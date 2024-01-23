@@ -2,22 +2,36 @@
 using System.Security.Cryptography.X509Certificates;
 using System;
 using System.IO;
+using System.Diagnostics;
 
 namespace Launcher.Tests
 {
     [TestClass()]
     public class DigitalSignatureHelperTests
     {
-        
+        private string RunShellCommand(string command)
+        {
+            var result = Launcher.Start(new()
+                {
+                    WorkingDir = Environment.CurrentDirectory,
+                    Arguments = $"/c where {command}",
+                    FileName = "cmd.exe",
+                    RedirectStandardOutput = true
+                }
+            );
+
+            return result.GetFirstOutput();
+        }
+
         [TestMethod()]
         public void FileDigitallySignedTest()
         {
             // Arrange
             // Get the path to msbuild.exe from the MSBuild environment variable
-            string msbuildPath = Environment.GetEnvironmentVariable("MSBuild");
+            string msbuildPath = RunShellCommand("MSBuild.exe");
 
             // If the MSBuild environment variable is not set, use a default path
-            if (msbuildPath == null)
+            if (!msbuildPath.Contains("msbuildPath.exe",string.))
             {
                 msbuildPath = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\msbuild.exe";
             }
