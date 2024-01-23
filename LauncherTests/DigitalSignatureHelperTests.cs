@@ -9,6 +9,8 @@ namespace Launcher.Tests
     [TestClass()]
     public class DigitalSignatureHelperTests
     {
+        private const string MsbuildPath = "MSBuild.exe";
+
         private string RunShellCommand(string command)
         {
             var result = Launcher.Start(new()
@@ -28,10 +30,10 @@ namespace Launcher.Tests
         {
             // Arrange
             // This test relies on GitHub Actions to add msbuild.exe it to the path environment variable.
-            string msbuildPath = RunShellCommand("MSBuild.exe");
+            string msbuildPath = RunShellCommand(MsbuildPath);
 
             // If the MSBuild not added to path, use a default path
-            if (!msbuildPath.Contains("msbuildPath.exe",StringComparison.OrdinalIgnoreCase))
+            if (!msbuildPath.Contains(MsbuildPath, StringComparison.OrdinalIgnoreCase))
             {
                 msbuildPath = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\msbuild.exe";
             }

@@ -6,9 +6,18 @@ This repository contains a .NET Core class library that wraps around the .NET cl
 ## Table of Contents
 1. [Distribution](#Distribution)
 2. [Usage](#usage)
+3. [Launcher Usage](./launcher/README.md)
 
 ## Distribution
-(installation instructions will be provided after the first release)
+- This class library is released to nuget.org as `Ntools-Launcher`. 
 
-## Launcher Usage
-- [Launcher Usage](./launcher/README.md)
+## Usage
+To use the `Ntools-Launcher` library in your project, follow these steps:
+
+1. Install the `Ntools-Launcher` package from nuget.org.
+2. Import the `Ntools.Launcher` namespace in your code.
+3. Create an instance of the `ResultHelper` class.
+4. Use the `Launch` method to execute the launcher executable.
+5. Retrieve the result code and output using the `ResultCode` and `Output` properties of the `ResultHelper` instance.
+
+For more detailed information on how to use the launcher, refer to the [Launcher Usage](./launcher/README.md) documentation.
