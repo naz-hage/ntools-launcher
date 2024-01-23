@@ -27,17 +27,16 @@ namespace Launcher.Tests
         public void FileDigitallySignedTest()
         {
             // Arrange
-            // Get the path to msbuild.exe from the MSBuild environment variable
+            // This test relies on GitHub Actions to add msbuild.exe it to the path environment variable.
             string msbuildPath = RunShellCommand("MSBuild.exe");
 
-            // If the MSBuild environment variable is not set, use a default path
-            if (!msbuildPath.Contains("msbuildPath.exe",string.))
+            // If the MSBuild not added to path, use a default path
+            if (!msbuildPath.Contains("msbuildPath.exe",StringComparison.OrdinalIgnoreCase))
             {
                 msbuildPath = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\msbuild.exe";
             }
 
             var fileStream = new System.IO.FileStream(msbuildPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
-
 
             // Act
             var result = SignatureVerifier.VerifyDigitalSignature(fileStream.Name);
