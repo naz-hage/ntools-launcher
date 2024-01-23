@@ -15,9 +15,9 @@ namespace launcherTests
         {
             var result = Launcher.Launcher.Start(new()
                         {
-                            WorkingDir = Directory.GetCurrentDirectory(),
+                            WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
                             Arguments = "/?",
-                            FileName = "robocopy",
+                            FileName = "robocopy.exe",
                             RedirectStandardOutput = true
                         }
             );
@@ -74,6 +74,11 @@ namespace launcherTests
 
 
             Assert.AreEqual(-100, result.Code);
+            foreach (var line in result.Output)
+            {
+                Console.WriteLine(line);
+            }
+
             Assert.AreEqual(5, result.Output.Count);
             Assert.IsTrue(result.Output.Contains("fail"));
             Assert.IsTrue(result.Output.Contains("error"));

@@ -8,9 +8,9 @@ using Launcher
 var result = Launcher.Launcher.Start(
     new()
     {
-        WorkingDir = Directory.GetCurrentDirectory(),
+        WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
         Arguments = "/?",
-        FileName = "robocopy",
+        FileName = "robocopy.exe",
         RedirectStandardOutput = true
     }
 );

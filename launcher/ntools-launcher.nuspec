@@ -7,7 +7,7 @@
     <authors>naz-hage</authors>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="file">LICENSE.txt</license>
-    <projectUrl>https://github.com/naz-hage/ntools/tree/main/launcher</projectUrl>
+    <projectUrl>https://github.com/naz-hage/ntools-launcher</projectUrl>
     <description>This package simplifies calling another executable.</description>
     <releaseNotes>First release</releaseNotes>
     <copyright>2020-2024</copyright>

@@ -1,0 +1,227 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!-- Reference: https://learn.microsoft.com/en-us/visualstudio/msbuild/walkthrough-using-msbuild?view=vs-2022 -->
+	
+	<Import Project="$(ProgramFiles)\Nbuild\common.targets"/>
+
+	
+	<PropertyGroup>
+        <!-- This is the folder where the *.sln resides-->
+		<CurrentDirectory>$(MSBuildProjectDirectory)</CurrentDirectory>
+		
+		<SolutionName>$([System.IO.Path]::GetFileNameWithoutExtension('$(MSBuildProjectDirectory)'))</SolutionName>
+        <!-- This is the location when the app deployed or installed -->
+
+		<NugetPackagePath>$(ArtifactsDir)\$(SolutionName)\Nuget\$(ProductVersion)</NugetPackagePath>
+		<LocalNugetFeed>$(ArtifactsDir)\nupkgs</LocalNugetFeed>
+
+		<DeploymentFolder>$(LocalNugetFeed)</DeploymentFolder>
+	</PropertyGroup>
+	
+	<Target Name="CURRENT_DIRECTORY">
+
+		<PropertyGroup>
+			<CurrentDirectory>$(MSBuildProjectDirectory)</CurrentDirectory>
+		</PropertyGroup>
+		
+		<PropertyGroup>
+			<DirectoryName>$([System.IO.Path]::GetFileNameWithoutExtension('$(MSBuildProjectDirectory)'))</DirectoryName>
+		</PropertyGroup>
+		<Message Text="Directory Name: $(DirectoryName)"/>
+	</Target>
+
+    <Target Name="ARTIFACTS" DependsOnTargets="TAG">
+      <PropertyGroup>
+        <ArtifactsFolder>$(ArtifactsDir)\$(SolutionName)\$(TargetRelease)\$(ProductVersion)</ArtifactsFolder>
+		<ArtifactsTestResultsFolder>$(ArtifactsDir)\$(SolutionName)\TestResults\$(ProductVersion)</ArtifactsTestResultsFolder>
+      </PropertyGroup>  
+      <ItemGroup>
+            <BinaryFiles 
+						Exclude="
+						 $(SolutionDir)\$(TargetRelease)\**\*.pdb;
+						 $(SolutionDir)\$(TargetRelease)\test.*;
+						 $(SolutionDir)\$(TargetRelease)\*test*;
+						 $(SolutionDir)\$(TargetRelease)\Nuget*;
+						 $(SolutionDir)\$(TargetRelease)\*CodeCoverage*"
+
+						Include="
+                        $(SolutionDir)\$(TargetRelease)\*.exe;
+                        $(SolutionDir)\$(TargetRelease)\*.exe.config;
+                        $(SolutionDir)\$(TargetRelease)\*.json;
+						$(SolutionDir)\Nbuild\resources\*.targets;
+						$(SolutionDir)\Nbuild\resources\*.ps1;
+                        $(SolutionDir)\$(TargetRelease)\*.dll"
+						/>
+
+            <RunTimesNetStandard20 Include = "
+								   $(SolutionDir)\$(TargetRelease)\netstandard2.0\*.*"
+                                    Exclude="
+						            $(SolutionDir)\$(TargetRelease)\**\*.pdb"
+						            />
+		  
+        </ItemGroup>
+		
+        <Message Text="==> DONE"/>
+    </Target>
+
+	<!-- Define Nuget dependencies -->
+	<Target Name="NUGET_DEP" DependsOnTargets="TAG">
+	<PropertyGroup>
+		<NugetPackagePath>$(ArtifactsDir)\$(SolutionName)\Nuget\$(ProductVersion)</NugetPackagePath>
+		<LocalNugetFeed>$(ArtifactsDir)\nupkgs</LocalNugetFeed>
+	</PropertyGroup>
+
+	</Target>
+
+	<!-- Create a Nuget package for the launcher and all to the local feed -->
+	<Target Name="NUGET_PACK" DependsOnTargets="TAG;NUGET_DEP;SOLUTION;">
+
+		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
+		<Exec Command='rd $(LocalNugetFeed)\ntools-launcher\$(ProductVersion) /s /q'/>
+		<Exec Command='"$(NugetExe)" add $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source "$(LocalNugetFeed)"'/>
+		<Message Text="==> DONE"/>
+		</Target>
+	
+	<!-- Publish Nuget package to the public feed -->
+	<Target Name="NUGET_PUBLISH" DependsOnTargets="TAG;NUGET_DEP">
+		<ReadLinesFromFile File="$(NugetApiKeyFile)">
+		<Output TaskParameter="Lines" PropertyName="NugetApiKey" />
+		</ReadLinesFromFile>
+		<MSBuild Projects="$(SolutionDir)\launcher\launcher.csproj" Properties="Configuration=$(TargetRelease);Platform=Any CPU;Version=$(ProductVersion);AssemblyVersion=$(ProductVersion)"/>
+		<Exec Command='"$(NugetExe)" push $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(NugetApiKey)'/>
+		<Message Text="==> DONE"/>	
+	</Target>
+
+	<Target Name="PACKAGE" DependsOnTargets="ARTIFACTS;TAG">
+		<Message Text="Staging tag: $(ProductVersion)"/>
+		<Message Text="Artifacts folder: $(ArtifactsFolder)"/>
+		<Message Text="Removing  file $(ArtifactsFolder).zip"> </Message>
+		<Delete Files="$(ArtifactsFolder).zip"/>
+		
+		<Exec Command='"$(ZipExe)" a -r -tzip $(ArtifactsFolder).zip $(ArtifactsFolder)\*'/>
+		
+		<Message Text="==> DONE"/>
+	</Target>
+
+	<Target Name="CLEAN_ARTIFACTS" AfterTargets="PACKAGE">
+		<Message Text="Removing $(ArtifactsFolder)"> </Message>
+		<RemoveDir Directories="$(ArtifactsFolder);"/>
+		<Message Text="==> DONE"/>
+	</Target>
+
+	<Target Name="CLEAN_TEST" DependsOnTargets="IS_ADMIN">
+		<ItemGroup>
+			<NGitFiles
+						Exclude="
+						 $(SolutionDir)\$(TargetRelease)\**\*.pdb;
+						 $(SolutionDir)\$(TargetRelease)\test.*;
+						 $(SolutionDir)\$(TargetRelease)\*test*;
+						 $(SolutionDir)\$(TargetRelease)\Nuget*;
+						 $(SolutionDir)\$(TargetRelease)\*CodeCoverage*"
+
+						Include="
+                        $(SolutionDir)\$(TargetRelease)\ngit*;
+						$(SolutionDir)\$(TargetRelease)\launcher*;
+                        $(SolutionDir)\Nbuild\resources\*.targets;
+                        $(SolutionDir)\$(TargetRelease)\commandline.dll;  
+                        $(SolutionDir)\$(TargetRelease)\OutputColorizer.dll"
+						/>
+		</ItemGroup>
+		<Exec Command='del "$(DeploymentFolder)" /q' />
+		<Copy SourceFiles="@(NGitFiles)"
+			DestinationFolder="$(DeploymentFolder)"
+			Condition="'@(NGitFiles, ' ')' != ''"
+			SkipUnchangedFiles="true" />
+		<Exec Command='dir "$(DeploymentFolder)"'></Exec>
+
+		<Message Text="==> DONE"/>
+	</Target>
+	
+	<Target Name="TEST_STAGING_DEPLOY" DependsOnTargets="
+				CLEAN;
+                TAG;
+                SOLUTION;
+                SAVE_ARTIFACTS;
+                PACKAGE;
+				">
+		<Exec Command='dir "$(DeploymentFolder)"'></Exec>
+		<Message Text="==> DONE"/>
+	</Target>
+
+	<Target Name="TEST_GIT">
+		<Git Command="GetBranch">
+			<Output TaskParameter="Output" PropertyName="GitBranch"/>
+		</Git>
+		<Message Text="Task - Git Branch:'$(GitBranch)'"/>
+
+		<RedError Condition="'$(GitBranch)' == ''" Message="GetBranch Failed: GitBranch property is not defined." />
+
+		<Git Command="GetTag" >
+			<Output TaskParameter="Output" PropertyName="ProductVersion"/>
+		</Git>
+		<Message Text="Task - Git Tag:'$(ProductVersion)'"/>
+
+		<RedError Condition="'$(ProductVersion)' == ''" Message="GetTag Failed: Product Version property is not defined." />
+
+		<!--<Git Command="DeleteTag" TaskParameter="$(ProductVersion)">
+			<Output TaskParameter="Output" PropertyName="Result"/>
+		</Git>
+		<Message Text="Task - Git Delete Tag Result:'$(Result)'"/>
+
+		<RedError Condition="'$(Result)' != 'True'" Message="DeteteTag Failed: Product Version property is not defined." />-->
+		
+		<Git Command="AutoTag" TaskParameter="Staging">
+			<Output TaskParameter="Output" PropertyName="ProductVersion"/>
+		</Git>
+		<Message Text="Task - Git Next Tag:'$(ProductVersion)'"/>
+
+		<RedError Condition="'$(ProductVersion)' == ''" Message="AutoTag Staging Failed: Product Version property is not defined." />
+
+		<!--<Git Command="AutoTag" TaskParameter="Production">
+			<Output TaskParameter="Output" PropertyName="ProductVersion"/>
+		</Git>
+		<Message Text="Task - Git Next Tag:'$(ProductVersion)'"/>
+
+		<RedError Condition="'$(ProductVersion)' == ''" Message="AutoTag Production Failed: Product Version property is not defined." />-->
+
+		<Git Command="SetTag" TaskParameter="$(ProductVersion)">
+			<Output TaskParameter="Output" PropertyName="ProductVersion"/>
+		</Git>
+		<Message Text="Task - Git Next Tag:'$(ProductVersion)'"/>
+
+		<RedError Condition="'$(ProductVersion)' == ''" Message="SetTag Failed: Product Version property is not defined." />
+
+		<Git Command="PushTag" TaskParameter="$(ProductVersion)">
+			<Output TaskParameter="Output" PropertyName="ProductVersion"/>
+		</Git>
+
+		<Message Text="Task - Git Push Tag Result:'$(Result)'"/>
+
+		<RedError Condition="'$(Result)' != 'True'" Message="DeteteTag Failed: Product Version property is not defined." />
+
+		<Git Command="DeleteTag" TaskParameter="$(ProductVersion)">
+			<Output TaskParameter="Output" PropertyName="Result"/>
+		</Git>
+		<Message Text="Task - Git Delete Tag Result:'$(Result)'"/>
+
+		<RedError Condition="'$(Result)' != 'True'" Message="DeteteTag Failed: Product Version property is not defined." />
+
+		<Message Text="==> DONE"/>
+	</Target>
+
+	<Target Name="STAGING_LOCAL" DependsOnTargets="
+				CLEAN;
+                AUTOTAG_STAGING;
+                SOLUTION;
+                TEST;
+                SAVE_ARTIFACTS;
+                PACKAGE;
+				DEPLOY">
+	</Target>
+
+	<Target Name="DEPLOY_LOCAL" DependsOnTargets="
+                STAGING_LOCAL;
+                DEPLOY">
+	</Target>
+
+</Project>
