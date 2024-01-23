@@ -1,4 +1,4 @@
-﻿using Launcher;
+﻿using Ntools;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
@@ -13,7 +13,7 @@ namespace launcherTests
         [TestMethod]
         public void ProcessTestRobocopy()
         {
-            var result = Launcher.Launcher.Start(new()
+            var result = Ntools.Launcher.Start(new()
                         {
                             WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
                             Arguments = "/?",
@@ -46,7 +46,7 @@ namespace launcherTests
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
 
 
-            var result = Launcher.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(launcherParameters);
             Assert.AreEqual(0, result.Code);
             Assert.AreEqual(2, result.Output.Count);
         }
@@ -70,7 +70,7 @@ namespace launcherTests
             Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
 
-            var result = Launcher.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(launcherParameters);
 
 
             Assert.AreEqual(-100, result.Code);
@@ -88,7 +88,7 @@ namespace launcherTests
         [TestMethod]
         public void LaunchInThreadTest()
         {
-            var result = Launcher.Launcher.LaunchInThread(
+            var result = Ntools.Launcher.LaunchInThread(
                            workingDir: Directory.GetCurrentDirectory(),
                            fileName: ExcecutableToLaunch,
                            arguments: "pass"
@@ -96,7 +96,7 @@ namespace launcherTests
             Assert.AreEqual(0, result.Code);
             Assert.AreEqual("Success", result.Output[0]);
 
-            result = Launcher.Launcher.LaunchInThread(
+            result = Ntools.Launcher.LaunchInThread(
                workingDir: Directory.GetCurrentDirectory(),
                fileName: "test1.exe",
                arguments: "fail"
@@ -122,7 +122,7 @@ namespace launcherTests
             var expectedExcecutablePath = Path.Combine(Path.GetFullPath(launcherParameters.WorkingDir), launcherParameters.FileName);
             Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
-            var result = Launcher.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(launcherParameters);
 
             Assert.AreEqual(-100, result.Code);
             Assert.AreEqual(5, result.Output.Count);

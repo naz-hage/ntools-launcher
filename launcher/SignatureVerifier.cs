@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Launcher
+namespace Ntools
 {
     public static class SignatureVerifier
     {

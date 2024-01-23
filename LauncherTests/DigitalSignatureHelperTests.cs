@@ -1,17 +1,16 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Security.Cryptography.X509Certificates;
 using System;
 using System.IO;
-using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
-namespace Launcher.Tests
+namespace Ntools.Tests
 {
     [TestClass()]
     public class DigitalSignatureHelperTests
     {
         private const string MsbuildPath = "MSBuild.exe";
 
-        private string RunShellCommand(string command)
+        private static string RunShellCommand(string command)
         {
             var result = Launcher.Start(new()
                 {
@@ -66,7 +65,7 @@ namespace Launcher.Tests
             var cert = new X509Certificate2(fileName);
 
             // Display the properties of the certificate.
-            Console.WriteLine($"SignatureAlgorithm: {cert.SignatureAlgorithm.FriendlyName.ToString()}");
+            Console.WriteLine($"SignatureAlgorithm: {cert.SignatureAlgorithm.FriendlyName}");
             Console.WriteLine($"Subject: {cert.Subject}");
             Console.WriteLine($"Issuer: {cert.Issuer}");
             Console.WriteLine($"Version: {cert.Version}");

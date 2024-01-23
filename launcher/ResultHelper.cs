@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Launcher
+namespace Ntools
 {
     // Represents a helper class for handling results
     public class ResultHelper

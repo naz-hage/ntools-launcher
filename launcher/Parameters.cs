@@ -1,4 +1,4 @@
-﻿namespace Launcher
+﻿namespace Ntools
 {
     public class Parameters
     {

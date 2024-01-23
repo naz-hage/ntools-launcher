@@ -1,12 +1,8 @@
-﻿using System;
-using System.IO;
-using Launcher;
-
-namespace Launcher
+﻿namespace Ntools
 {
     public class LockVerify
     {
-        // Method to start the lock verification process
+        // Method to start the lock and verify that process image is digitally signed.  File is unlocker after verification and launch.
         public ResultHelper Start(Parameters parameters, bool lockVerify)
         {
             var launcherBase = new LauncherBase();
