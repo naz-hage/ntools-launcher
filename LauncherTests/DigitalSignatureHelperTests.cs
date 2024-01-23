@@ -8,12 +8,21 @@ namespace Launcher.Tests
     [TestClass()]
     public class DigitalSignatureHelperTests
     {
-        private const string ExcecutableToLaunch = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\msbuild.exe";
+        
         [TestMethod()]
         public void FileDigitallySignedTest()
         {
             // Arrange
-            var fileStream = new System.IO.FileStream(ExcecutableToLaunch, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+            // Get the path to msbuild.exe from the MSBuild environment variable
+            string msbuildPath = Environment.GetEnvironmentVariable("MSBuild");
+
+            // If the MSBuild environment variable is not set, use a default path
+            if (msbuildPath == null)
+            {
+                msbuildPath = @"C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\msbuild.exe";
+            }
+
+            var fileStream = new System.IO.FileStream(msbuildPath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
 
 
             // Act
