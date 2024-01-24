@@ -29,14 +29,7 @@
     <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="LauncherTests\**" />
-    <Compile Remove="test\**" />
-    <EmbeddedResource Remove="LauncherTests\**" />
-    <EmbeddedResource Remove="test\**" />
-    <None Remove="LauncherTests\**" />
-    <None Remove="test\**" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <None Include="..\LICENSE.txt">

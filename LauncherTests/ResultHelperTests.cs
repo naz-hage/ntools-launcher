@@ -1,7 +1,8 @@
-﻿using Ntools;
+﻿using Launcher;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ntools;
 
-namespace launcherTests
+namespace Launcher.Tests
 {
     [TestClass()]
     public class ResultHelperTests

@@ -74,7 +74,7 @@
 	</Target>
 
 	<!-- Create a Nuget package for the launcher and all to the local feed -->
-	<Target Name="NUGET_PACK" DependsOnTargets="TAG;NUGET_DEP;SOLUTION;">
+	<Target Name="NUGET_PACK" DependsOnTargets="STAGING;NUGET_DEP">
 
 		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
 		<Exec Command='rd $(LocalNugetFeed)\ntools-launcher\$(ProductVersion) /s /q'/>
@@ -83,11 +83,10 @@
 		</Target>
 	
 	<!-- Publish Nuget package to the public feed -->
-	<Target Name="NUGET_PUBLISH" DependsOnTargets="TAG;NUGET_DEP">
+	<Target Name="NUGET_PUBLISH" DependsOnTargets="PRODUCTION;NUGET_DEP">
 		<ReadLinesFromFile File="$(NugetApiKeyFile)">
 		<Output TaskParameter="Lines" PropertyName="NugetApiKey" />
 		</ReadLinesFromFile>
-		<MSBuild Projects="$(SolutionDir)\launcher\launcher.csproj" Properties="Configuration=$(TargetRelease);Platform=Any CPU;Version=$(ProductVersion);AssemblyVersion=$(ProductVersion)"/>
 		<Exec Command='"$(NugetExe)" push $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(NugetApiKey)'/>
 		<Message Text="==> DONE"/>	
 	</Target>

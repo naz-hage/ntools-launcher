@@ -1,9 +1,9 @@
-﻿using Ntools;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ntools;
 using System;
 using System.IO;
 
-namespace launcherTests
+namespace Launcher.Tests
 {
     [TestClass]
     public class LauncherTests
@@ -28,8 +28,8 @@ namespace launcherTests
         [TestMethod]
         public void ProcessStartTestPass()
         {
-            
-            Parameters launcherParameters = new()
+
+            Parameters Parameters = new()
             {
                 WorkingDir = Directory.GetCurrentDirectory(),
                 Arguments = "pass",
@@ -37,16 +37,16 @@ namespace launcherTests
                 RedirectStandardOutput = true
             };
 
-            Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
-            Console.WriteLine($"FileName: {launcherParameters.FileName}");
-            Console.WriteLine($"Arguments: {launcherParameters.Arguments}");
-            Console.WriteLine($"RedirectStandardOutput: {launcherParameters.RedirectStandardOutput}");
-            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(launcherParameters.WorkingDir), launcherParameters.FileName);
+            Console.WriteLine($"WorkingDir: {Parameters.WorkingDir}");
+            Console.WriteLine($"FileName: {Parameters.FileName}");
+            Console.WriteLine($"Arguments: {Parameters.Arguments}");
+            Console.WriteLine($"RedirectStandardOutput: {Parameters.RedirectStandardOutput}");
+            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(Parameters.WorkingDir), Parameters.FileName);
             Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
 
 
-            var result = Ntools.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(Parameters);
             Assert.AreEqual(0, result.Code);
             Assert.AreEqual(2, result.Output.Count);
         }

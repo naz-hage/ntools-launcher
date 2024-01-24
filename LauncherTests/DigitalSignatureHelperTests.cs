@@ -1,9 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ntools;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Ntools.Tests
+namespace Launcher.Tests
 {
     [TestClass()]
     public class DigitalSignatureHelperTests
@@ -12,7 +13,7 @@ namespace Ntools.Tests
 
         private static string RunShellCommand(string command)
         {
-            var result = Launcher.Start(new()
+            var result = Ntools.Launcher.Start(new()
                 {
                     WorkingDir = Environment.CurrentDirectory,
                     Arguments = $"/c where {command}",
