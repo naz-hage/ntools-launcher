@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace Launcher.Tests
 {
     [TestClass()]
-    public class DigitalSignatureHelperTests
+    public class SignatureVerifierTests
     {
         private const string MsbuildPath = "MSBuild.exe";
 
