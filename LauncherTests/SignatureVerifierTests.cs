@@ -18,7 +18,8 @@ namespace Launcher.Tests
                     WorkingDir = Environment.CurrentDirectory,
                     Arguments = $"/c where {command}",
                     FileName = "cmd.exe",
-                    RedirectStandardOutput = true
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 }
             );
 

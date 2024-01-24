@@ -140,58 +140,6 @@ namespace Ntools
         }
 
         /// <summary>
-        /// Launches an executable with arguments.
-        /// </summary>
-        /// <param name="workingDir">The working directory to run the executable from.</param>
-        /// <param name="fileName">The file name (including extension) of the executable to launch.</param>
-        /// <param name="arguments">The command line arguments to pass to the executable.</param>
-        /// <param name="redirectStandardOutput">Whether or not to redirect any output from the executable to the result object's Output property.</param>
-        /// <param name="verbose">Whether or not to output additional verbose messages.</param>
-        /// <param name="useShellExecute">Whether or not to use the system shell to start the process. This should be false to allow I/O redirection.</param>
-        /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
-        public static ResultHelper LaunchExecutable(string workingDir, string fileName, string arguments, bool redirectStandardOutput, bool verbose, bool useShellExecute)
-        {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                WorkingDirectory = workingDir,
-                Arguments = arguments,
-                UseShellExecute = useShellExecute,
-                RedirectStandardOutput = redirectStandardOutput,
-                CreateNoWindow = true,
-            };
-
-            try
-            {
-                var executable = Path.Combine(workingDir, fileName);
-                if (!File.Exists(executable))
-                {
-                    return ResultHelper.Fail(message: $"File {executable} not found");
-                }
-                new Thread(() =>
-                {
-                    try
-                    {
-                        Thread.CurrentThread.IsBackground = true;
-                        Process.Start(startInfo);
-                        Console.WriteLine($"Started {startInfo.FileName} {startInfo.Arguments}");
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(ex.Message);
-                    }
-                }).Start();
-
-                return ResultHelper.Success();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception: {ex.Message}");
-                return ResultHelper.Fail(message: ex.Message);
-            }
-        }
-
-        /// <summary>
         /// Launch in thread and exit
         /// </summary>
         /// <param name="fileName"></param>
