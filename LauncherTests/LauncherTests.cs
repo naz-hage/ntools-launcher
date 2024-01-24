@@ -19,7 +19,8 @@ namespace Launcher.Tests
                             WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
                             Arguments = "/?",
                             FileName = "robocopy.exe",
-                            RedirectStandardOutput = true
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
                         }
             );
             Assert.AreEqual(16, result.Code);
@@ -35,7 +36,8 @@ namespace Launcher.Tests
                 WorkingDir = Directory.GetCurrentDirectory(),
                 Arguments = "pass",
                 FileName = ExcecutableToLaunch,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
             Console.WriteLine($"WorkingDir: {Parameters.WorkingDir}");
@@ -60,7 +62,8 @@ namespace Launcher.Tests
                 WorkingDir = Directory.GetCurrentDirectory(),
                 Arguments = "fail",
                 FileName = ExcecutableToLaunch,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
             Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
@@ -114,7 +117,8 @@ namespace Launcher.Tests
                 WorkingDir = Directory.GetCurrentDirectory(),
                 FileName = ExcecutableToLaunch,
                 Arguments = "fail",
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
             Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
             Console.WriteLine($"FileName: {launcherParameters.FileName}");
@@ -133,7 +137,7 @@ namespace Launcher.Tests
         }
 
         [TestMethod()]
-        public void LockVerifyTest()
+        public void LockVerifyStartTest()
         {
             // Arrange
             var process = new Process();
@@ -146,16 +150,15 @@ namespace Launcher.Tests
             process.StartInfo.CreateNoWindow = false;
 
             var verbose = false;
-            var lockVerify = false;
-
+   
             // Act
-            var result = process.LockVerifyStart(verbose, lockVerify);
+            var result = process.LockVerifyStart(verbose);
 
 
             Console.WriteLine($"Output: {result.GetFirstOutput()}");
             // Assert
-            Assert.AreEqual(16, result.Code);
-            Assert.IsTrue(result.Output.Count > 100);
+            Assert.AreEqual(-1, result.Code);
+            Assert.IsTrue(result.GetFirstOutput().Contains("is not digitally signed"));
         }
     }
 }

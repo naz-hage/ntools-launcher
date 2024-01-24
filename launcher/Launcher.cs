@@ -7,32 +7,28 @@ namespace Ntools
 {
     public static class Launcher 
     {
-        public static bool Verbose { get; set; } = false;
-
-        public static ResultHelper LockVerifyStart(this Process process, bool verbose, bool lockVerify)
+        /// <summary>
+        /// Locks the file, verifies the digital signature, and starts the process.
+        /// </summary>
+        /// <param name="process">The Process object representing the executable to launch.</param>
+        /// <param name="verbose">Whether or not to output additional verbose messages.</param>
+        /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
+        public static ResultHelper LockVerifyStart(this Process process, bool verbose)
         {
             ResultHelper result;
-            if (lockVerify)
+            // Lock the file for reading
+            using (FileStream fileStream = new FileStream(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                // Lock the file for reading
-                using (FileStream fileStream = new FileStream(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
+                // Check for valid digital signature
+                if (!SignatureVerifier.VerifyDigitalSignature(fileStream.Name))
                 {
-                    // Check for valid digital signature
-                    if (!SignatureVerifier.VerifyDigitalSignature(fileStream.Name))
-                    {
-                        result = ResultHelper.Fail(-1, $"File {process.StartInfo.FileName} is not digitally signed");
-                    }
-                    else
-                    {
-                        // Start the process.
-                        result = process.Start(verbose);
-                    }
+                    result = ResultHelper.Fail(-1, $"File {process.StartInfo.FileName} is not digitally signed");
                 }
-            }
-            else
-            {
-                // Start the process.
-                result = process.Start(verbose);
+                else
+                {
+                    // Start the process.
+                    result = process.Start(verbose);
+                }
             }
 
             return result;
@@ -41,9 +37,8 @@ namespace Ntools
         /// <summary>
         /// Starts the process and handles the output redirection or waiting for the process to exit.
         /// </summary>
-        /// <param name="redirectStandardOutput">Whether or not to redirect any output from the executable to the result object's Output property.</param>
-        /// <param name="verbose">Whether or not to output additional verbose messages.</param>
         /// <param name="process">The Process object representing the executable to launch.</param>
+        /// <param name="verbose">Whether or not to output additional verbose messages.</param>
         /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
         public static ResultHelper Start(this Process process, bool verbose)
         {
@@ -90,30 +85,62 @@ namespace Ntools
 
             return result;
         }
+
         /// <summary>
-        /// Launch a process specified in parameters 
+        /// Launches a process with the specified parameters.
         /// </summary>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <param name="parameters">The Parameters object containing the launch parameters.</param>
+        /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
         public static ResultHelper Start(Parameters parameters)
         {
-   
-             var result = Start(
-                                parameters.WorkingDir,
-                                parameters.FileName,
-                                parameters.Arguments,
-                                parameters.RedirectStandardOutput,
-                                parameters.Verbose,
-                                parameters.UseShellExecute
-                                );
-           
+            var result = ResultHelper.New();
+
+            // preserve current directory
+            var currentDir = Directory.GetCurrentDirectory();
+            if (parameters.Verbose) Console.WriteLine($"CurrentDir: {currentDir}");
+
+            // Output verbose message if required.
+            if (parameters.Verbose)
+            {
+                Console.WriteLine($" -Launcher   => {parameters.FileName} {parameters.Arguments}");
+                Console.WriteLine($" -WorkingDir => {parameters.WorkingDir}");
+            }
+
+            try
+            {
+                // Create a new process object and set the properties for running the specified executable.
+                using (var process = new Process())
+                {
+                    process.StartInfo.WorkingDirectory = parameters.WorkingDir;
+                    process.StartInfo.FileName = parameters.FileName;
+                    process.StartInfo.Arguments = parameters.Arguments;
+                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                    process.StartInfo.CreateNoWindow = false;
+                    process.StartInfo.UseShellExecute = parameters.UseShellExecute;
+                    process.StartInfo.RedirectStandardOutput = parameters.RedirectStandardOutput;
+                    process.StartInfo.RedirectStandardError = parameters.RedirectStandardError;
+
+                    // Set the current directory to the working directory to avoid issues when running the executable.
+                    Directory.SetCurrentDirectory(process.StartInfo.WorkingDirectory);
+
+                    result = process.Start(parameters.Verbose);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (parameters.Verbose) Console.WriteLine($"ProcessStart Exception: {ex.Message}");
+                result = ResultHelper.Fail(-1, $"File {parameters.FileName} not found");
+            }
+
+            // restore current directory
+            Directory.SetCurrentDirectory(currentDir);
+            if (parameters.Verbose) Console.WriteLine($"reset CurrentDir: {Directory.GetCurrentDirectory()}");
+
             return result;
         }
 
-
         /// <summary>
-        /// A wrapper to launch an executable with arguments. The executable must run silently without requiring user input.
-        /// If redirectStandardOutput is true, any output from the executable will be redirected to the result object's Output property.
+        /// Launches an executable with arguments.
         /// </summary>
         /// <param name="workingDir">The working directory to run the executable from.</param>
         /// <param name="fileName">The file name (including extension) of the executable to launch.</param>
@@ -122,110 +149,56 @@ namespace Ntools
         /// <param name="verbose">Whether or not to output additional verbose messages.</param>
         /// <param name="useShellExecute">Whether or not to use the system shell to start the process. This should be false to allow I/O redirection.</param>
         /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
-        private static ResultHelper Start(string workingDir,
-                    string fileName,
-                    string arguments,
-                    bool redirectStandardOutput = false,
-                    bool verbose = false,
-                    bool useShellExecute = false,
-                    bool lockVerify = false)
+        public static ResultHelper LaunchExecutable(string workingDir, string fileName, string arguments, bool redirectStandardOutput, bool verbose, bool useShellExecute)
         {
-            var result = ResultHelper.New();
-
-            // preserve current directory
-            var currentDir = Directory.GetCurrentDirectory();
-            if (verbose) Console.WriteLine($"CurrentDir: {currentDir}");
-
-            // Output verbose message if required.
-            if (verbose)
+            var startInfo = new ProcessStartInfo
             {
-                Console.WriteLine($" -Launcher   => {fileName} {arguments}");
-                Console.WriteLine($" -WorkingDir => {workingDir}");
-            }
+                FileName = fileName,
+                WorkingDirectory = workingDir,
+                Arguments = arguments,
+                UseShellExecute = useShellExecute,
+                RedirectStandardOutput = redirectStandardOutput,
+                CreateNoWindow = true,
+            };
 
             try
             {
-                // Create a new process object and set the properties for running the specified executable.
-                using (var process = new Process())
+                var executable = Path.Combine(workingDir, fileName);
+                if (!File.Exists(executable))
                 {
-                    process.StartInfo.WorkingDirectory = workingDir;
-                    process.StartInfo.FileName = fileName;
-                    process.StartInfo.Arguments = arguments;
-                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                    process.StartInfo.CreateNoWindow = false;
-                    process.StartInfo.UseShellExecute = useShellExecute;
-                    process.StartInfo.RedirectStandardOutput = redirectStandardOutput;
-                    process.StartInfo.RedirectStandardError = redirectStandardOutput;
-
-                    // Set the current directory to the working directory to avoid issues when running the executable.
-                    Directory.SetCurrentDirectory(process.StartInfo.WorkingDirectory);
-
-                    if (lockVerify)
-                    {
-                        // Lock the file for reading
-                        using (FileStream fileStream = new FileStream(Path.Combine(workingDir, fileName), FileMode.Open, FileAccess.Read, FileShare.Read))
-                        {
-                            // Check for valid digital signature
-                            if (!SignatureVerifier.VerifyDigitalSignature(fileStream.Name))
-                            {
-                                result = ResultHelper.Fail(-1, $"File {fileName} is not digitally signed");
-                            }
-                            else
-                            {
-                                // Start the process.
-                                result = process.Start(verbose);
-                            }
-
-                        }
-                    }
-                    else
-                    {
-                        // Start the process.
-                        result = process.Start(verbose);
-                    }
-                    // File is automatically unlocked here as 'using' block is exited and FileStream is disposed
-                    // Set the exit code in the result object and return it.
+                    return ResultHelper.Fail(message: $"File {executable} not found");
                 }
-            }
+                new Thread(() =>
+                {
+                    try
+                    {
+                        Thread.CurrentThread.IsBackground = true;
+                        Process.Start(startInfo);
+                        Console.WriteLine($"Started {startInfo.FileName} {startInfo.Arguments}");
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                }).Start();
 
+                return ResultHelper.Success();
+            }
             catch (Exception ex)
             {
-                if (verbose) Console.WriteLine($"ProcessStart Exception: {ex.Message}");
-                result = ResultHelper.Fail(-1, $"File {fileName} not found");
+                Console.WriteLine($"Exception: {ex.Message}");
+                return ResultHelper.Fail(message: ex.Message);
             }
-
-            // restore current directory
-            Directory.SetCurrentDirectory(currentDir);
-            if (verbose) Console.WriteLine($"reset CurrentDir: {Directory.GetCurrentDirectory()}");
-
-            return result;
         }
 
-        
-
-    private static void RunProcessAsAdmin(string filename)
-    {
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = filename,
-                UseShellExecute = true,
-                Verb = "runas",
-            }
-        };
-
-        process.Start();
-    }
-
-    /// <summary>
-    /// Launch in thread and exit
-    /// </summary>
-    /// <param name="fileName"></param>
-    /// <param name="workingDir"></param>
-    /// <param name="arguments"></param>
-    /// <returns></returns>
-    public static ResultHelper LaunchInThread(string workingDir, string fileName, string arguments)
+        /// <summary>
+        /// Launch in thread and exit
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="workingDir"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        public static ResultHelper LaunchInThread(string workingDir, string fileName, string arguments)
         {
             var startInfo = new ProcessStartInfo
             {
@@ -263,7 +236,7 @@ namespace Ntools
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
-                return ResultHelper.Fail(message:ex.Message);
+                return ResultHelper.Fail(message: ex.Message);
             }
         }
     }
