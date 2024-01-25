@@ -69,7 +69,7 @@
 	<PropertyGroup>
 		<NugetPackagePath>$(ArtifactsDir)\$(SolutionName)\Nuget\$(ProductVersion)</NugetPackagePath>
 		<LocalNugetFeed>$(ArtifactsDir)\nupkgs</LocalNugetFeed>
-		<NugetApiKey>$(USERPROFILE)\NugetApiKey.txt</NugetApiKey>
+		<NugetApiKeyFile>$(USERPROFILE)\NugetApiKey.txt</NugetApiKeyFile>
 	</PropertyGroup>
 	</Target>
 
