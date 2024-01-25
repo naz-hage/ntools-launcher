@@ -7,7 +7,7 @@
     <authors>naz-hage</authors>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="file">LICENSE.txt</license>
-    <projectUrl>https://github.com/naz-hage/ntools/tree/main/launcher</projectUrl>
+    <projectUrl>https://github.com/naz-hage/ntools-launcher/blob/main/README.md</projectUrl>
     <description>This package simplifies calling another executable.</description>
     <releaseNotes>First release</releaseNotes>
     <copyright>2020-2024</copyright>
@@ -16,6 +16,8 @@
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="System.Security.Principal.Windows" version="5.0.0" />
+		<dependency id="System.Security.Cryptography.Pkcs" version="8.0.0" />
+		<dependency id="System.Security.Cryptography.X509Certificates" version="4.3.2" />
       </group>
     </dependencies>
   </metadata>

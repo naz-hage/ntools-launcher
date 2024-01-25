@@ -29,14 +29,7 @@
     <AppendTargetFrameworkToOutputPath>False</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="LauncherTests\**" />
-    <Compile Remove="test\**" />
-    <EmbeddedResource Remove="LauncherTests\**" />
-    <EmbeddedResource Remove="test\**" />
-    <None Remove="LauncherTests\**" />
-    <None Remove="test\**" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <None Include="..\LICENSE.txt">
@@ -46,6 +39,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
   </ItemGroup>
 

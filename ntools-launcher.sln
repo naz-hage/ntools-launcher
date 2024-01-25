@@ -12,6 +12,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "launcherTests", "LauncherTe
 		{2CEBEEB0-0B7C-418E-AD34-40F60B5B6E6B} = {2CEBEEB0-0B7C-418E-AD34-40F60B5B6E6B}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{72E68ED8-5547-411B-A18D-24A8F59B4A26}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Nbuild.bat = Nbuild.bat
+		nbuild.log = nbuild.log
+		nbuild.targets = nbuild.targets
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{975DD70F-DD7A-47B0-BCD1-2A2814EA3914}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet-desktop.yml = .github\workflows\dotnet-desktop.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

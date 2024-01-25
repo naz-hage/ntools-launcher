@@ -1,4 +1,4 @@
-﻿using Launcher;
+﻿using Ntools;
 
 namespace LauncherTest
 {
@@ -6,7 +6,7 @@ namespace LauncherTest
     {
         public static ResultHelper Test()
         {
-            var result = Launcher.Launcher.Start(
+            var result = Ntools.Launcher.Start(
                 new()
                 {
                     WorkingDir = Directory.GetCurrentDirectory(),

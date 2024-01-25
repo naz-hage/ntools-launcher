@@ -1,9 +1,8 @@
 ﻿using System.Security.Principal;
 
-namespace Launcher
+namespace Ntools
 {
-    public
-        class CurrentProcess
+    public static class CurrentProcess
     {
         public static bool IsElevated() => new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator);
     }

@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
 
     runs-on: windows-latest  # For a list of available runner types, refer to
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
@@ -37,10 +37,16 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1
 
+    - name: Install dependencies
+      run: dotnet restore
+
     # Execute all unit tests in the solution
     - name: Build the solution
-      run: dotnet build
+      run: dotnet build --no-restore --verbosity normal
 
     - name: Execute unit tests
-      run: dotnet test --logger "console;verbosity=normal;DOTNET_CLI_TELEMETRY_OPTOUT=1" --verbosity normal
+      #run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+      run: dotnet test --no-build --verbosity normal
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
 

@@ -1,9 +1,10 @@
-﻿using Launcher;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ntools;
 using System;
+using System.Diagnostics;
 using System.IO;
 
-namespace launcherTests
+namespace Launcher.Tests
 {
     [TestClass]
     public class LauncherTests
@@ -13,12 +14,13 @@ namespace launcherTests
         [TestMethod]
         public void ProcessTestRobocopy()
         {
-            var result = Launcher.Launcher.Start(new()
+            var result = Ntools.Launcher.Start(new()
                         {
-                            WorkingDir = Directory.GetCurrentDirectory(),
+                            WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
                             Arguments = "/?",
-                            FileName = "robocopy",
-                            RedirectStandardOutput = true
+                            FileName = "robocopy.exe",
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
                         }
             );
             Assert.AreEqual(16, result.Code);
@@ -28,25 +30,26 @@ namespace launcherTests
         [TestMethod]
         public void ProcessStartTestPass()
         {
-            
-            Parameters launcherParameters = new()
+
+            Parameters Parameters = new()
             {
                 WorkingDir = Directory.GetCurrentDirectory(),
                 Arguments = "pass",
                 FileName = ExcecutableToLaunch,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
-            Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
-            Console.WriteLine($"FileName: {launcherParameters.FileName}");
-            Console.WriteLine($"Arguments: {launcherParameters.Arguments}");
-            Console.WriteLine($"RedirectStandardOutput: {launcherParameters.RedirectStandardOutput}");
-            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(launcherParameters.WorkingDir), launcherParameters.FileName);
+            Console.WriteLine($"WorkingDir: {Parameters.WorkingDir}");
+            Console.WriteLine($"FileName: {Parameters.FileName}");
+            Console.WriteLine($"Arguments: {Parameters.Arguments}");
+            Console.WriteLine($"RedirectStandardOutput: {Parameters.RedirectStandardOutput}");
+            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(Parameters.WorkingDir), Parameters.FileName);
             Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
 
 
-            var result = Launcher.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(Parameters);
             Assert.AreEqual(0, result.Code);
             Assert.AreEqual(2, result.Output.Count);
         }
@@ -59,7 +62,8 @@ namespace launcherTests
                 WorkingDir = Directory.GetCurrentDirectory(),
                 Arguments = "fail",
                 FileName = ExcecutableToLaunch,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
             Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
@@ -70,10 +74,15 @@ namespace launcherTests
             Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
 
-            var result = Launcher.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(launcherParameters);
 
 
             Assert.AreEqual(-100, result.Code);
+            foreach (var line in result.Output)
+            {
+                Console.WriteLine(line);
+            }
+
             Assert.AreEqual(5, result.Output.Count);
             Assert.IsTrue(result.Output.Contains("fail"));
             Assert.IsTrue(result.Output.Contains("error"));
@@ -83,7 +92,7 @@ namespace launcherTests
         [TestMethod]
         public void LaunchInThreadTest()
         {
-            var result = Launcher.Launcher.LaunchInThread(
+            var result = Ntools.Launcher.LaunchInThread(
                            workingDir: Directory.GetCurrentDirectory(),
                            fileName: ExcecutableToLaunch,
                            arguments: "pass"
@@ -91,7 +100,7 @@ namespace launcherTests
             Assert.AreEqual(0, result.Code);
             Assert.AreEqual("Success", result.Output[0]);
 
-            result = Launcher.Launcher.LaunchInThread(
+            result = Ntools.Launcher.LaunchInThread(
                workingDir: Directory.GetCurrentDirectory(),
                fileName: "test1.exe",
                arguments: "fail"
@@ -108,7 +117,8 @@ namespace launcherTests
                 WorkingDir = Directory.GetCurrentDirectory(),
                 FileName = ExcecutableToLaunch,
                 Arguments = "fail",
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
             Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
             Console.WriteLine($"FileName: {launcherParameters.FileName}");
@@ -117,13 +127,38 @@ namespace launcherTests
             var expectedExcecutablePath = Path.Combine(Path.GetFullPath(launcherParameters.WorkingDir), launcherParameters.FileName);
             Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
             Assert.IsTrue(File.Exists(expectedExcecutablePath));
-            var result = Launcher.Launcher.Start(launcherParameters);
+            var result = Ntools.Launcher.Start(launcherParameters);
 
             Assert.AreEqual(-100, result.Code);
             Assert.AreEqual(5, result.Output.Count);
             Assert.IsTrue(result.Output.Contains("fail"));
             Assert.IsTrue(result.Output.Contains("error"));
             Assert.IsTrue(result.Output.Contains("rejected"));
+        }
+
+        [TestMethod()]
+        public void LockVerifyStartTest()
+        {
+            // Arrange
+            var process = new Process();
+            process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System);
+            process.StartInfo.FileName = $"robocopy.exe";  // must be path rooted
+            process.StartInfo.Arguments = "/?";
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            process.StartInfo.CreateNoWindow = false;
+
+            var verbose = false;
+   
+            // Act
+            var result = process.LockVerifyStart(verbose);
+
+
+            Console.WriteLine($"Output: {result.GetFirstOutput()}");
+            // Assert
+            Assert.AreEqual(-1, result.Code);
+            Assert.IsTrue(result.GetFirstOutput().Contains("is not digitally signed"));
         }
     }
 }

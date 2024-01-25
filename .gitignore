@@ -401,5 +401,5 @@ FodyWeavers.xsd
 /__azurite_db_blob_extent__.json
 /__azurite_db_blob__.json
 **/launchSettings.json
-/Nbuild.bat
-/nbuild.targets
+
+/launcher/DESIGN.md
