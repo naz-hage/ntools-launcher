@@ -69,8 +69,8 @@
 	<PropertyGroup>
 		<NugetPackagePath>$(ArtifactsDir)\$(SolutionName)\Nuget\$(ProductVersion)</NugetPackagePath>
 		<LocalNugetFeed>$(ArtifactsDir)\nupkgs</LocalNugetFeed>
+		<NugetApiKey>$(USERPROFILE)\NugetApiKey.txt</NugetApiKey>
 	</PropertyGroup>
-
 	</Target>
 
 	<!-- Create a Nuget package for the launcher and all to the local feed -->
