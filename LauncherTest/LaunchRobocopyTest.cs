@@ -1,4 +1,5 @@
 ﻿using Ntools;
+using System.Diagnostics;
 
 namespace LauncherTest
 {
@@ -6,15 +7,13 @@ namespace LauncherTest
     {
         public static ResultHelper Test()
         {
-            var result = Ntools.Launcher.Start(
-                new()
-                {
-                    WorkingDir = Directory.GetCurrentDirectory(),
-                    Arguments = "/?",
-                    FileName = "robocopy",
-                    RedirectStandardOutput = true
-                }
-            );
+            var process = new Process();
+            process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+            process.StartInfo.FileName = "robocopy.exe";
+            process.StartInfo.Arguments = "/?";
+            process.StartInfo.RedirectStandardOutput = true;
+            var result = process.LockStart(true);
+
             if (result.IsSuccess())
             {
                 Console.WriteLine("Success");

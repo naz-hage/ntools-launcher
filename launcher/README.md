@@ -3,9 +3,14 @@
 Ntools is a .NET namespace that provides various utilities for launching processes. It includes the following class libraries:
 
 - **Launcher:** Provides methods to launch a process and wait for it to complete.
-- **LockVerify:** Provides methods to verify that a file is digitally signed before launch.
+    - **LockVerifyStart:** A methods that locks file and verify that a file is digitally signed before launching.
+    - **LockStart:** A method that locks procees before launching.
+    - **LaunchInThread:** A method that launches a process in a separate thread.
 - **ResultHelper:** Provides a helper class and methods to retrieve the result `Code` and `Output` of the launched executable.
 - **CurrentProcess:** Provides a method to determine if the current process is elevated.
+- **ShellUtility:** A helper class that executes shell commands.
+    - **GetFullPathOfFile:** A method that retrieves the full path of a file from the Path environment variable.
+
 
 ## Installation
 
@@ -18,17 +23,22 @@ Here's an example of how to use the `Launcher` class to start a process:
 ```csharp
 using Ntools;
 
-var result = Launcher.Start(
-    new()
+var process = new Process
+{
+    StartInfo = new ProcessStartInfo
     {
-        WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
-        Arguments = "/?",
+        WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System),
         FileName = "robocopy.exe",
+        Arguments = "/?",
         RedirectStandardOutput = true,
-        RedirectStandardError = true
+        RedirectStandardError = true,
+        WindowStyle = ProcessWindowStyle.Hidden,
+        CreateNoWindow = false,
+        UseShellExecute = false
     }
-);
+};
 
+var result = process.LockStart(true);
 if (result.IsSuccess())
 {
     Console.WriteLine("Success");

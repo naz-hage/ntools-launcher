@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ntools;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -13,15 +14,13 @@ namespace Launcher.Tests
 
         private static string RunShellCommand(string command)
         {
-            var result = Ntools.Launcher.Start(new()
-                {
-                    WorkingDir = Environment.CurrentDirectory,
-                    Arguments = $"/c where {command}",
-                    FileName = "cmd.exe",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            );
+            var process = new Process();
+            process.StartInfo.WorkingDirectory = @$"{Environment.GetFolderPath(Environment.SpecialFolder.System)}";
+            process.StartInfo.FileName = "cmd.exe";
+            process.StartInfo.Arguments = $"/c where {command}";
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            var result = process.LockStart(false);
 
             return result.GetFirstOutput();
         }
