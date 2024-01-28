@@ -23,7 +23,9 @@ namespace Ntools
                     Arguments = $"/c where {command}",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    UseShellExecute = false
+                    UseShellExecute = false,
+                    CreateNoWindow = false,
+                    WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
             var result = process.LockStart(false);

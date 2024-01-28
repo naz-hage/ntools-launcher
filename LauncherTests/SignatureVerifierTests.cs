@@ -12,25 +12,14 @@ namespace Launcher.Tests
     {
         private const string MsbuildPath = "MSBuild.exe";
 
-        private static string RunShellCommand(string command)
-        {
-            var process = new Process();
-            process.StartInfo.WorkingDirectory = @$"{Environment.GetFolderPath(Environment.SpecialFolder.System)}";
-            process.StartInfo.FileName = "cmd.exe";
-            process.StartInfo.Arguments = $"/c where {command}";
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            var result = process.LockStart(false);
-
-            return result.GetFirstOutput();
-        }
 
         [TestMethod()]
         public void FileDigitallySignedTest()
         {
             // Arrange
             // This test relies on GitHub Actions to add msbuild.exe it to the path environment variable.
-            string msbuildPath = RunShellCommand(MsbuildPath);
+            string msbuildPath = ShellUtility.GetFullPathOfFile(MsbuildPath);
+            Console.WriteLine($"MSBuild path: {msbuildPath}");
 
             // If the MSBuild not added to path, use a default path
             if (!msbuildPath.Contains(MsbuildPath, StringComparison.OrdinalIgnoreCase))
@@ -42,7 +31,6 @@ namespace Launcher.Tests
 
             // Act
             var result = SignatureVerifier.VerifyDigitalSignature(fileStream.Name);
-
 
             // Assert
             Assert.IsTrue(result);
