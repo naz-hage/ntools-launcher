@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ntools;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
@@ -11,27 +12,14 @@ namespace Launcher.Tests
     {
         private const string MsbuildPath = "MSBuild.exe";
 
-        private static string RunShellCommand(string command)
-        {
-            var result = Ntools.Launcher.Start(new()
-                {
-                    WorkingDir = Environment.CurrentDirectory,
-                    Arguments = $"/c where {command}",
-                    FileName = "cmd.exe",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            );
-
-            return result.GetFirstOutput();
-        }
 
         [TestMethod()]
         public void FileDigitallySignedTest()
         {
             // Arrange
             // This test relies on GitHub Actions to add msbuild.exe it to the path environment variable.
-            string msbuildPath = RunShellCommand(MsbuildPath);
+            string msbuildPath = ShellUtility.GetFullPathOfFile(MsbuildPath);
+            Console.WriteLine($"MSBuild path: {msbuildPath}");
 
             // If the MSBuild not added to path, use a default path
             if (!msbuildPath.Contains(MsbuildPath, StringComparison.OrdinalIgnoreCase))
@@ -43,7 +31,6 @@ namespace Launcher.Tests
 
             // Act
             var result = SignatureVerifier.VerifyDigitalSignature(fileStream.Name);
-
 
             // Assert
             Assert.IsTrue(result);

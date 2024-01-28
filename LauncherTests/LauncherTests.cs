@@ -14,79 +14,28 @@ namespace Launcher.Tests
         [TestMethod]
         public void ProcessTestRobocopy()
         {
-            var result = Ntools.Launcher.Start(new()
-                        {
-                            WorkingDir = Environment.GetFolderPath(Environment.SpecialFolder.System),
-                            Arguments = "/?",
-                            FileName = "robocopy.exe",
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        }
-            );
+            // Arrange
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System),
+                    FileName = "robocopy.exe",
+                    Arguments = "/?",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = false,
+                    UseShellExecute = false
+                }
+            };
+
+            // Act
+            var result = process.LockStart(true);
+
+            // Assert
             Assert.AreEqual(16, result.Code);
             Assert.IsTrue(result.Output.Count > 100);
-        }
-
-        [TestMethod]
-        public void ProcessStartTestPass()
-        {
-
-            Parameters Parameters = new()
-            {
-                WorkingDir = Directory.GetCurrentDirectory(),
-                Arguments = "pass",
-                FileName = ExcecutableToLaunch,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            Console.WriteLine($"WorkingDir: {Parameters.WorkingDir}");
-            Console.WriteLine($"FileName: {Parameters.FileName}");
-            Console.WriteLine($"Arguments: {Parameters.Arguments}");
-            Console.WriteLine($"RedirectStandardOutput: {Parameters.RedirectStandardOutput}");
-            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(Parameters.WorkingDir), Parameters.FileName);
-            Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
-            Assert.IsTrue(File.Exists(expectedExcecutablePath));
-
-
-            var result = Ntools.Launcher.Start(Parameters);
-            Assert.AreEqual(0, result.Code);
-            Assert.AreEqual(2, result.Output.Count);
-        }
-
-        [TestMethod]
-        public void ProcessStartTestFail()
-        {
-            Parameters launcherParameters = new()
-            {
-                WorkingDir = Directory.GetCurrentDirectory(),
-                Arguments = "fail",
-                FileName = ExcecutableToLaunch,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
-            Console.WriteLine($"FileName: {launcherParameters.FileName}");
-            Console.WriteLine($"Arguments: {launcherParameters.Arguments}");
-            Console.WriteLine($"RedirectStandardOutput: {launcherParameters.RedirectStandardOutput}");
-            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(launcherParameters.WorkingDir), launcherParameters.FileName);
-            Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
-            Assert.IsTrue(File.Exists(expectedExcecutablePath));
-
-            var result = Ntools.Launcher.Start(launcherParameters);
-
-
-            Assert.AreEqual(-100, result.Code);
-            foreach (var line in result.Output)
-            {
-                Console.WriteLine(line);
-            }
-
-            Assert.AreEqual(5, result.Output.Count);
-            Assert.IsTrue(result.Output.Contains("fail"));
-            Assert.IsTrue(result.Output.Contains("error"));
-            Assert.IsTrue(result.Output.Contains("rejected"));
         }
 
         [TestMethod]
@@ -110,25 +59,54 @@ namespace Launcher.Tests
         }
 
         [TestMethod]
-        public void ProcessStartTestWithLauncherParameters()
+        public void LockStarPassTest()
         {
-            Parameters launcherParameters = new()
+            // Arrange
+            var process = new Process
             {
-                WorkingDir = Directory.GetCurrentDirectory(),
-                FileName = ExcecutableToLaunch,
-                Arguments = "fail",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                StartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = Directory.GetCurrentDirectory(),
+                    FileName = ExcecutableToLaunch,
+                    Arguments = "pass",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = false
+                }
             };
-            Console.WriteLine($"WorkingDir: {launcherParameters.WorkingDir}");
-            Console.WriteLine($"FileName: {launcherParameters.FileName}");
-            Console.WriteLine($"Arguments: {launcherParameters.Arguments}");
-            Console.WriteLine($"RedirectStandardOutput: {launcherParameters.RedirectStandardOutput}");
-            var expectedExcecutablePath = Path.Combine(Path.GetFullPath(launcherParameters.WorkingDir), launcherParameters.FileName);
-            Console.WriteLine($"expectedExcecutablePath: {expectedExcecutablePath}");
-            Assert.IsTrue(File.Exists(expectedExcecutablePath));
-            var result = Ntools.Launcher.Start(launcherParameters);
 
+            // Act
+            var result = process.LockStart(true);
+
+            // Assert
+            Assert.AreEqual(0, result.Code);
+            Assert.AreEqual(2, result.Output.Count);
+            Assert.IsTrue(result.GetFirstOutput().Contains("pass"));
+        }
+
+        [TestMethod]
+        public void LockStartFailTest()
+        {
+            // Arrange
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = Directory.GetCurrentDirectory(),
+                    FileName = ExcecutableToLaunch,
+                    Arguments = "fail",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = false
+                }
+            };
+
+            // Act
+            var result = process.LockStart(true);
+
+            // Assert
             Assert.AreEqual(-100, result.Code);
             Assert.AreEqual(5, result.Output.Count);
             Assert.IsTrue(result.Output.Contains("fail"));
@@ -159,6 +137,82 @@ namespace Launcher.Tests
             // Assert
             Assert.AreEqual(-1, result.Code);
             Assert.IsTrue(result.GetFirstOutput().Contains("is not digitally signed"));
+        }
+
+        [TestMethod]
+        public void LockStartWithDirectoryNotExist()
+        {
+            // Arrange
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = @"C:\DoesNotExist",
+                    FileName = $"robocopy.exe",
+                    Arguments = "/?",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = false
+                }
+            };
+            var verbose = true;
+
+            // Act with LockVerifyStart
+            Console.WriteLine("LockVerifyStart");
+            var result = process.LockVerifyStart(verbose);
+
+            Console.WriteLine($"Output: {result.GetFirstOutput()}");
+
+            // Assert
+            Assert.AreEqual(-1, result.Code);
+
+            // Act with LockVerifyStart
+            Console.WriteLine("LockStart");
+            result = process.LockVerifyStart(verbose);
+
+            Console.WriteLine($"Output: {result.GetFirstOutput()}");
+
+            // Assert
+            Assert.AreEqual(-1, result.Code);
+        }
+
+        [TestMethod]
+        public void LockStartWithFileNotExist()
+        {
+            // Arrange
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System),
+                    FileName = $"DoesNotExist.exe",
+                    Arguments = "/?",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = false
+                }
+            };
+            var verbose = true;
+
+            // Act
+            Console.WriteLine("LockVerifyStart");
+            var result = process.LockVerifyStart(verbose);
+
+            Console.WriteLine($"Output: {result.GetFirstOutput()}");
+
+            // Assert
+            Assert.AreEqual(-1, result.Code);
+
+            // Act with LockVerifyStart
+            Console.WriteLine("LockStart");
+            result = process.LockVerifyStart(verbose);
+
+            Console.WriteLine($"Output: {result.GetFirstOutput()}");
+
+            // Assert
+            Assert.AreEqual(-1, result.Code);
         }
     }
 }

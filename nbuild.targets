@@ -83,10 +83,11 @@
 		</Target>
 	
 	<!-- Publish Nuget package to the public feed -->
-	<Target Name="NUGET_PUBLISH" DependsOnTargets="PRODUCTION;NUGET_DEP">
+	<Target Name="NUGET_PUBLISH" DependsOnTargets="NUGET_DEP">
 		<ReadLinesFromFile File="$(NugetApiKeyFile)">
 		<Output TaskParameter="Lines" PropertyName="NugetApiKey" />
 		</ReadLinesFromFile>
+		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
 		<Exec Command='"$(NugetExe)" push $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(NugetApiKey)'/>
 		<Message Text="==> DONE"/>	
 	</Target>

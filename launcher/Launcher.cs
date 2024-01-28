@@ -16,13 +16,28 @@ namespace Ntools
         public static ResultHelper LockVerifyStart(this Process process, bool verbose)
         {
             ResultHelper result;
+
+            // verify that working directory is path rooted and exists
+            if (!Path.IsPathRooted(process.StartInfo.WorkingDirectory) ||
+                !Directory.Exists(process.StartInfo.WorkingDirectory))
+            {
+                return ResultHelper.Fail(-1, $"Working directory '{process.StartInfo.WorkingDirectory}' is not path rooted");
+            }
+
+            // verify that file exists
+            var executable = Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName);
+            if (!File.Exists(executable))
+            {
+                return ResultHelper.Fail(-1, $"File '{executable}' not found");
+            }
+
             // Lock the file for reading
             using (FileStream fileStream = new FileStream(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // Check for valid digital signature
                 if (!SignatureVerifier.VerifyDigitalSignature(fileStream.Name))
                 {
-                    result = ResultHelper.Fail(-1, $"File {process.StartInfo.FileName} is not digitally signed");
+                    result = ResultHelper.Fail(-1, $"File '{process.StartInfo.FileName}' is not digitally signed");
                 }
                 else
                 {
@@ -35,14 +50,51 @@ namespace Ntools
         }
 
         /// <summary>
+        /// Locks the file, and starts the process.
+        /// </summary>
+        /// <param name="process">The Process object representing the executable to launch.</param>
+        /// <param name="verbose">Whether or not to output additional verbose messages.</param>
+        /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
+        public static ResultHelper LockStart(this Process process, bool verbose)
+        {
+            ResultHelper result;
+
+            // verify that working directory is path rooted and exists
+            if (!Path.IsPathRooted(process.StartInfo.WorkingDirectory) ||
+                !Directory.Exists(process.StartInfo.WorkingDirectory))
+            {
+                return ResultHelper.Fail(-1, $"Working directory {process.StartInfo.WorkingDirectory} is not path rooted");
+            }
+
+            // verify that file exists
+            var executable = Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName);
+            if (!File.Exists(executable))
+            {
+                return ResultHelper.Fail(-1, $"File {executable} not found");
+            }
+
+            // Lock the file for reading
+            using (FileStream fileStream = new FileStream(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                    // Start the process.
+                    result = process.Start(verbose);
+            }
+
+
+            return result;
+        }
+        /// <summary>
         /// Starts the process and handles the output redirection or waiting for the process to exit.
         /// </summary>
         /// <param name="process">The Process object representing the executable to launch.</param>
         /// <param name="verbose">Whether or not to output additional verbose messages.</param>
         /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
-        public static ResultHelper Start(this Process process, bool verbose)
+        private static ResultHelper Start(this Process process, bool verbose)
         {
             var result = ResultHelper.New();
+
+            // preserve current directory
+            var currentDir = Directory.GetCurrentDirectory();
 
             if (process.Start())
             {
@@ -62,19 +114,18 @@ namespace Ntools
             }
             else
             {
-                return ResultHelper.Fail(-1, $"File {process.StartInfo.FileName} not found");
+                result = ResultHelper.Fail(-1, $"Failed to start {process.StartInfo.FileName}");
             }
 
             // display exit code and process.output
             if (verbose)
             {
+                Console.WriteLine($" -Code: {process.ExitCode}");
                 Console.WriteLine($" -Output:");
                 foreach (var line in result.Output)
                 {
                     Console.WriteLine($"   {line}");
                 }
-
-                Console.WriteLine($" -Code: {process.ExitCode}");
             }
 
             result.Code = process.ExitCode;
@@ -83,6 +134,22 @@ namespace Ntools
                 result.Output.Add($"ProcessStart Exception: {process.ExitCode}");
             }
 
+            // restore current directory
+            Directory.SetCurrentDirectory(currentDir);
+
+            // check if current directory is restored
+            if (Directory.GetCurrentDirectory() != currentDir)
+            {
+                if (result.Code == 0)
+                {
+                    result = ResultHelper.Fail(-1, $"Unable to restore current directory to {currentDir}");
+                }
+                else
+                {
+                    result.Output.Add($"Unable to restore current directory to {currentDir}");
+                }
+            }
+            
             return result;
         }
 
@@ -91,54 +158,7 @@ namespace Ntools
         /// </summary>
         /// <param name="parameters">The Parameters object containing the launch parameters.</param>
         /// <returns>A ResultHelper object containing the exit code and, if redirectStandardOutput is true, any output from the executable.</returns>
-        public static ResultHelper Start(Parameters parameters)
-        {
-            var result = ResultHelper.New();
-
-            // preserve current directory
-            var currentDir = Directory.GetCurrentDirectory();
-            if (parameters.Verbose) Console.WriteLine($"CurrentDir: {currentDir}");
-
-            // Output verbose message if required.
-            if (parameters.Verbose)
-            {
-                Console.WriteLine($" -Launcher   => {parameters.FileName} {parameters.Arguments}");
-                Console.WriteLine($" -WorkingDir => {parameters.WorkingDir}");
-            }
-
-            try
-            {
-                // Create a new process object and set the properties for running the specified executable.
-                using (var process = new Process())
-                {
-                    process.StartInfo.WorkingDirectory = parameters.WorkingDir;
-                    process.StartInfo.FileName = parameters.FileName;
-                    process.StartInfo.Arguments = parameters.Arguments;
-                    process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                    process.StartInfo.CreateNoWindow = false;
-                    process.StartInfo.UseShellExecute = parameters.UseShellExecute;
-                    process.StartInfo.RedirectStandardOutput = parameters.RedirectStandardOutput;
-                    process.StartInfo.RedirectStandardError = parameters.RedirectStandardError;
-
-                    // Set the current directory to the working directory to avoid issues when running the executable.
-                    Directory.SetCurrentDirectory(process.StartInfo.WorkingDirectory);
-
-                    result = process.Start(parameters.Verbose);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (parameters.Verbose) Console.WriteLine($"ProcessStart Exception: {ex.Message}");
-                result = ResultHelper.Fail(-1, $"File {parameters.FileName} not found");
-            }
-
-            // restore current directory
-            Directory.SetCurrentDirectory(currentDir);
-            if (parameters.Verbose) Console.WriteLine($"reset CurrentDir: {Directory.GetCurrentDirectory()}");
-
-            return result;
-        }
-
+        
         /// <summary>
         /// Launch in thread and exit
         /// </summary>
