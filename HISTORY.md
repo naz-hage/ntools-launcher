@@ -1,6 +1,8 @@
 [Next](#next)
 
-## Version 1.1.0 - 30-jan-24
+## Version 1.2.0 - 28-jan-24
+
+## Version 1.1.0 - 25-jan-24
 - Add lock file to prevent file being changed before it is launched.
     - If file cannot be locked, then it is not launched. An error is returned.
     - After returnning from `launch`, the file is unlocked.

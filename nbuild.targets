@@ -83,7 +83,7 @@
 		</Target>
 	
 	<!-- Publish Nuget package to the public feed -->
-	<Target Name="NUGET_PUBLISH" DependsOnTargets="NUGET_DEP">
+	<Target Name="NUGET_PUBLISH" DependsOnTargets="PRODUCTION;NUGET_DEP">
 		<ReadLinesFromFile File="$(NugetApiKeyFile)">
 		<Output TaskParameter="Lines" PropertyName="NugetApiKey" />
 		</ReadLinesFromFile>
