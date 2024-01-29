@@ -95,47 +95,57 @@ namespace Ntools
 
             // preserve current directory
             var currentDir = Directory.GetCurrentDirectory();
-
-            if (process.Start())
+            
+            try
             {
-                // If redirectStandardOutput is true, read any output from the executable and add it to the result object's Output property.
-                if (process.StartInfo.RedirectStandardOutput && process.StartInfo.RedirectStandardError)
+                // Set the working directory to the working directory.
+                Directory.SetCurrentDirectory(process.StartInfo.WorkingDirectory);
+
+                if (process.Start())
                 {
-                    result.Output.AddRange(process.StandardOutput.ReadToEnd()
-                                    .Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
-                    result.Output.AddRange(process.StandardError.ReadToEnd()
-                                   .Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+                    // If redirectStandardOutput is true, read any output from the executable and add it to the result object's Output property.
+                    if (process.StartInfo.RedirectStandardOutput && process.StartInfo.RedirectStandardError)
+                    {
+                        result.Output.AddRange(process.StandardOutput.ReadToEnd()
+                                        .Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+                        result.Output.AddRange(process.StandardError.ReadToEnd()
+                                       .Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries));
+                    }
+                    else
+                    {
+                        // If redirectStandardOutput is false, wait for the process to exit and add the exit code to the result object's Code property.
+                        process.WaitForExit();
+                    }
                 }
                 else
                 {
-                    // If redirectStandardOutput is false, wait for the process to exit and add the exit code to the result object's Code property.
-                    process.WaitForExit();
+                    result = ResultHelper.Fail(-1, $"Failed to start {process.StartInfo.FileName}");
                 }
-            }
-            else
-            {
-                result = ResultHelper.Fail(-1, $"Failed to start {process.StartInfo.FileName}");
-            }
 
-            // display exit code and process.output
-            if (verbose)
-            {
-                Console.WriteLine($" -Code: {process.ExitCode}");
-                Console.WriteLine($" -Output:");
-                foreach (var line in result.Output)
+                // display exit code and process.output
+                if (verbose)
                 {
-                    Console.WriteLine($"   {line}");
+                    Console.WriteLine($" -Code: {process.ExitCode}");
+                    Console.WriteLine($" -Output:");
+                    foreach (var line in result.Output)
+                    {
+                        Console.WriteLine($"   {line}");
+                    }
                 }
-            }
 
-            result.Code = process.ExitCode;
-            if (result.Code != 0 && !process.StartInfo.RedirectStandardOutput)
+                result.Code = process.ExitCode;
+                if (result.Code != 0 && !process.StartInfo.RedirectStandardOutput)
+                {
+                    result.Output.Add($"ProcessStart Exception: {process.ExitCode}");
+                }
+
+                // restore current directory
+                Directory.SetCurrentDirectory(currentDir);
+            }
+            catch (Exception ex)
             {
-                result.Output.Add($"ProcessStart Exception: {process.ExitCode}");
+                result = ResultHelper.Fail(-1, $"Exception: {ex.Message}");
             }
-
-            // restore current directory
-            Directory.SetCurrentDirectory(currentDir);
 
             // check if current directory is restored
             if (Directory.GetCurrentDirectory() != currentDir)
