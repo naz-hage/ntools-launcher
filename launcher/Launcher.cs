@@ -100,6 +100,10 @@ namespace Ntools
             {
                 // Set the working directory to the working directory.
                 Directory.SetCurrentDirectory(process.StartInfo.WorkingDirectory);
+                if (verbose)
+                {
+                    Console.WriteLine($"Working Directory when launching Process: {Directory.GetCurrentDirectory()}");
+                }
 
                 if (process.Start())
                 {
@@ -141,6 +145,11 @@ namespace Ntools
 
                 // restore current directory
                 Directory.SetCurrentDirectory(currentDir);
+                if (verbose)
+                {
+                    Console.WriteLine($"Working Directory After launching Process: {Directory.GetCurrentDirectory()}");
+                }
+
             }
             catch (Exception ex)
             {
