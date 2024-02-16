@@ -1,6 +1,8 @@
 ﻿using Ntools;
 using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.IO;
 
 namespace Ntools
 {
@@ -12,8 +14,23 @@ namespace Ntools
         //   command: The command to search for the file
         // Returns:
         //   The full path of the file if found, otherwise an empty string
-        public static string GetFullPathOfFile(string command)
+        public static string GetFullPathOfFile(string command, bool versobe = false)
         {
+            if (string.IsNullOrEmpty(command)) return string.Empty;
+
+            // Don't accept invalid characters
+            //  < (less than)
+            //	> (greater than)
+            //	: (colon)
+            //	" (double quote)
+            //	/ (forward slash)
+            //	\ (backslash)
+            //	| (pipe)
+            //	? (question mark)
+            //	*(asterisk)
+            // return empty if command contains invalid characters for directory or file name
+            if (command.IndexOfAny(Path.GetInvalidPathChars()) >= 0) return string.Empty;
+
             var process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
@@ -28,7 +45,12 @@ namespace Ntools
                     WindowStyle = ProcessWindowStyle.Hidden
                 }
             };
-            var result = process.LockStart(false);
+
+            var result = process.LockStart(versobe);
+            if (!result.IsSuccess())
+            {
+                return string.Empty;
+            }
 
             return result.GetFirstOutput();
         }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
@@ -111,6 +112,34 @@ namespace Ntools
             Console.WriteLine("Valid From: " + certificate.NotBefore);
             Console.WriteLine("Valid To: " + certificate.NotAfter);
             Console.WriteLine("Thumbprint: " + certificate.Thumbprint);
+        }
+
+        // Display the properties of a Digital certificate
+        public static void DisplayCertificate(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                throw new ArgumentException("File name cannot be null or empty.", nameof(fileName));
+            }
+
+            if (!File.Exists(fileName))
+            {
+                throw new ArgumentException("File does not exist.", nameof(fileName));
+            }
+            // Create an X509Certificate2 object to represent the certificate of the signed file.
+            var cert = new X509Certificate2(fileName);
+
+            // Display the properties of the certificate.
+            Console.WriteLine($"Certificate Properties ");
+            Console.WriteLine($"---------------------- ");
+            Console.WriteLine($"SignatureAlgorithm: {cert.SignatureAlgorithm.FriendlyName}");
+            Console.WriteLine($"Subject: {cert.Subject}");
+            Console.WriteLine($"Issuer: {cert.Issuer}");
+            Console.WriteLine($"Version: {cert.Version}");
+            Console.WriteLine($"Valid From: {cert.NotBefore}");
+            Console.WriteLine($"Valid To: {cert.NotAfter}");
+            Console.WriteLine($"Serial Number: {cert.SerialNumber}");
+            Console.WriteLine($"Thumbprint: {cert.Thumbprint}");
         }
     }
 

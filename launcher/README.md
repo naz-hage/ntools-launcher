@@ -4,12 +4,15 @@ Ntools is a .NET namespace that provides various utilities for launching process
 
 - **Launcher:** Provides methods to launch a process and wait for it to complete.
     - **LockVerifyStart:** A methods that locks file and verify that a file is digitally signed before launching.
-    - **LockStart:** A method that locks procees before launching.
+    - **LockStart:** A method that locks process before launching.
     - **LaunchInThread:** A method that launches a process in a separate thread.
 - **ResultHelper:** Provides a helper class and methods to retrieve the result `Code` and `Output` of the launched executable.
 - **CurrentProcess:** Provides a method to determine if the current process is elevated.
 - **ShellUtility:** A helper class that executes shell commands.
     - **GetFullPathOfFile:** A method that retrieves the full path of a file from the Path environment variable.
+- **Download:** A class that downloads file from the web.
+    - **File:** A method that downloads a file from the web and save to a local drive.
+    - **SignedFile:** A method that downloads a file and expects file to be digitally signed. If files is signed, method succeeds.  Otherwise, file is deleted.
 
 
 ## Installation
