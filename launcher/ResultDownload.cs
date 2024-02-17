@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -8,12 +9,12 @@ namespace Ntools
 {
     public class ResultDownload : ResultHelper
     {
-        public string FileName { get; } = string.Empty;
-        public Uri Uri { get; } = new Uri("http://localhost");
+        public string FileName { get; }
+        public Uri Uri { get; }
 
-        public bool DigitallySigned { get; private set; }
+        public bool DigitallySigned { get; private set; } = false;
 
-        public long FileSize { get; private set; }
+        public long FileSize { get; private set; } = 0;
 
         public X509Certificate2 X509Certificate2 { get; private set; }
 
@@ -22,7 +23,6 @@ namespace Ntools
             New();
             FileName = fileName;
             Uri = uri;
-            DigitallySigned = false;
         }
 
         public void Success()

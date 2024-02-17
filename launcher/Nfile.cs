@@ -8,40 +8,46 @@ namespace Ntools
 {
     public static class Nfile
     {
-        public static async Task<ResultDownload> DownloadAsync(this HttpClient client, Uri uri, string fileName)
+        public static async Task<ResultDownload> DownloadAsync(this HttpClient client, Uri uri, string downloadedFilename)
         {
-            var resultDownload = new ResultDownload (fileName, uri);
+            if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(uri));
+
+            if (string.IsNullOrEmpty(downloadedFilename)) throw new ArgumentException("Invalid file name.", nameof(downloadedFilename));
+
+            if (!Path.IsPathRooted(downloadedFilename)) throw new ArgumentException("Invalid file name: Path must be rooted.", nameof(downloadedFilename));
+
+            // Check if downloadedFilename contains invalid characters
+            var invalidChars = Path.GetInvalidFileNameChars();
+            if (Path.GetFileName(downloadedFilename).IndexOfAny(invalidChars) >= 0) throw new ArgumentException($"Invalid file name: downloadedFilename contains one or more invalid characters {invalidChars}.", nameof(downloadedFilename));
+
+            var resultDownload = new ResultDownload (downloadedFilename, uri);
             try
             {
-                if (!ValidUri(resultDownload.Uri.ToString())) throw new ArgumentException("Invalid uri", nameof(resultDownload.Uri));
-
-                if (string.IsNullOrEmpty(resultDownload.FileName)) throw new ArgumentException("Invalid file name.", nameof(resultDownload.FileName));
-
-                if (!Path.IsPathRooted(resultDownload.FileName)) throw new ArgumentException("Invalid file name. Must be a valid full path.", nameof(resultDownload.FileName));
-
-                // Check if fileName contains invalid characters
-                var invalidChars = Path.GetInvalidFileNameChars();
-
-                if (Path.GetFileName(resultDownload.FileName).IndexOfAny(invalidChars) >= 0) throw new ArgumentException("Invalid file name. Contains invalid characters.", nameof(resultDownload.FileName));
-
-                if (File.Exists(resultDownload.FileName)) File.Delete(resultDownload.FileName);
-
-                var response = await client.GetAsync(resultDownload.Uri);
-                if (!response.IsSuccessStatusCode) throw new FileNotFoundException($"'{resultDownload.Uri}' not found. status: {response.StatusCode}", nameof(resultDownload.Uri));
-
-                using (var s = await client.GetStreamAsync(resultDownload.Uri))
-                using (var fs = new FileStream(resultDownload.FileName, FileMode.Create))
+                // check if uri exists
+                var response = await client.GetAsync(uri);
+                if (!response.IsSuccessStatusCode)
                 {
-                    await s.CopyToAsync(fs);
+                    resultDownload.Fail($"{response}");
                 }
-                resultDownload.Success();
-                
+                else
+                {
+                    // Set file size in the return object.  This could be used to check if size is within a range at a later release
+                    resultDownload.SetFileSize();
+                    if (File.Exists(downloadedFilename)) File.Delete(downloadedFilename);
+
+                    using (var s = await client.GetStreamAsync(uri))
+                    using (var fs = new FileStream(downloadedFilename, FileMode.Create))
+                    {
+                        await s.CopyToAsync(fs);
+                    }
+                    resultDownload.Success();
+                }
             }
             catch (ArgumentNullException ex)
             {
                 resultDownload.Fail(ex.Message);
             }
-            catch (ArgumentException ex)
+            catch (HttpRequestException ex)
             {
                 resultDownload.Fail(ex.Message);
             }
@@ -54,11 +60,24 @@ namespace Ntools
                 if (resultDownload.IsSuccess())
                 {
                     // Check if file got downnloaed and do any cleanup here
-                    if (!File.Exists(resultDownload.FileName)) resultDownload.Fail($"File {resultDownload.FileName} does not exist.");
+                    if (!File.Exists(downloadedFilename))
+                    {
+                        resultDownload.Fail($"File {downloadedFilename} does not exist.");
+                    }
+                    else
+                    {
+                        // get downloaded file size from the local file
+                        var fileInfo = new FileInfo(downloadedFilename);
+                        long fileSize = fileInfo.Length;
 
-                    //Set digital signature and file size
-                    resultDownload.SetFileSigned();
-                    resultDownload.SetFileSize();
+                        if (fileSize != resultDownload.FileSize) resultDownload.Fail($"File size mismatch. Expected: {resultDownload.FileSize}, Actual: {fileSize}.");
+
+                        // and compare with the size from the server
+                        resultDownload.SetFileSize();
+
+                        //Set digital signature and file size
+                        resultDownload.SetFileSigned();
+                    }
                 }
             }
 
@@ -66,14 +85,13 @@ namespace Ntools
         }
 
         // Add a method to check if a Uri exists
-        public static async Task<bool> UriExistsAsync(this HttpClient client, string uri)
+        public static async Task<HttpResponseMessage> UriExistsAsync(this HttpClient client, string uri)
         {
             if (!ValidUri(uri)) throw new ArgumentException("Invalid uri", nameof(uri));
 
             try
             {
-                var response = await client.GetAsync(uri);
-                return response.IsSuccessStatusCode;
+                return await client.GetAsync(uri);
             }
             catch (HttpRequestException)
             {
@@ -96,22 +114,6 @@ namespace Ntools
             {
                 // pass through exception to caller
                 throw;
-            }
-        }
-
-        public static async Task<bool> UriExistsAsync(string uri)
-        {
-            using (var client = new HttpClient())
-            {
-                try
-                {
-                    var response = await client.GetAsync(uri);
-                    return response.IsSuccessStatusCode;
-                }
-                catch (HttpRequestException)
-                {
-                    return false;
-                }
             }
         }
 
