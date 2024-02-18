@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
+using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Threading.Tasks;
 
 namespace Ntools
 {
     public static class Nfile
     {
+        private const int MaxRetries = 3;
         private static List<string> AllowedExtensions { get; set; } = new List<string> ();
         private static List<string> TrustedHosts { get; set; } = new List<string> ();
 
@@ -37,11 +40,22 @@ namespace Ntools
 
         public static async Task<ResultDownload> DownloadAsync(this HttpClient client, Uri uri, string downloadedFilename)
         {
+            var resultDownload = new ResultDownload(downloadedFilename, uri);
+            // check if uri exists
+            var response = await client.GetAsync(uri);
+            if (!response.IsSuccessStatusCode)
+            {
+                resultDownload.Fail($"{response}");
+                return resultDownload;
+            }
+
             if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(uri));
 
             if (!TrustedHost(uri)) throw new ArgumentException("Untrusted host", nameof(uri));
 
             if (!ValidExtension(uri.ToString())) throw new ArgumentException("Invalid uri extension", nameof(uri));
+
+            if (!ValidateServerCertificate(uri.ToString())) throw new ArgumentException("Invalid server certificate", nameof(uri));
 
             if (string.IsNullOrEmpty(downloadedFilename)) throw new ArgumentException("Invalid file name.", nameof(downloadedFilename));
 
@@ -51,63 +65,70 @@ namespace Ntools
             var invalidChars = Path.GetInvalidFileNameChars();
             if (Path.GetFileName(downloadedFilename).IndexOfAny(invalidChars) >= 0) throw new ArgumentException($"Invalid file name: downloadedFilename contains one or more invalid characters {invalidChars}.", nameof(downloadedFilename));
 
-            var resultDownload = new ResultDownload (downloadedFilename, uri);
-            try
+            int retryCount = 0;
+            while (retryCount < MaxRetries)
             {
-                // check if uri exists
-                var response = await client.GetAsync(uri);
-                if (!response.IsSuccessStatusCode)
-                {
-                    resultDownload.Fail($"{response}");
-                }
-                else
-                {
-                    // Set file size in the return object.  This could be used to check if size is within a range at a later release
-                    resultDownload.SetFileSize();
-                    if (File.Exists(downloadedFilename)) File.Delete(downloadedFilename);
 
-                    using (var s = await client.GetStreamAsync(uri))
-                    using (var fs = new FileStream(downloadedFilename, FileMode.Create))
-                    {
-                        await s.CopyToAsync(fs);
-                    }
-                    resultDownload.Success();
-                }
-            }
-            catch (ArgumentNullException ex)
-            {
-                resultDownload.Fail(ex.Message);
-            }
-            catch (HttpRequestException ex)
-            {
-                resultDownload.Fail(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                resultDownload.Fail(ex.Message);
-            }
-            finally
-            {
-                if (resultDownload.IsSuccess())
+                try
                 {
-                    // Check if file got downnloaed and do any cleanup here
-                    if (!File.Exists(downloadedFilename))
+                    // check if uri exists
+                    response = await client.GetAsync(uri);
+                    if (!response.IsSuccessStatusCode)
                     {
-                        resultDownload.Fail($"File {downloadedFilename} does not exist.");
+                        resultDownload.Fail($"{response}");
                     }
                     else
                     {
-                        // get downloaded file size from the local file
-                        var fileInfo = new FileInfo(downloadedFilename);
-                        long fileSize = fileInfo.Length;
-
-                        if (fileSize != resultDownload.FileSize) resultDownload.Fail($"File size mismatch. Expected: {resultDownload.FileSize}, Actual: {fileSize}.");
-
-                        // and compare with the size from the server
+                        // Set file size in the return object.  This could be used to check if size is within a range at a later release
                         resultDownload.SetFileSize();
+                        if (File.Exists(downloadedFilename)) File.Delete(downloadedFilename);
 
-                        //Set digital signature and file size
-                        resultDownload.SetFileSigned();
+                        using (var s = await client.GetStreamAsync(uri))
+                        using (var fs = new FileStream(downloadedFilename, FileMode.Create))
+                        {
+                            await s.CopyToAsync(fs);
+                        }
+                        resultDownload.Success();
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    retryCount++;
+                    if (retryCount >= 3)
+                    {
+                        resultDownload.Fail($"An exception occurred in download try # {retryCount}: {ex.Message}");
+                    }
+
+                    await Task.Delay(1000); // wait before retrying
+                }
+                finally
+                {
+                    //httpStream?.Dispose();
+                    //fileStream?.Dispose();
+                    retryCount = MaxRetries;
+
+                    if (resultDownload.IsSuccess())
+                    {
+                        // Check if file got downnloaed and do any cleanup here
+                        if (!File.Exists(downloadedFilename))
+                        {
+                            resultDownload.Fail($"File {downloadedFilename} does not exist.");
+                        }
+                        else
+                        {
+                            // get downloaded file size from the local file
+                            var fileInfo = new FileInfo(downloadedFilename);
+                            long fileSize = fileInfo.Length;
+
+                            if (fileSize != resultDownload.FileSize) resultDownload.Fail($"File size mismatch. Expected: {resultDownload.FileSize}, Actual: {fileSize}.");
+
+                            // and compare with the size from the server
+                            resultDownload.SetFileSize();
+
+                            //Set digital signature and file size
+                            resultDownload.SetFileSigned();
+                        }
                     }
                 }
             }
@@ -226,6 +247,37 @@ namespace Ntools
             }
 
             return uri;
+        }
+
+        private static bool ValidateServerCertificate(string httpsUrl)
+        {
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(httpsUrl);
+            request.Method = "HEAD"; // A HEAD request is sufficient to get the certificate
+
+            ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+            {
+                if (sslPolicyErrors == SslPolicyErrors.None)
+                {
+                    return true; // Good certificate.
+                }
+
+                Console.WriteLine("SSL certificate error: {0}", sslPolicyErrors);
+                return false; // Bad certificate
+            };
+
+            try
+            {
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    // If we got here, the certificate is valid
+                    return true;
+                }
+            }
+            catch (WebException ex)
+            {
+                Console.WriteLine("WebException: {0}", ex.Message);
+                return false;
+            }
         }
     }
 }
