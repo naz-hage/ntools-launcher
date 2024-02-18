@@ -20,6 +20,9 @@ namespace Ntools.Tests
             Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
             string downloadedFile = "nuget.exe";
 
+            Nfile.SetTrustedHosts(new List<string> { "dist.nuget.org" });
+            Nfile.SetAllowedExtensions(new List<string> { ".exe" });
+
             // setup file name to download to temp folder because devtools is protected
             downloadedFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadedFile));
             if (File.Exists(downloadedFile))
@@ -49,6 +52,7 @@ namespace Ntools.Tests
             {
                 {   new("https://desktop.docker.com/win/main/am@d64/Docker%20Desktop%20Installer.exe"),"Docker.Desktop.Installer.exe" }, // Uri not found Result no success
             };
+            Nfile.SetTrustedHosts(new List<string> { "desktop.docker.com" });
 
             var httpClient = new HttpClient();
 
@@ -132,6 +136,71 @@ namespace Ntools.Tests
             Assert.AreEqual(uri, resultDownload.Uri);
         }
        
+        [TestMethod]
+        public async Task SetAllowedExtensionsTestAsync()
+        {
+            // Arrange
+            var allowedExtensions = new List<string> { ".exe", ".msi" };
+
+            // Act
+            Nfile.SetAllowedExtensions(allowedExtensions);
+
+            // Assert
+            Assert.AreEqual(allowedExtensions, Nfile.GetAllowedExtensions());
+
+            // download file with allowed extension
+            var httpClient = new HttpClient();
+            Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
+            string downloadedFile = "nuget.exe";
+            
+            Nfile.SetTrustedHosts(new List<string> { "dist.nuget.org" });
+            // setup file name to download to temp folder because devtools is protected
+            downloadedFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadedFile));
+            if (File.Exists(downloadedFile))
+            {
+                File.Delete(downloadedFile);
+            }
+
+            // Act
+            var result = httpClient.DownloadAsync(webDownloadFile, downloadedFile).Result;
+
+            // Assert
+            Assert.IsTrue(File.Exists(downloadedFile));
+
+            Console.WriteLine($"File size: {result.FileSize}");
+
+            Assert.IsTrue(result.IsSuccess());
+            Assert.IsTrue(result.GetFirstOutput().Contains("Success"));
+
+            // download file with not allowed extension
+
+            webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.zip");
+            downloadedFile = "nuget.zip";
+
+            // setup file name to download to temp folder because devtools is protected
+            downloadedFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadedFile));
+            if (File.Exists(downloadedFile))
+            {
+                File.Delete(downloadedFile);
+            }
+
+            // Act
+            try
+            {
+                result = await httpClient.DownloadAsync(webDownloadFile, downloadedFile);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+
+                // Assert
+                Assert.IsTrue(ex.Message.Contains("Invalid uri extension"));
+            }
+            
+            // Act and Assert
+            await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await httpClient.DownloadAsync(webDownloadFile, downloadedFile));
+        }
+
         [TestMethod()]
         public async Task GetFileSizeAsyncTest()
         {

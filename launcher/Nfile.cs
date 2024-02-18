@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Net.Http;
@@ -8,9 +9,39 @@ namespace Ntools
 {
     public static class Nfile
     {
+        private static List<string> AllowedExtensions { get; set; } = new List<string> ();
+        private static List<string> TrustedHosts { get; set; } = new List<string> ();
+
+        // Getter and setter for TrustedHosts
+        public static List<string> GetTrustedHosts()
+        {
+            return TrustedHosts;
+        }
+
+        public static void SetTrustedHosts(List<string> trustedHosts)
+        {
+            TrustedHosts = trustedHosts;
+        }
+
+        // Gettter and Setter for AllowedExtensions
+        
+        public static List<string> GetAllowedExtensions()
+        {
+            return AllowedExtensions;
+        }
+
+        public static void SetAllowedExtensions(List<string> allowedExtensions)
+        {
+            AllowedExtensions = allowedExtensions;
+        }
+
         public static async Task<ResultDownload> DownloadAsync(this HttpClient client, Uri uri, string downloadedFilename)
         {
             if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(uri));
+
+            if (!TrustedHost(uri)) throw new ArgumentException("Untrusted host", nameof(uri));
+
+            if (!ValidExtension(uri.ToString())) throw new ArgumentException("Invalid uri extension", nameof(uri));
 
             if (string.IsNullOrEmpty(downloadedFilename)) throw new ArgumentException("Invalid file name.", nameof(downloadedFilename));
 
@@ -117,13 +148,84 @@ namespace Ntools
             }
         }
 
+        public static bool TrustedHost(Uri uri)
+        {
+            foreach (var trustedHost in TrustedHosts)
+            {
+                if (uri.Host == trustedHost)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static bool ValidUri(string uri)
+        {
+            var result = ValidUriInternal(uri, out Uri uriResult);
+
+            // Disallow traversal paths
+            if (result)
+            {
+                result = !uriResult.AbsolutePath.Contains("..");
+            }
+
+            return result;
+        }
+
+        private static bool ValidUriInternal(string uri, out Uri uriResult)
         {
             if (uri == null) throw new ArgumentNullException(nameof(uri));
 
-            bool result = Uri.TryCreate(uri, UriKind.Absolute, out Uri uriResult)
+            return Uri.TryCreate(uri, UriKind.Absolute, out uriResult)
                         && uriResult.Scheme == Uri.UriSchemeHttps;
+        }
+
+        public static bool ValidExtension(string uri)
+        {
+            var result = ValidUriInternal(uri, out Uri uriResult);
+            if (result)
+            {
+                string fileExtension = Path.GetExtension(uriResult.AbsolutePath);
+                result = AllowedExtensions.Contains(fileExtension);
+            }
+
             return result;
+        }
+
+        public static Uri CreateSafeUri(string userInput)
+        {
+            if (string.IsNullOrEmpty(userInput))
+            {
+                throw new ArgumentException("Input cannot be null or empty", nameof(userInput));
+            }
+
+            string encodedInput = Uri.EscapeDataString(userInput);
+
+            Uri uri;
+            if (!Uri.TryCreate(encodedInput, UriKind.Absolute, out uri))
+            {
+                throw new ArgumentException("Invalid URI", nameof(userInput));
+            }
+
+            if (uri.Scheme != Uri.UriSchemeHttps)
+            {
+                throw new ArgumentException("Non-secure URI", nameof(userInput));
+            }
+
+            // Add your trusted hosts here
+            List<string> trustedHosts = new List<string> { "trustedhost1.com", "trustedhost2.com" };
+            if (!trustedHosts.Contains(uri.Host))
+            {
+                throw new ArgumentException("Untrusted host", nameof(userInput));
+            }
+
+            if (uri.AbsolutePath.Contains(".."))
+            {
+                throw new ArgumentException("Path traversal detected", nameof(userInput));
+            }
+
+            return uri;
         }
     }
 }
