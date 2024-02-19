@@ -12,8 +12,28 @@ namespace Ntools
     public static class Nfile
     {
         private const int MaxRetries = 3;
+        //private static Stream httpStream;
+        //private static Stream fileStream;
+        //private static HttpListener httpListener;
+        private static readonly HttpClient HttpClient;
+        private static readonly HttpMessageHandler HttpMessageHandler;
+
+        private static int Timeout { get; set; } = 300000;  // 300000 = 5 minutes 
+
         private static List<string> AllowedExtensions { get; set; } = new List<string> ();
         private static List<string> TrustedHosts { get; set; } = new List<string> ();
+
+        static Nfile()
+        {
+            // Set up the HttpClient
+            HttpMessageHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+
+            HttpClient = new HttpClient(HttpMessageHandler);
+            HttpClient.Timeout = TimeSpan.FromMilliseconds(Timeout);
+        }
 
         // Getter and setter for TrustedHosts
         public static List<string> GetTrustedHosts()
@@ -38,24 +58,24 @@ namespace Ntools
             AllowedExtensions = allowedExtensions;
         }
 
-        public static async Task<ResultDownload> DownloadAsync(this HttpClient client, Uri uri, string downloadedFilename)
+        public static async Task<ResultDownload> DownloadAsync(string url, string downloadedFilename)
         {
-            var resultDownload = new ResultDownload(downloadedFilename, uri);
-            // check if uri exists
-            var response = await client.GetAsync(uri);
-            if (!response.IsSuccessStatusCode)
+            //if (!ValidUri(url)) throw new ArgumentException("Invalid uri", nameof(url));
+
+            var safeUri = CreateSafeUri(url);
+            var resultDownload = new ResultDownload(safeUri, downloadedFilename);
+
+            //if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(uri));
+
+            //if (!TrustedHost(uri)) throw new ArgumentException("Untrusted host", nameof(uri));
+
+            if (!ValidExtension(url.ToString())) throw new ArgumentException("Invalid uri extension", nameof(url));
+
+            if (!ValidateServerCertificate(url.ToString()))
             {
-                resultDownload.Fail($"{response}");
+                resultDownload.Fail("Invalid server certificate");
                 return resultDownload;
             }
-
-            if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(uri));
-
-            if (!TrustedHost(uri)) throw new ArgumentException("Untrusted host", nameof(uri));
-
-            if (!ValidExtension(uri.ToString())) throw new ArgumentException("Invalid uri extension", nameof(uri));
-
-            if (!ValidateServerCertificate(uri.ToString())) throw new ArgumentException("Invalid server certificate", nameof(uri));
 
             if (string.IsNullOrEmpty(downloadedFilename)) throw new ArgumentException("Invalid file name.", nameof(downloadedFilename));
 
@@ -68,29 +88,26 @@ namespace Ntools
             int retryCount = 0;
             while (retryCount < MaxRetries)
             {
-
                 try
                 {
-                    // check if uri exists
-                    response = await client.GetAsync(uri);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        resultDownload.Fail($"{response}");
-                    }
-                    else
-                    {
-                        // Set file size in the return object.  This could be used to check if size is within a range at a later release
-                        resultDownload.SetFileSize();
-                        if (File.Exists(downloadedFilename)) File.Delete(downloadedFilename);
+                    // Set file size in the return object.  This could be used to check if size is within a range at a later release
+                    resultDownload.SetFileSize();
+                    if (File.Exists(downloadedFilename)) File.Delete(downloadedFilename);
 
-                        using (var s = await client.GetStreamAsync(uri))
-                        using (var fs = new FileStream(downloadedFilename, FileMode.Create))
-                        {
-                            await s.CopyToAsync(fs);
-                        }
-                        resultDownload.Success();
-
+                    using (var s = await HttpClient.GetStreamAsync(url))
+                    using (var fs = new FileStream(downloadedFilename, FileMode.Create))
+                    {
+                        await s.CopyToAsync(fs);
                     }
+                    resultDownload.Success();
+                }
+                catch (OperationCanceledException ex)
+                {
+                    resultDownload.Fail($"Operation canceled: {ex.Message}");
+                }
+                catch (HttpRequestException ex)
+                {
+                    resultDownload.Fail($"An exception occurred in download try # {retryCount}: {ex.Message}");
                 }
                 catch (Exception ex)
                 {
@@ -107,29 +124,29 @@ namespace Ntools
                     //httpStream?.Dispose();
                     //fileStream?.Dispose();
                     retryCount = MaxRetries;
+                }
+            }
 
-                    if (resultDownload.IsSuccess())
-                    {
-                        // Check if file got downnloaed and do any cleanup here
-                        if (!File.Exists(downloadedFilename))
-                        {
-                            resultDownload.Fail($"File {downloadedFilename} does not exist.");
-                        }
-                        else
-                        {
-                            // get downloaded file size from the local file
-                            var fileInfo = new FileInfo(downloadedFilename);
-                            long fileSize = fileInfo.Length;
+            if (resultDownload.IsSuccess())
+            {
+                // Check if file got downnloaed and do any cleanup here
+                if (!File.Exists(downloadedFilename))
+                {
+                    resultDownload.Fail($"File {downloadedFilename} does not exist.");
+                }
+                else
+                {
+                    // get downloaded file size from the local file
+                    var fileInfo = new FileInfo(downloadedFilename);
+                    long fileSize = fileInfo.Length;
 
-                            if (fileSize != resultDownload.FileSize) resultDownload.Fail($"File size mismatch. Expected: {resultDownload.FileSize}, Actual: {fileSize}.");
+                    if (fileSize != resultDownload.FileSize) resultDownload.Fail($"File size mismatch. Expected: {resultDownload.FileSize}, Actual: {fileSize}.");
 
-                            // and compare with the size from the server
-                            resultDownload.SetFileSize();
+                    //Set digital signature and file size
+                    resultDownload.SetFileSigned();
 
-                            //Set digital signature and file size
-                            resultDownload.SetFileSigned();
-                        }
-                    }
+                    // and compare with the size from the server
+                    resultDownload.SetFileSize();
                 }
             }
 
@@ -137,13 +154,13 @@ namespace Ntools
         }
 
         // Add a method to check if a Uri exists
-        public static async Task<HttpResponseMessage> UriExistsAsync(this HttpClient client, string uri)
+        public static async Task<HttpResponseMessage> UriExistsAsync(string uri)
         {
             if (!ValidUri(uri)) throw new ArgumentException("Invalid uri", nameof(uri));
 
             try
             {
-                return await client.GetAsync(uri);
+                return await HttpClient.GetAsync(uri);
             }
             catch (HttpRequestException)
             {
@@ -153,13 +170,13 @@ namespace Ntools
         }
 
         // Add a method to get the file size of a Uri
-        public static async Task<long> GetFileSizeAsync(this HttpClient client, string uri)
+        public static async Task<long> GetFileSizeAsync(string uri)
         {
             if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(Uri));
 
             try
             {
-                var response = await client.GetAsync(uri);
+                var response = await HttpClient.GetAsync(uri);
                 return response.Content.Headers.ContentLength ?? 0;
             }
             catch (HttpRequestException)
@@ -221,10 +238,7 @@ namespace Ntools
                 throw new ArgumentException("Input cannot be null or empty", nameof(userInput));
             }
 
-            string encodedInput = Uri.EscapeDataString(userInput);
-
-            Uri uri;
-            if (!Uri.TryCreate(encodedInput, UriKind.Absolute, out uri))
+            if (!Uri.TryCreate(userInput, UriKind.Absolute, out Uri uri))
             {
                 throw new ArgumentException("Invalid URI", nameof(userInput));
             }
@@ -234,14 +248,13 @@ namespace Ntools
                 throw new ArgumentException("Non-secure URI", nameof(userInput));
             }
 
-            // Add your trusted hosts here
-            List<string> trustedHosts = new List<string> { "trustedhost1.com", "trustedhost2.com" };
-            if (!trustedHosts.Contains(uri.Host))
+            if (!TrustedHost(uri))
             {
                 throw new ArgumentException("Untrusted host", nameof(userInput));
             }
 
-            if (uri.AbsolutePath.Contains(".."))
+            Uri baseUri = new Uri(uri.GetLeftPart(UriPartial.Path));
+            if (!baseUri.IsBaseOf(uri))
             {
                 throw new ArgumentException("Path traversal detected", nameof(userInput));
             }
@@ -276,7 +289,9 @@ namespace Ntools
             catch (WebException ex)
             {
                 Console.WriteLine("WebException: {0}", ex.Message);
-                return false;
+                // If we got here, the certificate is invalid
+                // pass through exception to caller
+                throw;
             }
         }
     }

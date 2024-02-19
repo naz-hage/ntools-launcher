@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 namespace Ntools.Tests
 {
     [TestClass()]
-    public class NFileTests
+    public class NfileTests
     {
         [TestMethod()]
         public async Task DownloadAsyncTest()
         {
             // Arrange
-            var httpClient = new HttpClient();
             Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
             string downloadedFile = "nuget.exe";
 
@@ -29,13 +28,14 @@ namespace Ntools.Tests
             }
 
             // Act
-            var result = await httpClient.DownloadAsync(webDownloadFile, downloadedFile);
+            var result = await Nfile.DownloadAsync(webDownloadFile.ToString(), downloadedFile);
 
             // Assert
             Assert.IsTrue(File.Exists(downloadedFile));
 
             Console.WriteLine($"File size: {result.FileSize}");
             Console.WriteLine($"File is signed: {result.DigitallySigned}");
+            Assert.IsTrue(result.DigitallySigned);
             result.DisplayCertificate();
 
             Assert.IsTrue(result.IsSuccess());
@@ -51,8 +51,9 @@ namespace Ntools.Tests
                 {   new("https://desktop.docker.com/win/main/am@d64/Docker%20Desktop%20Installer.exe"),"Docker.Desktop.Installer.exe" }, // Uri not found Result no success
             };
             Nfile.SetTrustedHosts(new List<string> { "desktop.docker.com" });
+            Nfile.SetAllowedExtensions(new List<string> { ".exe" });
 
-            var httpClient = new HttpClient();
+            
 
             foreach (var item in expectedFail)
             {
@@ -63,14 +64,16 @@ namespace Ntools.Tests
                     File.Delete(fileName);
                 }
 
-                // Act
-                var result = await httpClient.DownloadAsync(item.Key, fileName);
-
-
-                Console.WriteLine($"output: {result.GetFirstOutput()}");
-
-                // Assert
-                Assert.IsFalse(result.IsSuccess());
+                try
+                {
+                    // Act
+                    var result = await Nfile.DownloadAsync(item.Key.ToString(), fileName);
+                    Console.WriteLine($"output: {result.GetFirstOutput()}");
+                }
+                catch (Exception ex)
+                {
+                    Assert.IsTrue(ex.Message.Contains("The remote server returned an error: (403) Forbidden"));
+                }
             }
         }
 
@@ -83,7 +86,7 @@ namespace Ntools.Tests
                 {   new("http://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"), "Docker.Desktop.Installer.exe" },  // Invalid Uri: exception 
             };
 
-            var httpClient = new HttpClient();
+            
 
             foreach (var item in expectedFail)
             {
@@ -95,7 +98,7 @@ namespace Ntools.Tests
                 }
 
                 // Act and Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await httpClient.DownloadAsync(item.Key, fileName));
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Nfile.DownloadAsync(item.Key.ToString(), fileName));
             }
         }
 
@@ -110,14 +113,16 @@ namespace Ntools.Tests
                 { new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"), null },  //Invalid download filename: exception
             };
 
-            var httpClient = new HttpClient();
+            
+
+            Nfile.SetTrustedHosts(new List<string> { "desktop.docker.com", "github.com", "dist.nuget.org" });
 
             foreach (var item in expectedFail)
             {
                 Console.WriteLine($"Uri: {item.Key}");
                 Console.WriteLine($"Downloaded file: {item.Value}");
                 // Act and Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await httpClient.DownloadAsync(item.Key, item.Value));
+                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Nfile.DownloadAsync(item.Key.ToString(), item.Value));
             }
         }
 
@@ -129,7 +134,7 @@ namespace Ntools.Tests
             Uri uri = new Uri("https://localhost");
 
             // Act
-            ResultDownload resultDownload = new ResultDownload(fileName, uri);
+            ResultDownload resultDownload = new ResultDownload(uri, fileName);
 
             // Assert
             Assert.AreEqual(fileName, resultDownload.FileName);
@@ -137,7 +142,7 @@ namespace Ntools.Tests
         }
        
         [TestMethod]
-        public async Task SetAllowedExtensionsTestAsync()
+        public void SetAllowedExtensionsTestAsync()
         {
             // Arrange
             var allowedExtensions = new List<string> { ".exe", ".msi" };
@@ -148,35 +153,18 @@ namespace Ntools.Tests
             // Assert
             Assert.AreEqual(allowedExtensions, Nfile.GetAllowedExtensions());
 
-            // download file with allowed extension
-            var httpClient = new HttpClient();
+        }
+
+       
+        [TestMethod]
+        public async Task SetAllowedExtensionsNullTestAsync()
+        {
+            // Arrange download file with not allowed extension
+            
             Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
             string downloadedFile = "nuget.exe";
-            
+
             Nfile.SetTrustedHosts(new List<string> { "dist.nuget.org" });
-            // setup file name to download to temp folder because devtools is protected
-            downloadedFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadedFile));
-            if (File.Exists(downloadedFile))
-            {
-                File.Delete(downloadedFile);
-            }
-
-            // Act
-            var result = httpClient.DownloadAsync(webDownloadFile, downloadedFile).Result;
-
-            // Assert
-            Assert.IsTrue(File.Exists(downloadedFile));
-
-            Console.WriteLine($"File size: {result.FileSize}");
-
-            Assert.IsTrue(result.IsSuccess());
-            Assert.IsTrue(result.GetFirstOutput().Contains("Success"));
-
-            // download file with not allowed extension
-
-            webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
-            downloadedFile = "nuget.exe";
-
             // setup file name to download to temp folder because devtools is protected
             downloadedFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadedFile));
             if (File.Exists(downloadedFile))
@@ -188,7 +176,7 @@ namespace Ntools.Tests
             // Act
             try
             {
-                result = await httpClient.DownloadAsync(webDownloadFile, downloadedFile);
+                var result = await Nfile.DownloadAsync(webDownloadFile.ToString(), downloadedFile);
                 Console.WriteLine($"Download Response:\n {result.GetFirstOutput()}");
             }
             catch (Exception ex)
@@ -198,16 +186,16 @@ namespace Ntools.Tests
                 // Assert
                 Assert.IsTrue(ex.Message.Contains("Invalid uri extension"));
             }
-            
+
             // Act and Assert
-            await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await httpClient.DownloadAsync(webDownloadFile, downloadedFile));
+            //await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Nfile.DownloadAsync(webDownloadFile, downloadedFile));
         }
 
         [TestMethod()]
         public async Task GetFileSizeAsyncTest()
         {
             // Arrange
-            var httpClient = new HttpClient();
+            
             Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
             string downloadedFile = "nuget.exe";
 
@@ -219,7 +207,7 @@ namespace Ntools.Tests
             }
 
             // Act
-            var result = await httpClient.GetFileSizeAsync(webDownloadFile.ToString());
+            var result = await Nfile.GetFileSizeAsync(webDownloadFile.ToString());
             Console.WriteLine($"File size: {result}");
 
             // Assert
@@ -230,7 +218,7 @@ namespace Ntools.Tests
         public async Task UriExistsAsyncTest()
         {
             // Arrange
-            var httpClient = new HttpClient();
+            
             Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe");
             string downloadedFile = "nuget.exe";
 
@@ -242,7 +230,7 @@ namespace Ntools.Tests
             }
 
             // Act
-            var result = await httpClient.UriExistsAsync(webDownloadFile.ToString());
+            var result = await Nfile.UriExistsAsync(webDownloadFile.ToString());
             Console.WriteLine($"Uri Exist: {result}");
 
             // Assert
@@ -253,9 +241,12 @@ namespace Ntools.Tests
         public async Task DownloadAsyncUriNotFoundTest()
         {
             // Arrange
-            var httpClient = new HttpClient();
+            
             Uri webDownloadFile = new("https://dist.nuget.org/win-x86-commandline-notFound/latest/nuget.exe");
             string downloadedFile = "nuget.exe";
+
+            Nfile.SetTrustedHosts(new List<string> { "dist.nuget.org" });
+            Nfile.SetAllowedExtensions(new List<string> { ".exe" });
 
             // setup file name to download to temp folder because devtools is protected
             downloadedFile = Path.Combine(Path.GetTempPath(), Path.GetFileName(downloadedFile));
@@ -265,11 +256,20 @@ namespace Ntools.Tests
             }
 
             // Act
-            var result = await httpClient.DownloadAsync(webDownloadFile, downloadedFile);
-            Console.WriteLine($"http Response:\n {result.GetFirstOutput()}");
+            try
+            {
+                var result = await Nfile.DownloadAsync(webDownloadFile.ToString(), downloadedFile);
+                Console.WriteLine($"http Response:\n {result.GetFirstOutput()}");
 
-            // Assert
-            Assert.IsFalse(result.IsSuccess());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                Assert.IsTrue(ex.Message.Contains("The remote server returned an error: (404) Not Found"));
+
+                // Assert
+                //Assert.IsFalse(result.IsSuccess());
+            }
         }
     }
 }

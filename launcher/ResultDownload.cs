@@ -18,7 +18,7 @@ namespace Ntools
 
         public X509Certificate2 X509Certificate2 { get; private set; }
 
-        public ResultDownload(string fileName, Uri uri)
+        public ResultDownload(Uri uri, string fileName)
         {
             New();
             FileName = fileName;
@@ -41,8 +41,7 @@ namespace Ntools
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
-                FileSize = Task.Run(async () => await httpClient.GetFileSizeAsync(Uri.ToString())).Result;
+                FileSize = Task.Run(async () => await Nfile.GetFileSizeAsync(Uri.ToString())).Result;
             }
             catch (Exception)
             {

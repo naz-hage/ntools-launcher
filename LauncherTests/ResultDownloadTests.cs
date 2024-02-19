@@ -19,7 +19,7 @@ namespace Ntools.Tests
             var uri = new Uri("http://localhost");
 
             // Act
-            var resultDownload = new ResultDownload(fileName, uri);
+            var resultDownload = new ResultDownload(uri, fileName);
 
             // Assert
             Assert.AreEqual(fileName, resultDownload.FileName);
