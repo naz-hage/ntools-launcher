@@ -1,10 +1,9 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ntools;
 using System;
 using System.Diagnostics;
 using System.IO;
 
-namespace Launcher.Tests
+namespace Ntools.Tests
 {
     [TestClass]
     public class LauncherTests

@@ -1,31 +1,36 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
-namespace Tests
+namespace Ntools.Tests
 {
     [TestClass()]
     public class VirusTotalCheckerTests
     {
-        [TestMethod(),Ignore]
-        public void CheckFileAsyncTest()
+        [TestMethod]
+        public async Task CheckFileAsyncTestAsync()
         {
-            string key = "fa7d716fa86ad82f76583c3b2b062c60b90b2975ea57559fcc713046f281ce2a"; // Replace with your own key
-            // Arrange
-            var checker = new VirusTotalChecker();
-            var file = @"c:\temp\1.2.57.zip";
+            // Arrange: Get VT key and download a file to check
+            var key = Environment.GetEnvironmentVariable("VTAPIKEY");
+            Assert.IsNotNull(key);
+            
+            var file = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
+            Nfile.SetTrustedHosts(["dist.nuget.org"]);
+            Nfile.SetAllowedExtensions([".exe"]);
+            var downloadedFile = Path.Combine(Environment.GetEnvironmentVariable("TEMP"), "nuget.exe");
+            await Nfile.DownloadAsync(file, downloadedFile);
+            Assert.IsTrue(File.Exists(downloadedFile));
+
+            var checker = new VirusTotalChecker();  
 
             // Act
-            var result = checker.CheckFileAsync(file, key).Result;
-
+            var result = checker.CheckFileAsync(downloadedFile, key).Result;
 
             // Assert
             Assert.IsNotNull(result);
 
-            // Get the result from the VirusTotal API
+            // Get the result from the VirusTotal API and assert the file is virus free
             Assert.IsTrue(checker.VirusFree);
         }
     }
