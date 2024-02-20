@@ -47,7 +47,7 @@ jobs:
     - name: Execute unit tests
       #run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
       env:
-        API_KEY: ${{ secrets.VTAPIKEY }}
+        VTAPIKEY: ${{ secrets.VTAPIKEY }}
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
       run: dotnet test --no-build --verbosity normal
 
