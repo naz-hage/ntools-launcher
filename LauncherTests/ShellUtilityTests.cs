@@ -1,35 +1,114 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ntools;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ntools.Tests
 {
     [TestClass()]
     public class ShellUtilityTests
     {
-        [TestMethod,Ignore]
+        [TestMethod]
         public void GetFullPathOfFileTest()
         {
             // Arrange
-            var file = "git.exe";
-            var expected = @"C:\Program Files\git\cmd\git.exe";
-            // on GitHub Actions, git.exe is 
-            var githubActions = Environment.GetEnvironmentVariable("GITHUB_ACTIONS", EnvironmentVariableTarget.User);
-            if (githubActions != null && githubActions.Equals("true", StringComparison.OrdinalIgnoreCase))
-            {
-                expected = @"C:\Program Files\Git\bin\git.exe"; //C:\Program Files\Git\bin\git.exe
-            }
+            var file = "xcopy.exe";
+            var expected = @"C:\Windows\System32\xcopy.exe";
             
             // Act
             var actual = ShellUtility.GetFullPathOfFile(file);
+            if (!string.IsNullOrEmpty(actual))
+            {
+                Console.WriteLine($"Full path of {file}: {actual}");
+            }
 
             // Assert
             // compare expected and actual strings not case sensitive
             Assert.AreEqual(expected, actual, true);
         }
+
+        [TestMethod]
+        public void GetFullPathOfFileEmptyTest()
+        {
+            // Arrange for empty file
+            var file = string.Empty;
+            var expected = "";
+
+            // Act
+            var actual = ShellUtility.GetFullPathOfFile(file);
+            if (!string.IsNullOrEmpty(actual))
+            {
+                Console.WriteLine($"Full path of {file}: {actual}");
+            }
+
+            // Assert
+            // compare expected and actual strings not case sensitive
+            Assert.AreEqual(expected, actual, true);
+
+        }
+
+        [TestMethod]
+        public void GetFullPathOfFileNullTest()
+        {
+            // Arrange for null file
+            string file = null;
+            var expected = "";
+
+            // Act
+            var actual = ShellUtility.GetFullPathOfFile(file);
+            if (!string.IsNullOrEmpty(actual))
+            {
+                Console.WriteLine($"Full path of {file}: {actual}");
+            }
+
+            // Assert
+            // compare expected and actual strings not case sensitive
+            Assert.AreEqual(expected, actual, true);
+
+
+        }
+
+        [TestMethod]
+        public void GetFullPathOfFileUnknownTest()
+        {
+
+            // Arrange for file that is unknown
+            var file = Guid.NewGuid().ToString();
+            var expected = "";
+
+            // Act
+            var actual = ShellUtility.GetFullPathOfFile(file);
+            if (!string.IsNullOrEmpty(actual))
+            {
+                Console.WriteLine($"Full path of {file}: {actual}");
+            }
+
+            // Assert
+            // compare expected and actual strings not case sensitive
+            Assert.AreEqual(expected, actual, true);
+
+            // Assert
+            // compare expected and actual strings not case sensitive
+            Assert.AreEqual(expected, actual, true);
+
+
+        }
+
+        [TestMethod]
+        public void GetFullPathOfFileInvalidTest()
+        {
+            // Arrange for file with invalid characters
+            var file = ":this";
+            var expected = "";
+
+            // Act
+            var actual = ShellUtility.GetFullPathOfFile(file);
+            if (!string.IsNullOrEmpty(actual))
+            {
+                Console.WriteLine($"Full path of {file}: {actual}");
+            }
+
+            // Assert
+            // compare expected and actual strings not case sensitive
+            Assert.AreEqual(expected, actual, true);
+        }   
     }
 }

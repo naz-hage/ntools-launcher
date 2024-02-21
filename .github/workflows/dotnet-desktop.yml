@@ -23,19 +23,19 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     # Install the .NET Core workload
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0
 
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v2
 
     - name: Install dependencies
       run: dotnet restore
@@ -46,7 +46,10 @@ jobs:
 
     - name: Execute unit tests
       #run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-      run: dotnet test --no-build --verbosity normal
       env:
+        VTAPIKEY: ${{ secrets.VTAPIKEY }}
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      run: dotnet test --no-build --verbosity normal
+
+        
 

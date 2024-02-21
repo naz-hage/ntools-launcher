@@ -20,7 +20,7 @@ namespace Ntools
         public int Code { get; set; } = Exception;
 
         // The result output
-        public List<string> Output { get; set; } = new List<string>() { UndefinedMessage };
+        public List<string> Output { get; set; } = new List<string>();
 
         // Checks if the result is a success
         public bool IsSuccess()
