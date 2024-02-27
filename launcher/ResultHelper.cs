@@ -2,45 +2,68 @@
 
 namespace Ntools
 {
-    // Represents a helper class for handling results
+    /// <summary>
+    /// Represents a helper class for handling results
+    /// </summary>
     public class ResultHelper
     {
-        // Predefined result codes
+        /// <summary>
+        /// Predefined result codes
+        /// </summary>
         public static readonly int SuccessCode = 0;
         public static readonly int InvalidParameter = -1;
         public static readonly int FileNotFound = -3;
         public static readonly int Exception = int.MaxValue;
 
-        // Predefined result messages
-        private const string SuccessMessage = "Success";
+        /// <summary>
+        /// Predefined result messages
+        /// </summary>
+        protected const string SuccessMessage = "Success";
         private const string UndefinedMessage = "Undefined";
         private const string FailMessage = "Fail";
 
-        // The result code
+        /// <summary>
+        /// The result code
+        /// </summary>
         public int Code { get; set; } = Exception;
 
-        // The result output
+        /// <summary>
+        /// The result output
+        /// </summary>
         public List<string> Output { get; set; } = new List<string>();
 
-        // Checks if the result is a success
+        /// <summary>
+        /// Checks if the result is a success
+        /// </summary>
+        /// <returns>True if the result is a success, otherwise false</returns>
         public bool IsSuccess()
         {
             return Code == SuccessCode;
         }
 
-        // Checks if the result is a failure
+        /// <summary>
+        /// Checks if the result is a failure
+        /// </summary>
+        /// <returns>True if the result is a failure, otherwise false</returns>
         public bool IsFail()
         {
             return Code != SuccessCode;
         }
 
-        // Gets the first output message or an undefined message if there are no output messages
+        /// <summary>
+        /// Gets the first output message or an undefined message if there are no output messages
+        /// </summary>
+        /// <returns>The first output message or an undefined message</returns>
         public string GetFirstOutput()
         {
             return Output.Count > 0 ? Output[0] : UndefinedMessage;
         }
 
-        // Creates a new success result with an optional message
+        /// <summary>
+        /// Creates a new success result with an optional message
+        /// </summary>
+        /// <param name="message">The optional message</param>
+        /// <returns>A new success result</returns>
         public static ResultHelper Success(string message = SuccessMessage)
         {
             var result = new ResultHelper
@@ -51,7 +74,12 @@ namespace Ntools
             return result;
         }
 
-        // Creates a new failure result with an optional code and message
+        /// <summary>
+        /// Creates a new failure result with an optional code and message
+        /// </summary>
+        /// <param name="code">The optional code</param>
+        /// <param name="message">The optional message</param>
+        /// <returns>A new failure result</returns>
         public static ResultHelper Fail(int code = int.MinValue, string message = FailMessage)
         {
             var result = new ResultHelper
@@ -62,13 +90,16 @@ namespace Ntools
             return result;
         }
 
-        // Creates a new result with default values.  This is redundant with the default constructor.
+        /// <summary>
+        /// Creates a new ResultHelper with default values
+        /// </summary>
+        /// <returns>A new ResultHelper with default values</returns>
         public static ResultHelper New()
         {
             return new ResultHelper
             {
                 Code = Exception,
-                Output = new List<string> ()
+                Output = new List<string>()
             };
         }
     }

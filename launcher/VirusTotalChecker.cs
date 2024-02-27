@@ -7,8 +7,17 @@ using System.Threading.Tasks;
 public class VirusTotalChecker
 {
     private static readonly HttpClient client = new HttpClient();
-    public bool VirusFree { get; private set; }
 
+    #region Properties
+    public bool VirusFree { get; private set; }
+    #endregion
+
+    /// <summary>
+    /// Checks the specified file for viruses using the VirusTotal API.
+    /// </summary>
+    /// <param name="filePath">The path to the file to be checked.</param>
+    /// <param name="apiKey">The API key for accessing the VirusTotal API.</param>
+    /// <returns>The JSON response from the VirusTotal API.</returns>
     public async Task<string> CheckFileAsync(string filePath, string apiKey)
     {
         var url = "https://www.virustotal.com/api/v3/files";
@@ -39,18 +48,35 @@ public class VirusTotalChecker
         return jsonResponse;
     }
 
+    /// <summary>
+    /// Retrieves the scan results for the specified analysis ID using the VirusTotal API.
+    ///This method is straightforward.It sends a GET request to the VirusTotal API and returns
+    /// the JSON response
+
+    /// </summary>
+    /// <param name="analysisId">The ID of the analysis.</param>
+    /// <param name="apiKey">The API key for accessing the VirusTotal API.</param>
+    /// <returns>The JSON response from the VirusTotal API.</returns>
     private async Task<string> GetScanResultsAsync(string analysisId, string apiKey)
     {
         var url = $"https://www.virustotal.com/api/v3/analyses/{analysisId}";
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Add("x-apikey", apiKey);
-
         var response = await client.SendAsync(request);
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
         return jsonResponse;
     }
 
+    /// <summary>
+    /// Waits for the scan results for the specified analysis ID using the VirusTotal API.
+    /// This method is a bit more complex.It repeatedly calls [`GetScanResultsAsync`] every
+    /// minute until it no longer receives a "NotFoundError". This method requires a bit
+    /// more understanding of the context to fully grasp its purpose.
+    /// </summary>
+    /// <param name="analysisId">The ID of the analysis.</param>
+    /// <param name="apiKey">The API key for accessing the VirusTotal API.</param>
+    /// <returns>The JSON response from the VirusTotal API.</returns>
     public async Task<string> WaitForScanResultsAsync(string analysisId, string apiKey)
     {
         string result;
@@ -64,7 +90,12 @@ public class VirusTotalChecker
         return result;
     }
 
-    public bool IsFileGood1(string jsonResponse)
+    /// <summary>
+    /// Determines whether the file is virus free based on the JSON response from the VirusTotal API.
+    /// </summary>
+    /// <param name="jsonResponse">The JSON response from the VirusTotal API.</param>
+    /// <returns>True if the file is virus; otherwise, false.</returns>
+    public bool IsFileVirusFree(string jsonResponse)
     {
         var jsonDocument = JsonDocument.Parse(jsonResponse);
         var root = jsonDocument.RootElement;
@@ -87,6 +118,12 @@ public class VirusTotalChecker
         return malicious == 0 && suspicious == 0;
     }
 
+    /// <summary>
+    /// Determines whether a virus is detected based on the JSON response from the VirusTotal API.
+    /// </summary>
+    /// <param name="jsonResponse">The JSON response from the VirusTotal API.</param>
+    /// <param name="ignoreGridinsoft">Whether to ignore Gridinsoft detection.</param>
+    /// <returns>True if no virus is detected; otherwise, false.</returns>
     public bool VirusDetected(string jsonResponse, bool ignoreGridinsoft = true)
     {
         var jsonDocument = JsonDocument.Parse(jsonResponse);
@@ -123,11 +160,16 @@ public class VirusTotalChecker
         return malicious == 0 && suspicious == 0;
     }
 
+    /// <summary>
+    /// Analyzes the file with the specified analysis ID using the VirusTotal API.
+    /// </summary>
+    /// <param name="analysisId">The ID of the analysis.</param>
+    /// <param name="apiKey">The API key for accessing the VirusTotal API.</param>
+    /// <returns>The JSON response from the VirusTotal API.</returns>
     public async Task<string> AnalyzeFileAsync(string analysisId, string apiKey)
     {
         string jsonResponse;
         string status = "";
-
 
         do
         {

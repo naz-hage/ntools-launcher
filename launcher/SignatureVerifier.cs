@@ -7,6 +7,9 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Ntools
 {
+        /// <summary>
+        /// Provides methods for verifying and extracting digital signatures from files.
+        /// </summary>
     public static class SignatureVerifier
     {
         // Structure to hold WinTrustData
@@ -36,7 +39,12 @@ namespace Ntools
             WinTrustData pWVTData
         );
 
-        // Verify the digital signature of a file
+        /// <summary>
+        /// Verifies the digital signature of a file.
+        /// </summary>
+        /// <param name="fileName">The name of the file to verify.</param>
+        /// <returns>True if the digital signature is valid, false otherwise.</returns>
+        /// <exception cref="ArgumentException">Thrown when the file name is null or empty, or when the file does not exist.</exception>
         public static bool VerifyDigitalSignature(string fileName)
         {
             if (string.IsNullOrEmpty(fileName))
@@ -90,7 +98,11 @@ namespace Ntools
             return result == 0;
         }
 
-        // Extract the digital signature from a file
+
+        /// <summary>
+        /// Extracts the digital signature from a file and prints the details of the digital signature.
+        /// </summary>
+        /// <param name="fileName">The name of the file to extract the digital signature from.</param>
         public static void ExtractDigitalSignature(string fileName)
         {
             // Read the signed file into a byte array
@@ -114,7 +126,12 @@ namespace Ntools
             Console.WriteLine("Thumbprint: " + certificate.Thumbprint);
         }
 
-        // Display the properties of a Digital certificate
+
+        /// <summary>
+        /// Displays the properties of a Digital certificate.
+        /// </summary>
+        /// <param name="fileName">The name of the file to display the certificate from.</param>
+        /// <exception cref="ArgumentException">Thrown when the file name is null or empty, or when the file does not exist.</exception>
         public static void DisplayCertificate(string fileName)
         {
             if (string.IsNullOrEmpty(fileName))

@@ -21,6 +21,17 @@ Provide instructions on how to install or add your library to a .NET project.
 
 ## Launcher Usage
 
+## Usage
+To use the `ntools-launcher` library in your project, follow these steps:
+
+1. Install the `ntools-launcher` package from nuget.org.
+2. Import the `Ntools` namespace in your code.
+3. Create an instance of the `ResultHelper` class.
+4. Use the `Start` method to execute the launcher executable.
+5. Retrieve the result code and output using the `Code` and `Output` properties of the `ResultHelper` instance.
+
+For more detailed information on how to use the launcher, refer to the [Launcher Usage](./launcher/README.md) documentation.
+
 Here's an example of how to use the `Launcher` class to start a process:
 
 ```csharp

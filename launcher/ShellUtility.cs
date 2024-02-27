@@ -6,14 +6,17 @@ using System.IO;
 
 namespace Ntools
 {
-    // This class provides utility methods related to File and Path operations
+    /// <summary>
+    /// This class provides utility methods related to File and Path operations
+    /// </summary>
     public class ShellUtility
     {
-        // Retrieves the full path of a file from the Path environment variable
-        // Parameters:
-        //   command: The command to search for the file
-        // Returns:
-        //   The full path of the file if found, otherwise an empty string
+        /// <summary>
+        /// Retrieves the full path of a file from the Path environment variable.
+        /// </summary>
+        /// <param name="command">The command to search for the file.</param>
+        /// <param name="versobe">Specifies whether to display verbose output.</param>
+        /// <returns>The full path of the file if found, otherwise an empty string.</returns>
         public static string GetFullPathOfFile(string command, bool versobe = false)
         {
             if (string.IsNullOrEmpty(command)) return string.Empty;
