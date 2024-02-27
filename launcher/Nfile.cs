@@ -59,14 +59,8 @@ namespace Ntools
 
         public static async Task<ResultDownload> DownloadAsync(string url, string downloadedFilename)
         {
-            //if (!ValidUri(url)) throw new ArgumentException("Invalid uri", nameof(url));
-
             var safeUri = CreateSafeUri(url);
             var resultDownload = new ResultDownload(safeUri, downloadedFilename);
-
-            //if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(uri));
-
-            //if (!TrustedHost(uri)) throw new ArgumentException("Untrusted host", nameof(uri));
 
             if (!ValidExtension(url.ToString())) throw new ArgumentException("Invalid uri extension", nameof(url));
 
