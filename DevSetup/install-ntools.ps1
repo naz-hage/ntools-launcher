@@ -37,8 +37,6 @@ function Main {
 
     # prepare the downloads directory
     PrepareDownloadsDirectory $downloadsDirectory
-
-
     
     # set DevDrive and MainDir environment variables
     if (-not (Test-Path Env:\DevDrive)) {
@@ -53,7 +51,8 @@ function Main {
     Write-Host "mainDir: $mainDir"
     
     
-    & $nbExePath -c install -json ntools.json 
+    & $nbExePath -c install -json ntools.json
+    & $nbExePath -c list -json ntools.json
 }
 
 # Call the Main function with the provided or default values
