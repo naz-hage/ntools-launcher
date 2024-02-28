@@ -41,6 +41,7 @@ nb staging
 ```bash
 nb -c targets
 ```
+The [targets](./targets.md) file contains the list of available targets.
 
 ## Distribution
 - This class library is released to nuget.org as `ntools-launcher` package. 
