@@ -18,6 +18,23 @@ function PrepareDownloadsDirectory {
 }
 
 <#
+.SYNOPSIS Get the file version.
+.DESCRIPTION This function gets the file version of the specified file.
+.PARAMETER FilePath The file path.
+.RETURN This function returns the file version.
+#>
+function GetFileVersion {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$FilePath
+    )   
+
+    $versionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($FilePath)
+    # return the all file version parts joined by a dot
+    return ($versionInfo.FileMajorPart, $versionInfo.FileMinorPart, $versionInfo.FileBuildPart, $versionInfo.FilePrivatePart) -join "."
+}
+
+<#
 .SYNOPSIS: Get the app information from the json file.
 .DESCRIPTION: This function reads the json file and returns the app information.
 .PARAMETER jsonFile The json file containing the app information.
@@ -90,7 +107,7 @@ function CheckIfAppInstalled {
      else
      {
         # check if the version is correct
-        $installedVersion = & .\file-version.ps1 $appInfo.AppFileName
+        $installedVersion = GetFileVersion $appInfo.AppFileName
         $targetVersion = $appInfo.Version
         Write-Host "$($appInfo.Name)  version: $($appInfo.Version) is found."
 
