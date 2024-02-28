@@ -126,10 +126,3 @@ var isElevated = CurrentProcess.IsElevated();
 Console.WriteLine(isElevated);
 ```
 
-## Contributing
-
-Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for details on how to contribute to this project.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.txt) file for details.

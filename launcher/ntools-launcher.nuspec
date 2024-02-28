@@ -8,7 +8,7 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="file">LICENSE.txt</license>
     <projectUrl>https://github.com/naz-hage/ntools-launcher/blob/main/README.md</projectUrl>
-    <description>ntools-launcher boosts developer's productivity and streamline workflows! This versatile library simplifies tasks like launching executables, downloading files, executing shell commands, and checking process elevation. With its user-friendly design and robust functionality, ntools-launcher is a must-have tool for developers.</description>
+    <description>Boost your developer productivity and streamline workflows with ntools-launcher! This versatile library simplifies tasks like launching executables, downloading files, executing shell commands, and checking process elevation. With its user-friendly design and robust functionality, ntools-launcher is a must-have tool for developers.</description>
     <releaseNotes>https://github.com/naz-hage/ntools-launcher/blob/main/ReleaseNotes.md</releaseNotes>
     <copyright>2020-2024</copyright>
     <readme>README.md</readme>
