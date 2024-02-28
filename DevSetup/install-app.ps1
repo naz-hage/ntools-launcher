@@ -2,21 +2,6 @@
 
 $downloadsDirectory = "c:\NToolsDownloads"
 
-function PrepareDownloadsDirectory {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$directory)
-
-    # Create the Downloads directory if it doesn't exist
-    if (!(Test-Path -Path $directory)) {
-        New-Item -ItemType Directory -Path $directory | Out-Null
-    }
-
-    # Grant Administrators full control of the Downloads directory
-    icacls.exe $directory /grant 'Administrators:(OI)(CI)F' /inheritance:r
-    
-}
-
 <#
 .SYNOPSIS Get the file version.
 .DESCRIPTION This function gets the file version of the specified file.
@@ -180,8 +165,6 @@ function Main {
         [Parameter(Mandatory=$true)]
         [string]$json
         )
-
-    PrepareDownloadsDirectory $downloadsDirectory
 
     $app = GetAppInfo $json
     # check if Git is installed
