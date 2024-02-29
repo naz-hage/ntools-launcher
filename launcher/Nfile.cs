@@ -8,19 +8,40 @@ using System.Threading.Tasks;
 
 namespace Ntools
 {
+    /// <summary>
+    /// Provides utility methods for file operations.
+    /// </summary>
     public static class Nfile
     {
+        /// <summary>
+        /// The maximum number of retries for downloading a file.
+        /// </summary>
         private const int MaxRetries = 3;
-        //private static Stream httpStream;
-        //private static Stream fileStream;
-        //private static HttpListener httpListener;
+
+        /// <summary>
+        /// The HttpClient instance used for downloading files.
+        /// </summary>
         private static readonly HttpClient HttpClient;
+
+        /// <summary>
+        /// The HttpMessageHandler instance used for handling HTTP requests.
+        /// </summary>
         private static readonly HttpMessageHandler HttpMessageHandler;
 
+        /// <summary>
+        /// The timeout value for HTTP requests in milliseconds.
+        /// </summary>
         private static int Timeout { get; set; } = 300000;  // 300000 = 5 minutes 
 
-        private static List<string> AllowedExtensions { get; set; } = new List<string> ();
-        private static List<string> TrustedHosts { get; set; } = new List<string> ();
+        /// <summary>
+        /// The list of allowed file extensions.
+        /// </summary>
+        private static List<string> AllowedExtensions { get; set; } = new List<string>();
+
+        /// <summary>
+        /// The list of trusted hosts.
+        /// </summary>
+        private static List<string> TrustedHosts { get; set; } = new List<string>();
 
         static Nfile()
         {
@@ -34,29 +55,48 @@ namespace Ntools
             HttpClient.Timeout = TimeSpan.FromMilliseconds(Timeout);
         }
 
-        // Getter and setter for TrustedHosts
+        /// <summary>
+        /// Gets the list of trusted hosts.
+        /// </summary>
+        /// <returns>The list of trusted hosts.</returns>
         public static List<string> GetTrustedHosts()
         {
             return TrustedHosts;
         }
 
+        /// <summary>
+        /// Sets the list of trusted hosts.
+        /// </summary>
+        /// <param name="trustedHosts">The list of trusted hosts.</param>
         public static void SetTrustedHosts(List<string> trustedHosts)
         {
             TrustedHosts = trustedHosts;
         }
 
-        // Gettter and Setter for AllowedExtensions
-        
+        /// <summary>
+        /// Gets the list of allowed file extensions.
+        /// </summary>
+        /// <returns>The list of allowed file extensions.</returns>
         public static List<string> GetAllowedExtensions()
         {
             return AllowedExtensions;
         }
 
+        /// <summary>
+        /// Sets the list of allowed file extensions.
+        /// </summary>
+        /// <param name="allowedExtensions">The list of allowed file extensions.</param>
         public static void SetAllowedExtensions(List<string> allowedExtensions)
         {
             AllowedExtensions = allowedExtensions;
         }
 
+        /// <summary>
+        /// Downloads a file asynchronously from the specified URL.
+        /// </summary>
+        /// <param name="url">The URL of the file to download.</param>
+        /// <param name="downloadedFilename">The name of the downloaded file.</param>
+        /// <returns>A task representing the asynchronous download operation.</returns>
         public static async Task<ResultDownload> DownloadAsync(string url, string downloadedFilename)
         {
             var safeUri = CreateSafeUri(url);
@@ -146,7 +186,11 @@ namespace Ntools
             return resultDownload;
         }
 
-        // Add a method to check if a Uri exists
+        /// <summary>
+        /// Checks if a URI exists asynchronously.
+        /// </summary>
+        /// <param name="uri">The URI to check.</param>
+        /// <returns>A task representing the asynchronous existence check.</returns>
         public static async Task<HttpResponseMessage> UriExistsAsync(string uri)
         {
             if (!ValidUri(uri)) throw new ArgumentException("Invalid uri", nameof(uri));
@@ -162,7 +206,11 @@ namespace Ntools
             }
         }
 
-        // Add a method to get the file size of a Uri
+        /// <summary>
+        /// Gets the file size of a URI asynchronously.
+        /// </summary>
+        /// <param name="uri">The URI to get the file size of.</param>
+        /// <returns>A task representing the asynchronous file size retrieval.</returns>
         public static async Task<long> GetFileSizeAsync(string uri)
         {
             if (!ValidUri(uri.ToString())) throw new ArgumentException("Invalid uri", nameof(Uri));
@@ -179,6 +227,11 @@ namespace Ntools
             }
         }
 
+        /// <summary>
+        /// Checks if a host is trusted.
+        /// </summary>
+        /// <param name="uri">The URI to check.</param>
+        /// <returns>True if the host is trusted; otherwise, false.</returns>
         public static bool TrustedHost(Uri uri)
         {
             foreach (var trustedHost in TrustedHosts)
@@ -191,6 +244,11 @@ namespace Ntools
             return false;
         }
 
+        /// <summary>
+        /// Checks if a URI is valid.
+        /// </summary>
+        /// <param name="uri">The URI to check.</param>
+        /// <returns>True if the URI is valid; otherwise, false.</returns>
         public static bool ValidUri(string uri)
         {
             var result = ValidUriInternal(uri, out Uri uriResult);
@@ -212,6 +270,11 @@ namespace Ntools
                         && uriResult.Scheme == Uri.UriSchemeHttps;
         }
 
+        /// <summary>
+        /// Checks if a URI has a valid extension.
+        /// </summary>
+        /// <param name="uri">The URI to check.</param>
+        /// <returns>True if the URI has a valid extension; otherwise, false.</returns>
         public static bool ValidExtension(string uri)
         {
             var result = ValidUriInternal(uri, out Uri uriResult);
@@ -224,6 +287,11 @@ namespace Ntools
             return result;
         }
 
+        /// <summary>
+        /// Creates a safe URI from the user input.
+        /// </summary>
+        /// <param name="userInput">The user input to create the URI from.</param>
+        /// <returns>The safe URI.</returns>
         public static Uri CreateSafeUri(string userInput)
         {
             if (string.IsNullOrEmpty(userInput))
@@ -255,6 +323,11 @@ namespace Ntools
             return uri;
         }
 
+        /// <summary>
+        /// Validates the server certificate for the specified HTTPS URL.
+        /// </summary>
+        /// <param name="httpsUrl">The HTTPS URL to validate the server certificate for.</param>
+        /// <returns>True if the server certificate is valid; otherwise, false.</returns>
         private static bool ValidateServerCertificate(string httpsUrl)
         {
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(httpsUrl);

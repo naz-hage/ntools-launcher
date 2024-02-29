@@ -1,27 +1,34 @@
 # ntools-launcher
 
-Ntools is a .NET namespace that provides various utilities for launching processes. It includes the following class libraries:
+The `ntools-launcher` is a NuGet package library that simplifies common tasks related to launching executables, downloading files, executing shell commands, and checking process elevation. This library is designed to be easy to use, while providing robust functionality for a variety of tasks.
 
-- **Launcher:** Provides methods to launch a process and wait for it to complete.
-    - **LockVerifyStart:** A methods that locks file and verify that a file is digitally signed before launching.
-    - **LockStart:** A method that locks process before launching.
-    - **LaunchInThread:** A method that launches a process in a separate thread.
-- **ResultHelper:** Provides a helper class and methods to retrieve the result `Code` and `Output` of the launched executable.
-- **CurrentProcess:** Provides a method to determine if the current process is elevated.
-- **ShellUtility:** A helper class that executes shell commands.
-    - **GetFullPathOfFile:** A method that retrieves the full path of a file from the Path environment variable.
-- **Download:** A class that downloads file from the web.
-    - **File:** A method that downloads a file from the web and save to a local drive.
-    - **SignedFile:** A method that downloads a file and expects file to be digitally signed. If files is signed, method succeeds.  Otherwise, file is deleted.
+## Features
 
+- **Launcher:** A class with methods to launch a process and wait for it to complete. This includes methods for locking a file and verifying its digital signature before launching, and launching a process in a separate thread.
+- **ResultHelper:** A helper class for retrieving the result `Code` and `Output` of the launched executable.
+
+- **NFile:** A class with a method for downloading files from the web. This method for checks Web download Url inegrity, the downloaded file signature, file size, and VirusTotal check.
+- **ResultDownload:** A helper class for retrieving the result of a downloaded file.
+
+- **CurrentProcess:** A class that provides a method to determine if the current process is elevated.
+
+- **ShellUtility:** A helper class for executing shell commands and retrieving the full path of a file from the Path environment variable.
 
 ## Installation
 
-Provide instructions on how to install or add your library to a .NET project.
+The `ntools-launcher` package is available on nuget.org. To install the package, run the following command in the Package Manager Console:
 
-## Launcher Usage
+```bash
+Install-Package ntools-launcher
+```
 
-Here's an example of how to use the `Launcher` class to start a process:
+## Usage
+
+### Launcher Class
+
+The `Launcher` class provides methods for launching a process. This includes methods for locking a file and verifying its digital signature before launching, and launching a process in a separate thread.
+
+Here's an example of how to use the `Launcher` class:
 
 ```csharp
 using Ntools;
@@ -55,15 +62,67 @@ else
     }
 }
 ```
-## LaunchInThread Usage
-The `LaunchInThread` function is useful in scenarios where you need to start a process asynchronously without blocking the main thread of your application. Here are some scenarios where you might use this function:
+The Launcher class exposes `LockVerifyStart` method which is useful in scenarios where you need to start a process and verify that the file is digitally signed before launching. Here are some scenarios where you might use this method:
 
-1. **Running a long-running process**: If the process you're starting is expected to take a long time to complete, you might want to run it in a separate thread so that it doesn't block the main thread of your application. This is especially important in UI applications, where blocking the main thread can make the application unresponsive.
+1. **Securely launching executables**: If you need to start an executable and want to ensure that it is digitally signed before launching, you can use this function to verify the digital signature of the file before starting the process.
 
-2. **Running multiple processes concurrently**: If you need to start multiple processes and have them run concurrently, you can do this by starting each one in a separate thread.
+2. **Preventing unauthorized executables**: In scenarios where you want to prevent unauthorized executables from running on your system, you can use this function to verify the digital signature of the file before launching it.
 
-3. **Non-blocking operations**: In scenarios where you don't need to immediately know the result of the process, you can use this function to start the process and then continue with other tasks.
 
-4. **Background tasks**: If the process you're starting is a background task that doesn't need to interact with the user or the main part of your application, you might choose to run it in a separate thread.
+### NFile Class
 
-Remember that multithreading can make your code more complex and harder to debug, so it should be used judiciously. Always consider whether the benefits of running a process in a separate thread outweigh the added complexity.
+The `NFile` class provides a method for downloading files from the web. Here's an example of how to use the `NFile` class:
+
+```csharp
+using Ntools;
+
+ try
+ {
+    // It is assumed that the VirusTotal API key is stored in the environment variable
+    // VTAPIKEY. The key is used to check the downloaded file for virus.
+    var result = await NFile.DownloadAsync("https://example.com/file.zip", "C:\\temp\\file.zip");
+    if (result.IsSuccess())
+    {
+        Console.WriteLine("Success");
+    }
+    else
+    {
+        Console.WriteLine($"Code: {result.Code}");
+        Console.WriteLine($"Message: {result.Message}");
+    }
+ }
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}
+```
+The `DownloadAsync` method is useful in scenarios where you need to download a file from the web. Here are some scenarios where you might use this method:
+
+1. **Downloading files from the web**: If you need to download a file from the web, you can use this function to do so.
+
+2. **Checking for virus**: In scenarios where you want to check the downloaded file for viruses, you can use this function to download the file and then check it using a virus scanning service such as VirusTotal.
+
+3. **Verifying file signature**: If you need to verify the digital signature of the downloaded file, you can use this function to do so.
+
+### ShellUtility Class
+
+The `ShellUtility` class provides a method for retrieving the full path of a file from the Path environment variable. Here's an example of how to use the `ShellUtility` class:
+
+```csharp
+using Ntools;
+
+var fullPath = ShellUtility.GetFullPathOfFile("notepad.exe");
+Console.WriteLine(fullPath);
+```
+
+### CurrentProcess Class
+
+The `CurrentProcess` class provides a method to determine if the current process is elevated. Here's an example of how to use the `CurrentProcess` class:
+
+```csharp
+using Ntools;
+
+var isElevated = CurrentProcess.IsElevated();
+Console.WriteLine(isElevated);
+```
+

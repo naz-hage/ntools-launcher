@@ -1,0 +1,17 @@
+{
+  "Version": "1.2.0",
+  "NbuildAppList": [
+    {
+      "Name": "Dotnet Runtime",
+      "Version": "8.0.1",
+      "AppFileName": "$(InstallPath)\\dotnet.exe",
+      "WebDownloadFile": "https://download.visualstudio.microsoft.com/download/pr/f18288f6-1732-415b-b577-7fb46510479a/a98239f751a7aed31bc4aa12f348a9bf/windowsdesktop-runtime-$(Version)-win-x64.exe",
+      "DownloadedFile": "dotnet_installer.exe",
+      "InstallCommand": "dotnet_installer.exe",
+      "InstallArgs": "/quiet /norestart\u0022",
+      "InstallPath": "$(ProgramFiles)\\dotnet",
+      "UninstallCommand": "dotnet_installer.exe",
+      "UninstallArgs": "/uninstall /quiet /norestart"
+    }
+  ]
+}
