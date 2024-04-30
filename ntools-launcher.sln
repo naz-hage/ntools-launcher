@@ -24,22 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{975DD70F-DD7A-47B0-BCD1-2A2814EA3914}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{F58E0A42-C27D-4F91-B649-5991E477C42E}"
-	ProjectSection(SolutionItems) = preProject
-		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
-		.github\ISSUE_TEMPLATE\custom.md = .github\ISSUE_TEMPLATE\custom.md
-		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{A49F6E80-00BE-48DA-9902-B0606A41A210}"
 	ProjectSection(SolutionItems) = preProject
-		DevSetup\app-Dotnet_Runtime.json = DevSetup\app-Dotnet_Runtime.json
-		DevSetup\app-Ntools.json = DevSetup\app-Ntools.json
-		DevSetup\DevSetup.ps1 = DevSetup\DevSetup.ps1
-		DevSetup\install-ntools.ps1 = DevSetup\install-ntools.ps1
-		DevSetup\ntools.json = DevSetup\ntools.json
-		DevSetup\ntools.json = DevSetup\ntools.json
-		DevSetup\ntools.json = DevSetup\ntools.json
+		.github\workflows\dotnet-desktop.yml = .github\workflows\dotnet-desktop.yml
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{259A65B7-1CBC-4C72-81B8-EE6C28129CC5}"
 	ProjectSection(SolutionItems) = preProject
 		docs\index.md = docs\index.md
@@ -59,10 +48,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "revisions", "revisions", "{
 		docs\revisions\changelog.md = docs\revisions\changelog.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevSetup", "DevSetup", "{B5C56239-4280-4292-8454-484FC1716924}"
+	ProjectSection(SolutionItems) = preProject
+		DevSetup\app-Dotnet_Runtime.json = DevSetup\app-Dotnet_Runtime.json
+		DevSetup\app-Ntools.json = DevSetup\app-Ntools.json
+		DevSetup\DevSetup.ps1 = DevSetup\DevSetup.ps1
+		DevSetup\install-ntools.ps1 = DevSetup\install-ntools.ps1
+		DevSetup\install.log = DevSetup\install.log
 		DevSetup\ntools.json = DevSetup\ntools.json
 	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{259A65B7-1CBC-4C72-81B8-EE6C28129CC5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -87,7 +81,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{F58E0A42-C27D-4F91-B649-5991E477C42E} = {975DD70F-DD7A-47B0-BCD1-2A2814EA3914}
 		{A49F6E80-00BE-48DA-9902-B0606A41A210} = {975DD70F-DD7A-47B0-BCD1-2A2814EA3914}
 		{A6D45CAF-2E9C-4288-B774-378B67F157FC} = {259A65B7-1CBC-4C72-81B8-EE6C28129CC5}
 		{E7E30B2D-EB5A-484C-BCB0-0E84A3C8C740} = {259A65B7-1CBC-4C72-81B8-EE6C28129CC5}
