@@ -71,6 +71,8 @@
 		<NugetPackagePath>$(ArtifactsDir)\$(SolutionName)\Nuget\$(ProductVersion)</NugetPackagePath>
 		<LocalNugetFeed>$(ArtifactsDir)\nupkgs</LocalNugetFeed>
 		<NugetApiKeyFile>$(USERPROFILE)\NugetApiKey.txt</NugetApiKeyFile>
+		<NugetSpecProject>ntools-launcher</NugetSpecProject>
+		<NugetSpecFile>$(SolutionDir)\$(NugetSpecProject)\$(NugetSpecProject).nuspec</NugetSpecFile>
 	</PropertyGroup>
 	</Target>
 
@@ -91,6 +93,14 @@
 		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
 		<Exec Command='"$(NugetExe)" push $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(NugetApiKey)'/>
 		<Message Text="==> DONE"/>	
+	</Target>
+
+		<!-- Build docs locally for testing -->
+	<Target Name="MKDOCS" >
+		<Exec Command='pip install mkdocs' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='mkdocs build -d %userprofile%\$(SolutionName)' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='mkdocs serve' WorkingDirectory="$(SolutionDir)"/>
+		<Message Text="==> DONE"/>
 	</Target>
 
 </Project>

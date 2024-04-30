@@ -2,18 +2,6 @@
   "Version": "1.2.0",
   "NbuildAppList": [
     {
-      "Name": "Dotnet Runtime",
-      "Version": "8.0.1",
-      "AppFileName": "$(InstallPath)\\dotnet.exe",
-      "WebDownloadFile": "https://download.visualstudio.microsoft.com/download/pr/f18288f6-1732-415b-b577-7fb46510479a/a98239f751a7aed31bc4aa12f348a9bf/windowsdesktop-runtime-$(Version)-win-x64.exe",
-      "DownloadedFile": "dotnet_installer.exe",
-      "InstallCommand": "dotnet_installer.exe",
-      "InstallArgs": "/quiet /norestart\"",
-      "InstallPath": "$(ProgramFiles)\\dotnet",
-      "UninstallCommand": "dotnet_installer.exe",
-      "UninstallArgs": "/uninstall /quiet /norestart"
-    },
-    {
       "Name": "Visual Studio 2022",
       "Version": "17.0.0",
       "AppFileName": "$(InstallPath)\\Common7\\IDE\\devenv.exe",
@@ -39,7 +27,7 @@
     },
     {
       "Name": "Git for Windows",
-      "Version": "2.43.0",
+      "Version": "2.44.0",
       "AppFileName": "$(InstallPath)\\bin\\git.exe",
       "WebDownloadFile": "https://github.com/git-for-windows/git/releases/download/v$(Version).windows.1/Git-$(Version)-64-bit.exe",
       "DownloadedFile": "Git-$(Version)-64-bit.exe",
@@ -51,7 +39,7 @@
     },
     {
       "Name": "Powershell",
-      "Version": "7.4.1",
+      "Version": "7.4.2",
       "AppFileName": "$(InstallPath)\\pwsh.exe",
       "WebDownloadFile": "https://github.com/PowerShell/PowerShell/releases/download/v$(Version)/PowerShell-$(Version)-win-x64.msi",
       "DownloadedFile": "PowerShell-$(Version)-win-x64.msi",
@@ -63,7 +51,7 @@
     },
     {
       "Name": "Visual Studio Code",
-      "Version": "1.86.2.0",
+      "Version": "1.88.1.0",
       "AppFileName": "$(InstallPath)\\Code.exe",
       "WebDownloadFile": "https://aka.ms/win32-x64-system-stable",
       "DownloadedFile": "VSCodeSetup-x64-$(Version).exe",
@@ -96,6 +84,18 @@
       "InstallPath": "$(ProgramFiles)\\SysInternalsSuite",
       "UninstallCommand": "powershell.exe",
       "UninstallArgs": "-Command Remove-Item -Path '$(InstallPath)' -Recurse -Force"
+    },
+    {
+      "Name": "Python",
+      "Version": "3.12.2",
+      "AppFileName": "$(InstallPath)\\python.exe",
+      "WebDownloadFile": "https://www.python.org/ftp/python/$(Version)/python-$(Version)-amd64.exe",
+      "DownloadedFile": "python-$(Version)-amd64.exe",
+      "InstallCommand": "$(DownloadedFile)",
+      "InstallArgs": "/quiet InstallAllUsers=1 PrependPath=1 TargetDir=\"$(InstallPath)\\\"",
+      "InstallPath": "$(ProgramFiles)\\Python\\$(Version)\\",
+      "UninstallCommand": "msiexec.exe",
+      "UninstallArgs": "/x {0001-0001-0001-0001-0001-0001} /qn"
     }
   ]
 }
