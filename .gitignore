@@ -403,3 +403,5 @@ FodyWeavers.xsd
 **/launchSettings.json
 
 /launcher/DESIGN.md
+/DevSetup/install-app.ps1
+/DevSetup/install.psm1
