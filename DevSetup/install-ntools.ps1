@@ -1,38 +1,41 @@
-# .\InstallNtools.ps1
+#The [cmdletbinding()] attribute is used to make the script function like a cmdlet
+# it is a lightweight command used in the PowerShell environment. This attribute allows the script to use cmdlet 
+# features such as common parameters (like -Verbose, -Debug, etc.) and the ability to be used in pipelines.
+[cmdletbinding()]
+param(
+    [Parameter(Mandatory = $false)]
+    [String]
+    $DevDrive = "c:",
 
-$nbExePath = "$env:ProgramFiles\Nbuild\nb.exe"
+    [Parameter(Mandatory = $false)]
+    [String]
+    $MainDir = "source"
+)
 
-<#
-.SYNOPSIS: Main function to install NTools.
-.DESCRIPTION: This function is the entry point for the script. It installs NTools using the nb.exe tool.
-.PARAMETER devDrive The drive letter where the development tools are installed.
-.PARAMETER mainDir The directory where the main development tools are installed.
-.RETURN This function does not return any value.
-.EXAMPLE Main -devDrive "C:" -mainDir "C:\Nbuild"
-#>
-function Main {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$devDrive,
-        [Parameter(Mandatory=$true)]
-        [string]$mainDir)
+# Get the common Install module and import it
+#########################
+$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/DevSetup/install.psm1"
+$output = "./install.psm1"
+Invoke-WebRequest -Uri $url -OutFile $output
+Import-Module ./install.psm1 -Force
 
-    # set DevDrive and MainDir environment variables
-    if (-not (Test-Path Env:\DevDrive)) {
-        Set-Item -Path Env:\DevDrive -Value $devDrive
-    }
+$fileName = Split-Path -Leaf $PSCommandPath
 
-    if (-not (Test-Path Env:\MainDir)) {
-        Set-Item -Path Env:\MainDir -Value $mainDir
-    }
+Write-OutputMessage $fileName "Started installation script."
 
-    Write-Host "devDrive: $devDrive"
-    Write-Host "mainDir: $mainDir"
-    
-    
-    & $nbExePath -c install -json ntools.json
-    & $nbExePath -c list -json ntools.json
+# install Ntools
+#########################
+MainInstallApp -command install -json .\app-Ntools.json
+if ($LASTEXITCODE -ne 0) {
+    Write-OutputMessage $fileName "Error: Installation of app-Ntools.json failed. Exiting script."
+    exit 1
+
 }
 
-# Call the Main function with the provided or default values
-Main -devDrive $args[0] -mainDir $args[1]
+# Set the development environment variables
+#########################
+SetDevEnvironmentVariables -devDrive $DevDrive -mainDir $MainDir
+
+
+Write-OutputMessage $fileName "Completed installation script."
+Write-OutputMessage $fileName "EmtpyLine"

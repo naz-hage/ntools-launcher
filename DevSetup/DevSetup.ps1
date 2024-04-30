@@ -1,76 +1,55 @@
-# FILEPATH: /c:/source/ntools-launcher/DevSetup/DevSetup.ps1
-$DEV_DRIVE = "c:"
-$MAIN_DIR = "source"
-$downloadsDirectory = "c:\NToolsDownloads"
+#The [cmdletbinding()] attribute is used to make the script function like a cmdlet
+# it is a lightweight command used in the PowerShell environment. This attribute allows the script to use cmdlet 
+# features such as common parameters (like -Verbose, -Debug, etc.) and the ability to be used in pipelines.
+[cmdletbinding()]
+param(
+    [Parameter(Mandatory = $false)]
+    [String]
+    $DevDrive = "c:",
 
+    [Parameter(Mandatory = $false)]
+    [String]
+    $MainDir = "source"
+)
 
+# Get the common Install module and import it
+#########################
+$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/DevSetup/install.psm1"
+$output = "./install.psm1"
+Invoke-WebRequest -Uri $url -OutFile $output
+Import-Module ./install.psm1 -Force
 
-<#
-.SYNOPSIS: Prepares the downloads directory.
-.DESCRIPTION: This function prepares the downloads directory by performing necessary setup tasks.
-.PARAMETER None This function does not accept any parameters.
-.RETURN This function does not return any value.
-.EXAMPLE PrepareDownloadsDirectory
-#>
-function PrepareDownloadsDirectory {
-    # Create the Downloads directory if it doesn't exist
-    if (!(Test-Path -Path $downloadsDirectory)) {
-        New-Item -ItemType Directory -Path $downloadsDirectory | Out-Null
-    }
+$fileName = Split-Path -Leaf $PSCommandPath
+Write-OutputMessage $fileName "Started installation script."
 
-    # Grant Administrators full control of the Downloads directory
-    icacls.exe $downloadsDirectory /grant 'Administrators:(OI)(CI)F' /inheritance:r
+# Check if admin
+#########################
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-OutputMessage $fileName "Error: Please run this script as an administrator."
+    exit 1
+} else {
+    Write-OutputMessage $fileName "Admin rights detected"
 }
 
-<#
-.SYNOPSIS: Main function to install the app.
-.DESCRIPTION: This function is the entry point for the script. It sets up the development environment by installing the apps.
-.PARAMETER json The json file containing the app information.
-.RETURN This function does not return any value.
-.EXAMPLE Main
-#>
-function Main {
+# install Ntools
+#########################
+MainInstallApp -command install -json .\app-Ntools.json
+if ($LASTEXITCODE -ne 0) {
+    Write-OutputMessage $fileName "Error: Installation of ntools failed. Exiting script."
+    exit 1
 
-    # Check if admin
-    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
-    if (-not $isAdmin) {
-        Write-Host "Please run this script as an administrator."
-        exit 1
-    }
-    else {
-        Write-Host "Running as administrator" -ForegroundColor Yellow -BackgroundColor Black
-    }
-    
-    PrepareDownloadsDirectory $downloadsDirectory
-
-    # Install DotNet Runtime
-    Invoke-Expression -Command ".\install-app.ps1 .\app-Dotnet_Runtime.json"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "An error occurred during the installation of Ntools."  -ForegroundColor Red -BackgroundColor Black
-        exit 1
-    }
-
-    # Install Ntools
-    Invoke-Expression -Command ".\install-app.ps1 .\app-Ntools.json"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "An error occurred during the installation of Ntools."  -ForegroundColor Red -BackgroundColor Black
-        exit 1
-    }
-
-    Write-Host "Setting up the development environment..."  -ForegroundColor Yellow -BackgroundColor Black
-
-    # Install Development Tools
-    Invoke-Expression -Command ".\install-ntools.ps1 $DEV_DRIVE $MAIN_DIR"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "An error occurred during the installation of Ntools." -ForegroundColor Red -BackgroundColor Black
-        exit 1
-    }
-
-    Write-Host "Development environment has been successfully setup." -ForegroundColor Green -BackgroundColor Black -NoNewline
-    Write-Host "" -ForegroundColor Green -BackgroundColor Black
+}
+#install Development tools for the home project
+#########################
+& $global:NbExePath -c install -json .\ntools.json
+if ($LASTEXITCODE -ne 0) {
+    Write-OutputMessage $fileName "Error: Installation of Development Tools failed. Exiting script."
+    exit 1
 }
 
-<#
-    The following command runs the Main function with the provided or default values.
-#>
-Main
+# Set the development environment variables
+#########################
+SetDevEnvironmentVariables -devDrive $DevDrive -mainDir $MainDir
+
+Write-OutputMessage $fileName "Completed installation script."
+Write-OutputMessage $fileName "EmtpyLine"
