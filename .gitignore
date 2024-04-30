@@ -405,3 +405,4 @@ FodyWeavers.xsd
 /launcher/DESIGN.md
 /DevSetup/install-app.ps1
 /DevSetup/install.psm1
+/targets.md
