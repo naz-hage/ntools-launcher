@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-
+    name: Build and Test # More descriptive name for the build job
     strategy:
       matrix:
         configuration: [Release]
@@ -20,7 +20,9 @@ jobs:
     env:
       Solution_Name: ntools-launcher.sln
       Test_Project_Path: LauncherTests\LauncherTests.csproj
-
+      DevDrive: 'D:'
+      MainDir: 'a\ntools-launcher'
+      
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -37,19 +39,52 @@ jobs:
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v2
 
-    - name: Install dependencies
-      run: dotnet restore
+    # Install ntools
+    - name: Install ntools
+      run: |
+        cd ./DevSetup
+        ./install-ntools.ps1 -devDrive "${{ env.DevDrive }}" -mainDir "${{ env.MainDir }}"
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
 
-    # Execute all unit tests in the solution
-    - name: Build the solution
-      run: dotnet build --no-restore --verbosity normal
+    # Set ProgramFilesPath
+    - name: Set ProgramFilesPath
+      run: |
+        $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
+        echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+      shell: pwsh
+   
+    # Configure Git
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "actions@github.com"
 
-    - name: Execute unit tests
-      #run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+    # Build Staging using ntools
+    - name: Run nb.exe
+      run: |
+        & "$env:ProgramFilesPath/nbuild/nb.exe" staging
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
       env:
         VTAPIKEY: ${{ secrets.VTAPIKEY }}
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      run: dotnet test --no-build --verbosity normal
 
-        
-
+  docs:
+    name: Publish docs  # More descriptive name for the docs job
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies	
+        run: |	
+          python -m pip install --upgrade pip	
+          pip install mkdocs	
+      - name: Update docs	
+        run: |	
+          mkdocs build	
+          mkdocs gh-deploy --force
