@@ -18,7 +18,7 @@
 	</PropertyGroup>
 	
 	<!-- Define current solution folder -->
-	<Target Name="CURRENT_DIRECTORY">
+	<Target Name="CURRENT_DIRECTORY" >
 
 		<PropertyGroup>
 			<CurrentDirectory>$(MSBuildProjectDirectory)</CurrentDirectory>
