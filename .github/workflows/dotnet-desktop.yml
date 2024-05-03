@@ -68,7 +68,7 @@ jobs:
     - name: Display GITHUB_PATH
       run: |
         Get-Content -Path $env:GITHUB_PATH
-        echo $env:PATH -split ';' | ForEach-Object { $_ }
+        $env:PATH -split ';' | ForEach-Object { "PATH: $_" }
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
