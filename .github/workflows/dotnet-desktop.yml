@@ -59,13 +59,15 @@ jobs:
 
     - name: Set ProgramFiles and Ntools Paths
       run: |
+        Get-Content -Path $env:GITHUB_PATH
         $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
         echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
         echo "$programFilesPath\${{ env.Ntools }}" | Out-File -FilePath $env:GITHUB_PATH -Append
+        Get-Content -Path $env:GITHUB_PATH
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
-    - name: Display GITHUB_PATH
+    - name: Display PATH environment variable
       run: |
         Get-Content -Path $env:GITHUB_PATH
         $env:PATH -split ';' | ForEach-Object { "PATH: $_" }
