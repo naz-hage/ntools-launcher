@@ -14,6 +14,7 @@ on:
   workflow_call:
 
 env:
+  Ntools: Nbuild
   Build_Type: ${{ github.event.inputs.build_type || 'staging' }}
   Enable_Logging: true # Enable additional logging
 
@@ -49,7 +50,7 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Install ntools and MongoDB
+    - name: Install ntools
       run: |
         cd ./DevSetup
         ./install-ntools.ps1
@@ -60,9 +61,16 @@ jobs:
       run: |
         $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
         echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+        echo "$programFilesPath\${{ env.Ntools }}" | Out-File -FilePath $env:GITHUB_PATH -Append
       shell: pwsh
       working-directory: ${{ github.workspace }}
-   
+
+    - name: Display GITHUB_PATH
+      run: |
+        Get-Content -Path $env:GITHUB_PATH
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
+
     - name: Configure Git
       run: |
         git config --global user.name "github-actions"
