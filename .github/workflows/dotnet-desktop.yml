@@ -5,65 +5,72 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "*" ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type (staging or production)'
+        required: false
+        default: 'staging'
+  workflow_call:
+
+env:
+  Build_Type: ${{ github.event.inputs.build_type || 'staging' }}
+  Enable_Logging: true # Enable additional logging
 
 jobs:
 
   build:
-    name: Build and Test # More descriptive name for the build job
+    name: Build and Test
     strategy:
       matrix:
-        configuration: [Release]
+        #configuration: [Debug, Release]
+        configuration: [Debug]
+    runs-on: windows-latest
 
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-
-    env:
-      Solution_Name: ntools-launcher.sln
-      Test_Project_Path: LauncherTests\LauncherTests.csproj
-      DevDrive: 'D:'
-      MainDir: 'a\ntools-launcher'
-      
     steps:
-    - name: Checkout
+    - name: Check Build Type | must be staging or production
+      run: |
+        if ($env:Build_Type -ne "staging" -and $env:Build_Type -ne "production") {
+          Write-Output "Invalid build type: $env:Build_Type"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0
 
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # Install ntools
-    - name: Install ntools
+    - name: Install ntools and MongoDB
       run: |
         cd ./DevSetup
-        ./install-ntools.ps1 -devDrive "${{ env.DevDrive }}" -mainDir "${{ env.MainDir }}"
+        ./install-ntools.ps1
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
-    # Set ProgramFilesPath
-    - name: Set ProgramFilesPath
+    - name: Set ProgramFiles Path
       run: |
         $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
         echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
       shell: pwsh
+      working-directory: ${{ github.workspace }}
    
-    # Configure Git
     - name: Configure Git
       run: |
-        git config --global user.name "gitHub-actions"
+        git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
-    # Build Staging using ntools
-    - name: Run nb.exe
+    - name: Run build using ntools
       run: |
-        & "$env:ProgramFilesPath/nbuild/nb.exe" staging
+        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.Build_Type }} -v ${{ env.Enable_Logging }}
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:
