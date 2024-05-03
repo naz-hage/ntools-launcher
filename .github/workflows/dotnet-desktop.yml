@@ -57,7 +57,7 @@ jobs:
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
-    - name: Set ProgramFiles Path
+    - name: Set ProgramFiles and Ntools Paths
       run: |
         $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
         echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
@@ -68,6 +68,7 @@ jobs:
     - name: Display GITHUB_PATH
       run: |
         Get-Content -Path $env:GITHUB_PATH
+        echo $env:PATH -split ';' | ForEach-Object { $_ }
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
