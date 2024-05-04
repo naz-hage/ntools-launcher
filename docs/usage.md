@@ -101,26 +101,3 @@ using Ntools;
 var isElevated = CurrentProcess.IsElevated();
 Console.WriteLine(isElevated);
 ```
-
-
-**Boost your productivity with `ntools-launcher`**, an efficient library for automating common development tasks.
-
-Streamline your development workflow with `ntools-launcher`. This versatile library simplifies a wide range of tasks, including:
-
-* Launching executables directly from your code.
-* Downloading files securily with ease.
-* Executing shell commands for automated scripting.
-* Checking process elevation for enhanced security awareness.
-
-**Key benefits:**
-
-* **Improved Efficiency:** Automate repetitive tasks and focus on core development activities.
-* **Simplified Workflow:** User-friendly API streamlines integration into your projects.
-* **Enhanced Control:** Manage processes and ensure proper elevation levels for secure development.
-
-Start saving time and effort today! Install `ntools-launcher` via NuGet.
-
-The library is used by the [ntools's](https://github.com/naz-hage/ntools) repo
-- **Nbackup** launches `robocopy` and wait for it to complete, ensuring that the backup process is fully completed before the program continues.
-- **Nbuild** launches `msbuild` to build and test .NET projects.  It also builds selected development tools for the project.  It utlilies the `NFile` class to download the tools from the web.
-- **Ngit** launches `git` to perform git operations.
