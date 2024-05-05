@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="naz-hage" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Usage - Ntools Launcher</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Usage";
+        var mkdocs_page_input_path = "usage.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> Ntools Launcher
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Usage</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#launcher-class">Launcher Class</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#nfile-class">NFile Class</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shellutility-class">ShellUtility Class</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#currentprocess-class">CurrentProcess Class</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development Guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../devguide/dependencies/">Project Dependencies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../devguide/setup/">Environment Setup</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../devguide/build-and-test/">Build and Test</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Revisions</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../revisions/changelog/">Changelog</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">Ntools Launcher</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Getting Started</li>
+      <li class="breadcrumb-item active">Usage</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/naz-hage/ntools-launcher/edit/main/docs/usage.md">Edit on ntools-launcher</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="usage">Usage</h2>
+<h3 id="launcher-class">Launcher Class</h3>
+<p>The <code>Launcher</code> class provides methods for launching a process. This includes methods for locking a file and verifying its digital signature before launching, and launching a process in a separate thread.</p>
+<p>Here's an example of how to use the <code>Launcher</code> class:</p>
+<pre><code class="language-csharp">using Ntools;
+
+var process = new Process
+{
+    StartInfo = new ProcessStartInfo
+    {
+        WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.System),
+        FileName = &quot;robocopy.exe&quot;,
+        Arguments = &quot;/?&quot;,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true,
+        WindowStyle = ProcessWindowStyle.Hidden,
+        CreateNoWindow = false,
+        UseShellExecute = false
+    }
+};
+
+var result = process.LockStart(true);
+if (result.IsSuccess())
+{
+    Console.WriteLine(&quot;Success&quot;);
+}
+else
+{
+    Console.WriteLine($&quot;Code: {result.Code}&quot;);
+    foreach (var line in result.Output)
+    {
+        Console.WriteLine(line);
+    }
+}
+</code></pre>
+<p>The Launcher class exposes <code>LockVerifyStart</code> method which is useful in scenarios where you need to start a process and verify that the file is digitally signed before launching. Here are some scenarios where you might use this method:</p>
+<ol>
+<li>
+<p><strong>Securely launching executables</strong>: If you need to start an executable and want to ensure that it is digitally signed before launching, you can use this function to verify the digital signature of the file before starting the process.</p>
+</li>
+<li>
+<p><strong>Preventing unauthorized executables</strong>: In scenarios where you want to prevent unauthorized executables from running on your system, you can use this function to verify the digital signature of the file before launching it.</p>
+</li>
+</ol>
+<h3 id="nfile-class">NFile Class</h3>
+<p>The <code>NFile</code> class provides a method for downloading files from the web. Here's an example of how to use the <code>NFile</code> class:</p>
+<pre><code class="language-csharp">using Ntools;
+
+ try
+ {
+    // It is assumed that the VirusTotal API key is stored in the environment variable
+    // VTAPIKEY. The key is used to check the downloaded file for virus.
+    var result = await NFile.DownloadAsync(&quot;https://example.com/file.zip&quot;, &quot;C:\\temp\\file.zip&quot;);
+    if (result.IsSuccess())
+    {
+        Console.WriteLine(&quot;Success&quot;);
+    }
+    else
+    {
+        Console.WriteLine($&quot;Code: {result.Code}&quot;);
+        Console.WriteLine($&quot;Message: {result.Message}&quot;);
+    }
+ }
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}
+</code></pre>
+<p>The <code>DownloadAsync</code> method is useful in scenarios where you need to download a file from the web. Here are some scenarios where you might use this method:</p>
+<ol>
+<li>
+<p><strong>Downloading files from the web</strong>: If you need to download a file from the web, you can use this function to do so.</p>
+</li>
+<li>
+<p><strong>Checking for virus</strong>: In scenarios where you want to check the downloaded file for viruses, you can use this function to download the file and then check it using a virus scanning service such as VirusTotal.</p>
+</li>
+<li>
+<p><strong>Verifying file signature</strong>: If you need to verify the digital signature of the downloaded file, you can use this function to do so.</p>
+</li>
+</ol>
+<h3 id="shellutility-class">ShellUtility Class</h3>
+<p>The <code>ShellUtility</code> class provides a method for retrieving the full path of a file from the Path environment variable. Here's an example of how to use the <code>ShellUtility</code> class:</p>
+<pre><code class="language-csharp">using Ntools;
+
+var fullPath = ShellUtility.GetFullPathOfFile(&quot;notepad.exe&quot;);
+Console.WriteLine(fullPath);
+</code></pre>
+<h3 id="currentprocess-class">CurrentProcess Class</h3>
+<p>The <code>CurrentProcess</code> class provides a method to determine if the current process is elevated. Here's an example of how to use the <code>CurrentProcess</code> class:</p>
+<pre><code class="language-csharp">using Ntools;
+
+var isElevated = CurrentProcess.IsElevated();
+Console.WriteLine(isElevated);
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../installation/" class="btn btn-neutral float-left" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../devguide/dependencies/" class="btn btn-neutral float-right" title="Project Dependencies">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/naz-hage/ntools-launcher" class="fa fa-code-fork" style="color: #fcfcfc"> ntools-launcher</a>
+        </span>
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../devguide/dependencies/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
