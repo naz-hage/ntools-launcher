@@ -39,7 +39,7 @@
     },
     {
       "Name": "Git for Windows",
-      "Version": "2.43.0",
+      "Version": "2.44.0",
       "AppFileName": "$(InstallPath)\\bin\\git.exe",
       "WebDownloadFile": "https://github.com/git-for-windows/git/releases/download/v$(Version).windows.1/Git-$(Version)-64-bit.exe",
       "DownloadedFile": "Git-$(Version)-64-bit.exe",
@@ -51,7 +51,7 @@
     },
     {
       "Name": "Powershell",
-      "Version": "7.4.1",
+      "Version": "7.4.2",
       "AppFileName": "$(InstallPath)\\pwsh.exe",
       "WebDownloadFile": "https://github.com/PowerShell/PowerShell/releases/download/v$(Version)/PowerShell-$(Version)-win-x64.msi",
       "DownloadedFile": "PowerShell-$(Version)-win-x64.msi",
@@ -63,7 +63,7 @@
     },
     {
       "Name": "Visual Studio Code",
-      "Version": "1.86.2.0",
+      "Version": "1.88.1.0",
       "AppFileName": "$(InstallPath)\\Code.exe",
       "WebDownloadFile": "https://aka.ms/win32-x64-system-stable",
       "DownloadedFile": "VSCodeSetup-x64-$(Version).exe",

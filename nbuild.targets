@@ -18,7 +18,7 @@
 	</PropertyGroup>
 	
 	<!-- Define current solution folder -->
-	<Target Name="CURRENT_DIRECTORY">
+	<Target Name="CURRENT_DIRECTORY" >
 
 		<PropertyGroup>
 			<CurrentDirectory>$(MSBuildProjectDirectory)</CurrentDirectory>
@@ -91,6 +91,14 @@
 		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
 		<Exec Command='"$(NugetExe)" push $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(NugetApiKey)'/>
 		<Message Text="==> DONE"/>	
+	</Target>
+
+	<!-- Build docs locally for testing -->
+	<Target Name="MKDOCS" >
+		<Exec Command='pip install mkdocs' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='mkdocs build -d %userprofile%\ntools' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='mkdocs serve' WorkingDirectory="$(SolutionDir)"/>
+	    <Message Text="==> DONE"/>
 	</Target>
 
 </Project>

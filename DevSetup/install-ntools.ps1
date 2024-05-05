@@ -1,38 +1,32 @@
-# .\InstallNtools.ps1
+# Get the common Install module and import it
+#########################
+$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/DevSetup/install.psm1"
+$output = "./install.psm1"
+Invoke-WebRequest -Uri $url -OutFile $output
+Import-Module ./install.psm1 -Force
 
-$nbExePath = "$env:ProgramFiles\Nbuild\nb.exe"
+$fileName = Split-Path -Leaf $PSCommandPath
 
-<#
-.SYNOPSIS: Main function to install NTools.
-.DESCRIPTION: This function is the entry point for the script. It installs NTools using the nb.exe tool.
-.PARAMETER devDrive The drive letter where the development tools are installed.
-.PARAMETER mainDir The directory where the main development tools are installed.
-.RETURN This function does not return any value.
-.EXAMPLE Main -devDrive "C:" -mainDir "C:\Nbuild"
-#>
-function Main {
-    param (
-        [Parameter(Mandatory=$true)]
-        [string]$devDrive,
-        [Parameter(Mandatory=$true)]
-        [string]$mainDir)
+Write-OutputMessage $fileName "Started installation script."
 
-    # set DevDrive and MainDir environment variables
-    if (-not (Test-Path Env:\DevDrive)) {
-        Set-Item -Path Env:\DevDrive -Value $devDrive
-    }
-
-    if (-not (Test-Path Env:\MainDir)) {
-        Set-Item -Path Env:\MainDir -Value $mainDir
-    }
-
-    Write-Host "devDrive: $devDrive"
-    Write-Host "mainDir: $mainDir"
-    
-    
-    & $nbExePath -c install -json ntools.json
-    & $nbExePath -c list -json ntools.json
+# Check if admin
+#########################
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-OutputMessage $fileName "Error: Please run this script as an administrator."
+    exit 1
+} else {
+    Write-OutputMessage $fileName "Admin rights detected"
 }
 
-# Call the Main function with the provided or default values
-Main -devDrive $args[0] -mainDir $args[1]
+# install Ntools
+#########################
+MainInstallApp -command install -json .\app-Ntools.json
+if ($LASTEXITCODE -ne 0) {
+    Write-OutputMessage $fileName "Error: Installation of app-Ntools.json failed. Exiting script."
+    exit 1
+
+}
+
+
+Write-OutputMessage $fileName "Completed installation script."
+Write-OutputMessage $fileName "EmtpyLine"

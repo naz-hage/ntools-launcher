@@ -5,51 +5,104 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "*" ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build Type (staging or production)'
+        required: false
+        default: 'staging'
+  workflow_call:
+
+env:
+  Ntools: Nbuild
+  Build_Type: ${{ github.event.inputs.build_type || 'staging' }}
+  Enable_Logging: true # Enable additional logging
 
 jobs:
 
   build:
-
+    name: Build and Test
     strategy:
       matrix:
-        configuration: [Release]
-
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-
-    env:
-      Solution_Name: ntools-launcher.sln
-      Test_Project_Path: LauncherTests\LauncherTests.csproj
+        #configuration: [Debug, Release]
+        configuration: [Debug]
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout
+    - name: Check Build Type | must be staging or production
+      run: |
+        if ($env:Build_Type -ne "staging" -and $env:Build_Type -ne "production") {
+          Write-Output "Invalid build type: $env:Build_Type"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Checkout Repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    # Install the .NET Core workload
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0
 
-    # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
-    - name: Setup MSBuild.exe
+    - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Install dependencies
-      run: dotnet restore
+    - name: Install ntools
+      run: |
+        cd ./DevSetup
+        ./install-ntools.ps1
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
 
-    # Execute all unit tests in the solution
-    - name: Build the solution
-      run: dotnet build --no-restore --verbosity normal
+    - name: Set ProgramFiles and Ntools Paths
+      run: |
+        Get-Content -Path $env:GITHUB_PATH
+        $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
+        echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+        echo "$programFilesPath\${{ env.Ntools }}" | Out-File -FilePath $env:GITHUB_PATH -Append
+        Get-Content -Path $env:GITHUB_PATH
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
 
-    - name: Execute unit tests
-      #run: dotnet test --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+    - name: Display PATH environment variable
+      run: |
+        Get-Content -Path $env:GITHUB_PATH
+        $env:PATH -split ';' | ForEach-Object { "PATH: $_" }
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "actions@github.com"
+
+    - name: Run build using ntools
+      run: |
+        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.Build_Type }} -v ${{ env.Enable_Logging }}
+      shell: pwsh
+      working-directory: ${{ github.workspace }}
       env:
         VTAPIKEY: ${{ secrets.VTAPIKEY }}
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
-      run: dotnet test --no-build --verbosity normal
 
-        
-
+  docs:
+    name: Publish docs  # More descriptive name for the docs job
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies	
+        run: |	
+          python -m pip install --upgrade pip	
+          pip install mkdocs	
+      - name: Update docs	
+        run: |	
+          mkdocs build	
+          mkdocs gh-deploy --force
