@@ -3,7 +3,7 @@
   "NbuildAppList": [
     {
       "Name": "Ntools",
-      "Version": "1.4.7",
+      "Version": "1.5.0",
       "AppFileName": "$(InstallPath)\\nb.exe",
       "WebDownloadFile": "https://github.com/naz-hage/ntools/releases/download/$(Version)/$(Version).zip",
       "DownloadedFile": "$(Version).zip",
