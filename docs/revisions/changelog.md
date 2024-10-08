@@ -1,5 +1,5 @@
 ### Version 1.6.0 - 07-may-24
-- [issue #14](https://github.com/naz-hage/home/issues/14) - Feature: Publish documentation using mkdocs
+- [issue #14](https://github.com/naz-hage/ntools-launcher/issues/14) - Feature: Publish documentation using mkdocs
 
 
 ### Version 1.5.0 - 29-feb-24
