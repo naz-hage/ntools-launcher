@@ -101,4 +101,19 @@
 	    <Message Text="==> DONE"/>
 	</Target>
 
+  <!-- Create a production Nuget package and release - override -->
+  <Target Name="PRODUCTION" DependsOnTargets="
+                CLEAN;
+                GIT_PULL;
+                TAG;
+                AUTOTAG_PRODUCTION;
+                SOLUTION;
+				TEST;
+                COPY_ARTIFACTS;
+                PACKAGE">
+
+		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
+		<Exec Command='"$(NugetExe)" push $(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg -Source https://api.nuget.org/v3/index.json -ApiKey $(NugetApiKey)'/>
+  </Target>
+
 </Project>
