@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="naz-hage" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>Overview - Ntools Launcher</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Overview";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> Ntools Launcher
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Overview</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#ntools-launcher">ntools-launcher</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#key-benefits">Key benefits</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#features">Features</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="usage/">Usage</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development Guide</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="devguide/dependencies/">Project Dependencies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="devguide/setup/">Environment Setup</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="devguide/build-and-test/">Build and Test</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Revisions</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="revisions/changelog/">Changelog</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">Ntools Launcher</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Getting Started</li>
+      <li class="breadcrumb-item active">Overview</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/naz-hage/ntools-launcher/edit/main/docs/index.md">Edit on ntools-launcher</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="_1"></h2>
+<h3 id="ntools-launcher">ntools-launcher</h3>
+<p>The <code>ntools-launcher</code> is a NuGet package library that simplifies common tasks related to launching executables, downloading files, executing shell commands, and checking process elevation. This library is designed to be easy to use, while providing robust functionality for a variety of tasks.</p>
+<p><strong>Boost your productivity with <code>ntools-launcher</code></strong>, automating common development tasks, including:</p>
+<ul>
+<li>Launching executables directly from your code.</li>
+<li>Downloading files securely with ease.</li>
+<li>Executing shell commands for automated scripting.</li>
+<li>Checking process elevation for enhanced security awareness.</li>
+</ul>
+<h3 id="key-benefits">Key benefits</h3>
+<ul>
+<li><strong>Improved Efficiency:</strong> Automate repetitive tasks and focus on core development activities.</li>
+<li><strong>Simplified Workflow:</strong> User-friendly API streamlines integration into your projects.</li>
+<li><strong>Enhanced Control:</strong> Manage processes and ensure proper elevation levels for secure development.</li>
+</ul>
+<p>This library is used by the <a href="https://github.com/naz-hage/ntools">ntools's</a> repo</p>
+<ul>
+<li><strong>Nbackup</strong> launches <code>robocopy</code> and wait for it to complete, ensuring that the backup process is fully completed before the program continues.</li>
+<li><strong>Nbuild</strong> launches <code>msbuild</code> to build and test .NET projects.  It also builds selected development tools for the project.  It utilizes the <code>NFile</code> class to download the tools from the web.</li>
+<li><strong>Ngit</strong> launches <code>git</code> to perform git operations.</li>
+</ul>
+<h3 id="features">Features</h3>
+<ul>
+<li><strong>Launcher:</strong> A class with methods to launch a process and wait for it to complete. This includes methods for locking a file and verifying its digital signature before launching, and launching a process in a separate thread.</li>
+<li><strong>ResultHelper:</strong> A helper class for retrieving the result <code>Code</code> and <code>Output</code> of the launched executable.</li>
+<li><strong>NFile:</strong> A class with a method for downloading files from the web. This method for checks Web download Url integrity, the downloaded file signature, file size, and VirusTotal check.</li>
+<li><strong>ResultDownload:</strong> A helper class for retrieving the result of a downloaded file.</li>
+<li><strong>CurrentProcess:</strong> A class that provides a method to determine if the current process is elevated.</li>
+<li><strong>ShellUtility:</strong> A helper class for executing shell commands and retrieving the full path of a file from the Path environment variable.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="installation/" class="btn btn-neutral float-right" title="Installation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/naz-hage/ntools-launcher" class="fa fa-code-fork" style="color: #fcfcfc"> ntools-launcher</a>
+        </span>
+    
+    
+    
+      <span><a href="installation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = ".";</script>
+    <script src="js/theme_extra.js"></script>
+    <script src="js/theme.js"></script>
+      <script src="search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
