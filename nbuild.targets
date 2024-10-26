@@ -75,7 +75,7 @@
 	</Target>
 
 	<!-- Create and Publish a Nuget package to the local Package feed -->
-	<Target Name="NUGET_PACK" DependsOnTargets="STAGING;NUGET_DEP">
+	<Target Name="NUGET_PACK" DependsOnTargets="STAGE;NUGET_DEP">
 
 		<Exec Command='"$(NugetExe)" pack $(SolutionDir)\launcher\ntools-launcher.nuspec -Version $(ProductVersion) -OutputDirectory $(NugetPackagePath)'/>
 		<Exec Command='rd $(LocalNugetFeed)\ntools-launcher\$(ProductVersion) /s /q'/>
@@ -84,7 +84,7 @@
 		</Target>
 	
 	<!-- Create and Publish a Nuget package to the public feed -->
-	<Target Name="NUGET_PUBLISH" DependsOnTargets="PRODUCTION;NUGET_DEP">
+	<Target Name="NUGET_PUBLISH" DependsOnTargets="PROD;NUGET_DEP">
 		<ReadLinesFromFile File="$(NugetApiKeyFile)">
 		<Output TaskParameter="Lines" PropertyName="NugetApiKey" />
 		</ReadLinesFromFile>
@@ -102,11 +102,11 @@
 	</Target>
 
   <!-- Create a production Nuget package and release - override -->
-  <Target Name="PRODUCTION" DependsOnTargets="
+  <Target Name="PROD" DependsOnTargets="
                 CLEAN;
                 GIT_PULL;
                 TAG;
-                AUTOTAG_PRODUCTION;
+                AUTOTAG_PROD;
                 SOLUTION;
 				TEST;
                 COPY_ARTIFACTS;
