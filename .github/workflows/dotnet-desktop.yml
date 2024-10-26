@@ -8,14 +8,14 @@ on:
   workflow_dispatch:
     inputs:
       build_type:
-        description: 'Build Type (staging or production)'
+        description: 'Build Type (stage or prod)'
         required: false
-        default: 'staging'
+        default: 'stage'
   workflow_call:
 
 env:
   Ntools: Nbuild
-  Build_Type: ${{ github.event.inputs.build_type || 'staging' }}
+  Build_Type: ${{ github.event.inputs.build_type || 'stage' }}
   Enable_Logging: true # Enable additional logging
 
 jobs:
@@ -29,9 +29,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Check Build Type | must be staging or production
+    - name: Check Build Type | must be stage or prod
       run: |
-        if ($env:Build_Type -ne "staging" -and $env:Build_Type -ne "production") {
+        if ($env:Build_Type -ne "stage" -and $env:Build_Type -ne "prod") {
           Write-Output "Invalid build type: $env:Build_Type"
           exit 1
         }

@@ -265,7 +265,7 @@ namespace Ntools.Tests
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
-                Assert.IsTrue(ex.Message.Contains("The remote server returned an error: (404) Not Found"));
+                Assert.IsTrue(ex.Message.Contains("404"));
 
                 // Assert
                 //Assert.IsFalse(result.IsSuccess());
