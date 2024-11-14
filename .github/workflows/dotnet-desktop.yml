@@ -50,11 +50,6 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Install Visual Studio
-      uses: microsoft/setup-msbuild@v2
-      with:
-        vs-version: 17.12
-
     - name: Install ntools
       run: |
         cd ./DevSetup
