@@ -12,13 +12,13 @@
     <copyright>2020-2024</copyright>
     <readme>README.md</readme>
     <tags></tags>
-    <dependencies>
-      <group targetFramework=".NETStandard2.0">
-        <dependency id="System.Security.Principal.Windows" version="5.0.0" />
-		<dependency id="System.Security.Cryptography.Pkcs" version="8.0.0" />
-		<dependency id="System.Security.Cryptography.X509Certificates" version="4.3.2" />
-      </group>
-    </dependencies>
+	  <dependencies>
+		  <group targetFramework=".NETStandard2.0">
+			  <dependency id="System.Security.Principal.Windows" version="5.0.0" />
+			  <dependency id="System.Security.Cryptography.Pkcs" version="9.0.0" />
+			  <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.2" />
+		  </group>
+	  </dependencies>
   </metadata>
   <files>
     <file src="..\Release\launcher.dll" target="lib\netstandard2.0" />

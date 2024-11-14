@@ -1,5 +1,7 @@
-### Version 1.6.0 - 07-may-24
+### Version 1.6.0 - 14-nov-24
 - [issue #14](https://github.com/naz-hage/ntools-launcher/issues/14) - Feature: Publish documentation using mkdocs
+- [issue #17](https://github.com/naz-hage/ntools-launcher/issues/14) - Bug:Microsoft Security Advisory CVE-2024-43485 | .NET Denial of Service Vulnerability
+- [issue #21](https://github.com/naz-hage/ntools-launcher/issues/21) - Feature: Update Target Frameworks to 9.0 and Package References
 
 
 ### Version 1.5.0 - 29-feb-24
