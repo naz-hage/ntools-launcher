@@ -53,7 +53,7 @@ jobs:
     - name: Install Visual Studio
       uses: microsoft/setup-msbuild@v2
       with:
-        vs-version: 17.6
+        vs-version: 17.12
 
     - name: Install ntools
       run: |
