@@ -14,9 +14,9 @@
     <tags></tags>
 	  <dependencies>
 		  <group targetFramework=".NETStandard2.0">
-			  <dependency id="System.Security.Principal.Windows" version="7.0.0" />
+			  <dependency id="System.Security.Principal.Windows" version="5.0.0" />
 			  <dependency id="System.Security.Cryptography.Pkcs" version="9.0.0" />
-			  <dependency id="System.Security.Cryptography.X509Certificates" version="7.0.0" />
+			  <dependency id="System.Security.Cryptography.X509Certificates" version="4.3.2" />
 		  </group>
 	  </dependencies>
   </metadata>
