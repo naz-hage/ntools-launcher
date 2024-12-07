@@ -40,7 +40,10 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
       with:
+        token: ${{ secrets.API_GITHUB_KEY }}
         fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
@@ -85,6 +88,8 @@ jobs:
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:
+        OWNER: ${{ github.repository_owner }}
+        API_GITHUB_KEY: ${{ secrets.API_GITHUB_KEY }}
         NugetApiKey: ${{ secrets.NUGETAPIKEY }}
         VTAPIKEY: ${{ secrets.VTAPIKEY }}
         DOTNET_CLI_TELEMETRY_OPTOUT: 1
