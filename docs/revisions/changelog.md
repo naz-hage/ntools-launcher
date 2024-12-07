@@ -1,3 +1,5 @@
+## [Latest Release](https://github.com/naz-hage/ntools-launcher/releases)
+
 ### Version 1.6.0 - 14-nov-24
 - [issue #14](https://github.com/naz-hage/ntools-launcher/issues/14) - Feature: Publish documentation using mkdocs
 - [issue #17](https://github.com/naz-hage/ntools-launcher/issues/14) - Bug:Microsoft Security Advisory CVE-2024-43485 | .NET Denial of Service Vulnerability

@@ -28,7 +28,7 @@ if (MainInstallApp -command install -json .\app-Ntools.json) {
 }
 #install Development tools for the home project
 #########################
-& $global:NbExePath -c install -json .\ntools.json
+& $global:NbExePath -c install -json .\apps.json
 if ($LASTEXITCODE -ne 0) {
     Write-OutputMessage $fileName "Error: Installation of Development Tools failed. Exiting script."
     exit 1

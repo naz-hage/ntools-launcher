@@ -52,10 +52,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevSetup", "DevSetup", "{B5
 	ProjectSection(SolutionItems) = preProject
 		DevSetup\app-Dotnet_Runtime.json = DevSetup\app-Dotnet_Runtime.json
 		DevSetup\app-Ntools.json = DevSetup\app-Ntools.json
+		DevSetup\app-nuget.json = DevSetup\app-nuget.json
 		DevSetup\DevSetup.ps1 = DevSetup\DevSetup.ps1
-		DevSetup\install-ntools.ps1 = DevSetup\install-ntools.ps1
+		DevSetup\apps.json = DevSetup\apps.json
 		DevSetup\install.log = DevSetup\install.log
-		DevSetup\ntools.json = DevSetup\ntools.json
+		DevSetup\install-dependencies.ps1 = DevSetup\install-dependencies.ps1
 	EndProjectSection
 EndProject
 Global
