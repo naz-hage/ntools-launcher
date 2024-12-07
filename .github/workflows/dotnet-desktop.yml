@@ -53,10 +53,10 @@ jobs:
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Install ntools
+    - name: Install Development Tools
       run: |
         cd ./DevSetup
-        ./install-ntools.ps1
+        ./DevSetup.ps1
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
