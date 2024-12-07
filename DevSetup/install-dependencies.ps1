@@ -27,6 +27,15 @@ if ($LASTEXITCODE -ne 0) {
 
 }
 
+# install Nuget
+#########################
+MainInstallApp -command install -json .\app-nuget.json
+if ($LASTEXITCODE -ne 0) {
+    Write-OutputMessage $fileName "Error: Installation of app-nuget.json failed. Exiting script."
+    exit 1
+
+}
+
 
 Write-OutputMessage $fileName "Completed installation script."
 Write-OutputMessage $fileName "EmtpyLine"
