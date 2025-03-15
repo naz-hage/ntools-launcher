@@ -1,6 +1,6 @@
 # Get the common Install module and import it
 #########################
-$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/DevSetup/install.psm1"
+$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/dev-setup/install.psm1"
 $output = "./install.psm1"
 Invoke-WebRequest -Uri $url -OutFile $output
 Import-Module ./install.psm1 -Force
