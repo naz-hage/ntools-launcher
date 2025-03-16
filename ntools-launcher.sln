@@ -50,13 +50,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "revisions", "revisions", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev-setup", "dev-setup", "{B5C56239-4280-4292-8454-484FC1716924}"
 	ProjectSection(SolutionItems) = preProject
-		dev-setup\app-Dotnet_Runtime.json = dev-setup\app-Dotnet_Runtime.json
-		dev-setup\app-Ntools.json = dev-setup\app-Ntools.json
-		dev-setup\app-nuget.json = dev-setup\app-nuget.json
+		dev-setup\ntools.json = dev-setup\ntools.json
 		dev-setup\dev-setup.ps1 = dev-setup\dev-setup.ps1
-		dev-setup\apps.json = dev-setup\apps.json
-		dev-setup\install.log = dev-setup\install.log
 		dev-setup\install-dependencies.ps1 = dev-setup\install-dependencies.ps1
+		dev-setup\install.log = dev-setup\install.log
+		dev-setup\nuget.json = dev-setup\nuget.json
 	EndProjectSection
 EndProject
 Global

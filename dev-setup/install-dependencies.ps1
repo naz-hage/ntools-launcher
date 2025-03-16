@@ -20,18 +20,18 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # install Ntools
 #########################
-MainInstallApp -command install -json .\app-Ntools.json
+MainInstallApp -command install -json .\ntools.json
 if ($LASTEXITCODE -ne 0) {
-    Write-OutputMessage $fileName "Error: Installation of app-Ntools.json failed. Exiting script."
+    Write-OutputMessage $fileName "Error: Installation of ntools.json failed. Exiting script."
     exit 1
 
 }
 
 # install Nuget
 #########################
-MainInstallApp -command install -json .\app-nuget.json
+MainInstallApp -command install -json .\nuget.json
 if ($LASTEXITCODE -ne 0) {
-    Write-OutputMessage $fileName "Error: Installation of app-nuget.json failed. Exiting script."
+    Write-OutputMessage $fileName "Error: Installation of nuget.json failed. Exiting script."
     exit 1
 
 }

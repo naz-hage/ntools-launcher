@@ -19,10 +19,10 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # install Ntools
 #########################
-if (MainInstallApp -command install -json .\app-Ntools.json) {
-    Write-OutputMessage $fileName "Installation of app-Ntools succeeded."
+if (MainInstallApp -command install -json .\ntools.json) {
+    Write-OutputMessage $fileName "Installation of ntools succeeded."
 } else {
-    Write-OutputMessage $fileName "Error: Installation of app-Ntools.json failed. Exiting script."
+    Write-OutputMessage $fileName "Error: Installation of ntools.json failed. Exiting script."
     exit 1
 
 }
