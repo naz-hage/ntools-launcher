@@ -1,6 +1,6 @@
 # Get the common Install module and import it
 #########################
-$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/DevSetup/install.psm1"
+$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/dev-setup/install.psm1"
 $output = "./install.psm1"
 Invoke-WebRequest -Uri $url -OutFile $output
 Import-Module ./install.psm1 -Force
@@ -19,10 +19,10 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # install Ntools
 #########################
-if (MainInstallApp -command install -json .\app-Ntools.json) {
-    Write-OutputMessage $fileName "Installation of app-Ntools succeeded."
+if (MainInstallApp -command install -json .\ntools.json) {
+    Write-OutputMessage $fileName "Installation of ntools succeeded."
 } else {
-    Write-OutputMessage $fileName "Error: Installation of app-Ntools.json failed. Exiting script."
+    Write-OutputMessage $fileName "Error: Installation of ntools.json failed. Exiting script."
     exit 1
 
 }

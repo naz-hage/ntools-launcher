@@ -8,7 +8,7 @@
     <Company>naz-hage</Company>
     <Product>Ntools</Product>
     <Description>A wrapper for Process .NET class</Description>
-    <Copyright>2020-2024</Copyright>
+    <Copyright>2020-2025</Copyright>
   </PropertyGroup>
 
 
@@ -39,10 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.0" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.3" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>

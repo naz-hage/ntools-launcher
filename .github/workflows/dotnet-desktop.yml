@@ -55,7 +55,7 @@ jobs:
 
     - name: Install ntools
       run: |
-        cd ./DevSetup
+        cd ./dev-setup
         ./install-dependencies.ps1
       shell: pwsh
       working-directory: ${{ github.workspace }}

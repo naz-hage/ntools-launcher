@@ -48,15 +48,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "revisions", "revisions", "{
 		docs\revisions\changelog.md = docs\revisions\changelog.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevSetup", "DevSetup", "{B5C56239-4280-4292-8454-484FC1716924}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev-setup", "dev-setup", "{B5C56239-4280-4292-8454-484FC1716924}"
 	ProjectSection(SolutionItems) = preProject
-		DevSetup\app-Dotnet_Runtime.json = DevSetup\app-Dotnet_Runtime.json
-		DevSetup\app-Ntools.json = DevSetup\app-Ntools.json
-		DevSetup\app-nuget.json = DevSetup\app-nuget.json
-		DevSetup\DevSetup.ps1 = DevSetup\DevSetup.ps1
-		DevSetup\apps.json = DevSetup\apps.json
-		DevSetup\install.log = DevSetup\install.log
-		DevSetup\install-dependencies.ps1 = DevSetup\install-dependencies.ps1
+		dev-setup\ntools.json = dev-setup\ntools.json
+		dev-setup\dev-setup.ps1 = dev-setup\dev-setup.ps1
+		dev-setup\install-dependencies.ps1 = dev-setup\install-dependencies.ps1
+		dev-setup\install.log = dev-setup\install.log
+		dev-setup\nuget.json = dev-setup\nuget.json
 	EndProjectSection
 EndProject
 Global
