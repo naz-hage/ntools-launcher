@@ -19,12 +19,10 @@ env:
   Enable_Logging: true # Enable additional logging
 
 jobs:
-
   build:
     name: Build and Test
     strategy:
       matrix:
-        #configuration: [Debug, Release]
         configuration: [Debug]
     runs-on: windows-latest
 
@@ -52,6 +50,12 @@ jobs:
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
+
+    - name: Set DOTNET_ROOT
+      run: echo "DOTNET_ROOT=$(dirname $(which dotnet))" >> $GITHUB_ENV
+
+    - name: Add .NET SDK to PATH
+      run: echo "$(dirname $(which dotnet))" >> $GITHUB_PATH
 
     - name: Install ntools
       run: |
@@ -104,11 +108,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install dependencies	
-        run: |	
-          python -m pip install --upgrade pip	
-          pip install mkdocs	
-      - name: Update docs	
-        run: |	
-          mkdocs build	
+      - name: Install dependencies  
+        run: |  
+          python -m pip install --upgrade pip  
+          pip install mkdocs  
+      - name: Update docs  
+        run: |  
+          mkdocs build  
           mkdocs gh-deploy --force
