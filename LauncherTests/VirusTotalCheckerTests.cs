@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 namespace Ntools.Tests
 {
     [TestClass()]
+    [DoNotParallelize]
     public class VirusTotalCheckerTests
     {
         private const string ApiKey = "VTAPIKEY";

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace Ntools.Tests
 {
     [TestClass()]
+    [DoNotParallelize]
     public class ResultDownloadTests
     {
         [TestMethod()]
@@ -28,7 +29,7 @@ namespace Ntools.Tests
             Assert.AreEqual(0, resultDownload.FileSize);
             Assert.IsNull(resultDownload.X509Certificate2);
             Assert.AreEqual(int.MaxValue, resultDownload.Code);
-            Assert.AreEqual(0, resultDownload.Output.Count);
+            Assert.IsEmpty(resultDownload.Output);
         }
     }
 }

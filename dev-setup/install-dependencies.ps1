@@ -18,13 +18,11 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Write-OutputMessage $fileName "Admin rights detected"
 }
 
-# install Ntools
-#########################
-MainInstallApp -command install -json .\ntools.json
-if ($LASTEXITCODE -ne 0) {
-    Write-OutputMessage $fileName "Error: Installation of ntools.json failed. Exiting script."
+# Call the InstallNtools function from the install module
+$result = InstallNtools
+if (-not $result) {
+    Write-Host "Failed to install NTools. Please check the logs for more details." -ForegroundColor Red
     exit 1
-
 }
 
 # install Nuget

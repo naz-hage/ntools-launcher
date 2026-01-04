@@ -406,3 +406,4 @@ FodyWeavers.xsd
 /dev-setup/install-app.ps1
 /dev-setup/install.psm1
 /targets.md
+/.temp
