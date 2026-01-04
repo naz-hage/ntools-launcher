@@ -15,7 +15,7 @@ on:
 
 env:
   Ntools: Nbuild
-  Build_Type: ${{ github.event.inputs.build_type || 'stage' }}
+  build_type: ${{ github.ref == 'refs/heads/main' && 'prod' || github.event.inputs.build_type || 'stage' }}
   Enable_Logging: true # Enable additional logging
 
 jobs:
@@ -29,8 +29,8 @@ jobs:
     steps:
     - name: Check Build Type | must be stage or prod
       run: |
-        if ($env:Build_Type -ne "stage" -and $env:Build_Type -ne "prod") {
-          Write-Output "Invalid build type: $env:Build_Type"
+        if ($env:build_type -ne "stage" -and $env:build_type -ne "prod") {
+          Write-Output "Invalid build type: $env:build_type"
           exit 1
         }
       shell: pwsh
