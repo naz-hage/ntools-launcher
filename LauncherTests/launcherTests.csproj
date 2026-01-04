@@ -8,7 +8,7 @@
     <Authors>naz-hage</Authors>
     <Company>naz-hage</Company>
     <Product>launcher</Product>
-    <Copyright>2020-2025</Copyright>
+    <Copyright>2020-2026</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
