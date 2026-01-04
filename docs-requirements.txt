@@ -1,0 +1,5 @@
+# MkDocs requirements for documentation with Material theme and Mermaid support
+mkdocs==1.6.1
+mkdocs-material==9.5.31
+pymdown-extensions==10.11.2
+mkdocs-material-extensions==1.3.1

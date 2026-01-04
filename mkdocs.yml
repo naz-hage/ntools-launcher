@@ -1,22 +1,53 @@
-site_name: Ntools Launcher
-site_description: Ntools Launcher
+site_name: NTools Launcher
+site_description: .NET library for secure process launching, file downloading, and shell operations
 site_author: naz-hage
 repo_name: ntools-launcher
 repo_url: https://github.com/naz-hage/ntools-launcher
 edit_uri: edit/main/docs/
 
 theme:
-  name: readthedocs
+  name: material
   language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed
+  - pymdownx.details
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section for reference
 
 nav:
-  - Getting Started: 
+  - Getting Started:
     - Overview: index.md
     - Installation: installation.md
     - Usage: usage.md
+  - Architecture:
+    - System Architecture: architecture.md
   - Development Guide:
     - Project Dependencies: devguide/dependencies.md
     - Environment Setup: devguide/setup.md
     - Build and Test: devguide/build-and-test.md
-  - Revisions: 
-    - revisions/changelog.md
+    - Build Targets: devguide/targets.md
+  - Revisions:
+    - Changelog: revisions/changelog.md

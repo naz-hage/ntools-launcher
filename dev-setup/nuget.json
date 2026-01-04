@@ -8,10 +8,11 @@
       "WebDownloadFile": "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe",
       "DownloadedFile": "nuget.exe",
       "InstallCommand": "xcopy.exe",
-      "InstallArgs": "$(DownloadedFile) \"$(InstallPath)\\\" /d /y",
+      "InstallArgs": "$(DownloadedFile) \u0022$(InstallPath)\\\u0022 /d /y",
       "InstallPath": "$(ProgramFiles)\\NBuild",
       "UninstallCommand": "powershell.exe",
-      "UninstallArgs": "-Command Remove-Item -Path '$(AppFileName)' -Force"
+      "UninstallArgs": "-Command Remove-Item -Path \u0027$(AppFileName)\u0027 -Force",
+      "StoredHash": null
     }
   ]
 }
