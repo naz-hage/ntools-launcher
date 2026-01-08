@@ -4,6 +4,7 @@ using System;
 namespace Ntools.Tests
 {
     [TestClass()]
+    [DoNotParallelize]
     public class SignatureVerifierTests
     {
         private const string MsbuildPath = "MSBuild.exe";

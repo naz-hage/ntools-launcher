@@ -15,7 +15,7 @@ on:
 
 env:
   Ntools: Nbuild
-  Build_Type: ${{ github.event.inputs.build_type || 'stage' }}
+  build_type: ${{ github.ref == 'refs/heads/main' && 'prod' || github.event.inputs.build_type || 'stage' }}
   Enable_Logging: true # Enable additional logging
 
 jobs:
@@ -29,8 +29,8 @@ jobs:
     steps:
     - name: Check Build Type | must be stage or prod
       run: |
-        if ($env:Build_Type -ne "stage" -and $env:Build_Type -ne "prod") {
-          Write-Output "Invalid build type: $env:Build_Type"
+        if ($env:build_type -ne "stage" -and $env:build_type -ne "prod") {
+          Write-Output "Invalid build type: $env:build_type"
           exit 1
         }
       shell: pwsh
@@ -44,9 +44,12 @@ jobs:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 9.0
+      run: |
+        # Install .NET 10 using the official install script
+        Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile 'dotnet-install.ps1'
+        .\dotnet-install.ps1 -Version 10.0.100 -InstallDir 'C:\Program Files\dotnet'
+        echo 'C:\Program Files\dotnet' | Out-File -FilePath $env:GITHUB_PATH -Append
+      shell: pwsh
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -88,7 +91,7 @@ jobs:
 
     - name: Run build using ntools
       run: |
-        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.Build_Type }} -v ${{ env.Enable_Logging }}
+        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.Build_Type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:
@@ -111,8 +114,10 @@ jobs:
       - name: Install dependencies  
         run: |  
           python -m pip install --upgrade pip  
-          pip install mkdocs  
+          pip install -r docs-requirements.txt  
       - name: Update docs  
         run: |  
           mkdocs build  
           mkdocs gh-deploy --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

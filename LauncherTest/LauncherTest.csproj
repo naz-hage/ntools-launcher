@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Version></Version>
     <AssemblyVersion></AssemblyVersion>
     <Authors>naz-hage</Authors>
     <Company>naz-hage</Company>
     <Product>Wrapper for git</Product>
 	<Description>Wrapper for git</Description>
-    <Copyright>2020-2025</Copyright>
+    <Copyright>2020-2026</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

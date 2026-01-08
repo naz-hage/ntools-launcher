@@ -103,8 +103,8 @@
 	<!-- Build docs locally for testing -->
 	<Target Name="MKDOCS" >
 		<Exec Command='pip install mkdocs' WorkingDirectory="$(SolutionDir)"/>
-		<Exec Command='mkdocs build -d %userprofile%\ntools' WorkingDirectory="$(SolutionDir)"/>
-		<Exec Command='mkdocs serve' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='python -m mkdocs build -d %userprofile%\ntools' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='python -m mkdocs serve' WorkingDirectory="$(SolutionDir)"/>
      <Message Text="==> DONE"/>
 	</Target>
 

@@ -6,6 +6,7 @@ using System.IO;
 namespace Ntools.Tests
 {
     [TestClass]
+    [DoNotParallelize]
     public class LauncherTests
     {
         private const string ExcecutableToLaunch = "LauncherTest.exe";
@@ -34,7 +35,7 @@ namespace Ntools.Tests
 
             // Assert
             Assert.AreEqual(16, result.Code);
-            Assert.IsTrue(result.Output.Count > 100);
+            Assert.IsGreaterThan(100, result.Output.Count);
         }
 
         [TestMethod]
@@ -54,7 +55,7 @@ namespace Ntools.Tests
                arguments: "fail"
                );
             Assert.AreEqual(int.MinValue, result.Code);
-            Assert.IsTrue(result.Output[0].Contains("not found"));
+            Assert.Contains("not found", result.Output[0]);
         }
 
         [TestMethod]
@@ -80,8 +81,8 @@ namespace Ntools.Tests
 
             // Assert
             Assert.AreEqual(0, result.Code);
-            Assert.AreEqual(2, result.Output.Count);
-            Assert.IsTrue(result.GetFirstOutput().Contains("pass"));
+            Assert.HasCount(2, result.Output);
+            Assert.Contains("pass", result.GetFirstOutput());
         }
 
         [TestMethod]
@@ -107,10 +108,10 @@ namespace Ntools.Tests
 
             // Assert
             Assert.AreEqual(-100, result.Code);
-            Assert.AreEqual(5, result.Output.Count);
-            Assert.IsTrue(result.Output.Contains("fail"));
-            Assert.IsTrue(result.Output.Contains("error"));
-            Assert.IsTrue(result.Output.Contains("rejected"));
+            Assert.HasCount(5, result.Output);
+            Assert.Contains("fail", result.Output);
+            Assert.Contains("error", result.Output);
+            Assert.Contains("rejected", result.Output);
         }
 
         [TestMethod()]
@@ -135,7 +136,7 @@ namespace Ntools.Tests
             Console.WriteLine($"Output: {result.GetFirstOutput()}");
             // Assert
             Assert.AreEqual(-1, result.Code);
-            Assert.IsTrue(result.GetFirstOutput().Contains("is not digitally signed"));
+            Assert.Contains("is not digitally signed", result.GetFirstOutput());
         }
 
         [TestMethod]

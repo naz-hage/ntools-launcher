@@ -3,6 +3,7 @@
 namespace Ntools.Tests
 {
     [TestClass()]
+    [DoNotParallelize]
     public class ResultHelperTests
     {
         [TestMethod()]
@@ -40,7 +41,7 @@ namespace Ntools.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(0, result.Code);
             Assert.AreEqual(success, result.GetFirstOutput());
-            Assert.AreEqual(1, result.Output.Count);
+            Assert.HasCount(1, result.Output);
         }
 
         [TestMethod()]
@@ -50,7 +51,7 @@ namespace Ntools.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(int.MinValue, result.Code);
             Assert.AreEqual("Fail", result.GetFirstOutput());
-            Assert.AreEqual(1, result.Output.Count);
+            Assert.HasCount(1, result.Output);
         }
 
         [TestMethod()]
@@ -59,7 +60,7 @@ namespace Ntools.Tests
             var result = ResultHelper.New();
             Assert.IsNotNull(result);
             Assert.AreEqual(int.MaxValue, result.Code);
-            Assert.AreEqual(0, result.Output.Count);
+            Assert.IsEmpty(result.Output);
         }
     }
 }

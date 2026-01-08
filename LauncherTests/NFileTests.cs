@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 namespace Ntools.Tests
 {
     [TestClass()]
+    [DoNotParallelize]
     public class NfileTests
     {
         [TestMethod()]
@@ -39,7 +40,7 @@ namespace Ntools.Tests
             result.DisplayCertificate();
 
             Assert.IsTrue(result.IsSuccess());
-            Assert.IsTrue(result.GetFirstOutput().Contains("Success"));
+            Assert.Contains("Success", result.GetFirstOutput());
         }
 
         [TestMethod()]
@@ -72,7 +73,7 @@ namespace Ntools.Tests
                 }
                 catch (Exception ex)
                 {
-                    Assert.IsTrue(ex.Message.Contains("The remote server returned an error: (403) Forbidden"));
+                    Assert.Contains("The remote server returned an error: (403) Forbidden", ex.Message);
                 }
             }
         }
@@ -98,7 +99,7 @@ namespace Ntools.Tests
                 }
 
                 // Act and Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Nfile.DownloadAsync(item.Key.ToString(), fileName));
+                await Assert.ThrowsAsync<ArgumentException>(async () => await Nfile.DownloadAsync(item.Key.ToString(), fileName));
             }
         }
 
@@ -122,7 +123,7 @@ namespace Ntools.Tests
                 Console.WriteLine($"Uri: {item.Key}");
                 Console.WriteLine($"Downloaded file: {item.Value}");
                 // Act and Assert
-                await Assert.ThrowsExceptionAsync<ArgumentException>(async () => await Nfile.DownloadAsync(item.Key.ToString(), item.Value));
+                await Assert.ThrowsAsync<ArgumentException>(async () => await Nfile.DownloadAsync(item.Key.ToString(), item.Value));
             }
         }
 
@@ -184,7 +185,7 @@ namespace Ntools.Tests
                 Console.WriteLine($"Exception: {ex.Message}");
 
                 // Assert
-                Assert.IsTrue(ex.Message.Contains("Invalid uri extension"));
+                Assert.Contains("Invalid uri extension", ex.Message);
             }
 
             // Act and Assert
@@ -211,7 +212,7 @@ namespace Ntools.Tests
             Console.WriteLine($"File size: {result}");
 
             // Assert
-            Assert.IsTrue(result > 0);
+            Assert.IsGreaterThan(0, result);
         }
 
         [TestMethod()]
@@ -265,7 +266,7 @@ namespace Ntools.Tests
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
-                Assert.IsTrue(ex.Message.Contains("404"));
+                Assert.Contains("404", ex.Message);
 
                 // Assert
                 //Assert.IsFalse(result.IsSuccess());
