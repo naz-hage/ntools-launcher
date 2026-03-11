@@ -159,7 +159,6 @@ graph TB
 ```
 ntools-launcher/
 ├── ntools-launcher.sln           # Main solution file
-├── Nbuild.bat                    # Build script
 ├── mkdocs.yml                    # Documentation configuration
 ├── README.md                     # Project documentation
 ├── targets.md                    # Build targets documentation
