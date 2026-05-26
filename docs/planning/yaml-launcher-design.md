@@ -138,7 +138,7 @@ variables:
 version: "1.0"
 description: "Independent parallel verification"
 
-executables:
+tasks:
   - name: "test_unit"
     path: "dotnet.exe"
     arguments: "test --no-build"
@@ -390,7 +390,7 @@ var result = await executor.LaunchAsync("app-config.yaml");
 ```yaml
 # tests/cli-scenarios.yaml
 version: "1.0"
-executables:
+tasks:
   - name: "test_install_with_name"
     path: "nb.exe"
     arguments: "install --name MyApp"
@@ -410,7 +410,7 @@ executables:
 ```yaml
 # deployment/installation-pipeline.yaml
 version: "1.0"
-executables:
+tasks:
   - name: "download"
     path: "nb.exe"
     arguments: "download --json tools.json"

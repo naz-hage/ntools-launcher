@@ -154,7 +154,7 @@ tests/YamlLauncher.Tests/
 variables:
   InstallPath: "C:\\Program Files\\MyApp"
 
-executable:
+task:
   path: "$(InstallPath)\\app.exe"
   arguments: "--config $(InstallPath)\\config.json"
 ```
@@ -198,7 +198,7 @@ tests/YamlLauncher.Tests/
 version: "1.0"
 description: "Deploy MyApp to production"
 
-executable:
+task:
   path: "C:\\installers\\myapp-setup.exe"
   arguments: "--install --path C:\\Program Files\\MyApp"
   timeout: 120000
@@ -226,7 +226,7 @@ else
 version: "1.0"
 description: "Build, test, and package"
 
-executables:
+tasks:
   - name: "restore"
     path: "dotnet.exe"
     arguments: "restore"
@@ -263,7 +263,7 @@ execution:
 version: "1.0"
 description: "Run tests on multiple frameworks in parallel"
 
-executables:
+tasks:
   - name: "test_net6"
     path: "dotnet.exe"
     arguments: "test --framework net6.0 --no-build"
@@ -299,7 +299,7 @@ variables:
   AppPath: "$(CompanyPath)\\$(AppName)"
   Version: "2.0.0"
 
-executables:
+tasks:
   - name: "backup_current"
     path: "C:\\scripts\\backup.exe"
     arguments: "--source $(AppPath) --destination C:\\backups\\$(Version)"
@@ -373,7 +373,7 @@ var result = await executor.ExecuteAsync("install", new[] { "--name", "MyApp" })
 # tests/nb-scenarios.yaml
 version: "1.0"
 
-executables:
+tasks:
   - name: "test_install_with_name"
     path: "nb.exe"
     arguments: "install --name MyApp"
@@ -415,7 +415,7 @@ foreach (var execResult in result.Results)
 ```yaml
 version: "1.0"
 
-executables:
+tasks:
   - name: "download"
     path: "nb.exe"
     arguments: "download --json tools.json"

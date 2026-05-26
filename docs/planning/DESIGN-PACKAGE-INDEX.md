@@ -171,23 +171,23 @@
 ### Execution Models Supported
 ```
 Level 1: Simple Execution (always worked)
-  executable:
+  task:
     path: "app.exe"
 
 Level 2: Return Code Validation (new)
-  executable:
+  task:
     path: "app.exe"
     expectedReturnCode: 0
 
 Level 3: Output Assertions (new)
-  executable:
+  task:
     path: "app.exe"
     assertions:
       - type: "output_contains"
         value: "Success"
 
 Level 4: Variable Extraction & Passing (new)
-  executables:
+  tasks:
     - name: "step1"
       extractVariables:
         - name: "version"

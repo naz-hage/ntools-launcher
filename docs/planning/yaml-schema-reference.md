@@ -164,7 +164,7 @@ variables:
   MyCustomVar: "C:\\Custom\\Path"
   AppConfig: "$(InstallPath)\\config.json"  # Can reference other variables
 
-executable:
+task:
   path: "$(MyCustomVar)\\app.exe"
   workingDirectory: "$(AppConfig)"
 ```
@@ -220,7 +220,7 @@ execution:
   mode: "sequential"
   stopOnFirstError: true
 
-executables:
+tasks:
   - name: "task1"
     continueOnError: false  # Task stops pipeline on failure
   - name: "task2"          # Won't execute if task1 fails
@@ -233,7 +233,7 @@ execution:
   mode: "sequential"
   stopOnFirstError: false  # Pipeline continues
 
-executables:
+tasks:
   - name: "backup"
     continueOnError: true   # Pipeline continues even if backup fails
   - name: "deploy"         # Always executes
@@ -248,7 +248,7 @@ execution:
   maxConcurrency: 3
   stopOnFirstError: false
 
-executables:
+tasks:
   - name: "test_unit"
   - name: "test_integration"
   - name: "lint"
@@ -261,7 +261,7 @@ executables:
 
 ### Task-Level Timeout
 ```yaml
-executable:
+task:
   path: "long-running-task.exe"
   timeout: 60000  # This task times out after 60 seconds
 ```
@@ -274,7 +274,7 @@ execution:
 
 ### No Timeout
 ```yaml
-executable:
+task:
   timeout: 0  # Task never times out
   
 execution:
@@ -287,7 +287,7 @@ execution:
 
 ### Single Executable (Signed)
 ```yaml
-executable:
+task:
   path: "C:\\Program Files\\MyApp\\app.exe"
   verifySignature: true  # Fails if not properly signed
   
@@ -297,7 +297,7 @@ execution:
 
 ### Multiple Executables (Mixed)
 ```yaml
-executables:
+tasks:
   - name: "core_app"
     path: "C:\\Program Files\\core.exe"
     verifySignature: true   # Must be signed
@@ -317,7 +317,7 @@ executables:
 version: "1.0"
 description: "Deploy MyApp"
 
-executable:
+task:
   path: "C:\\Programs\\installer.exe"
   arguments: "--install --path C:\\MyApp"
   workingDirectory: "C:\\Temp"
@@ -334,7 +334,7 @@ execution:
 version: "1.0"
 description: "Three-stage installation pipeline"
 
-executables:
+tasks:
   - name: "download"
     path: "C:\\tools\\downloader.exe"
     arguments: "--url https://example.com/app.zip --output app.zip"
@@ -381,7 +381,7 @@ variables:
 version: "1.0"
 description: "Run tests in parallel"
 
-executables:
+tasks:
   - name: "unit_tests"
     path: "dotnet.exe"
     arguments: "test --filter Category=Unit --no-build"
@@ -418,7 +418,7 @@ variables:
   AppPath: "$(InstallRoot)\\$(CompanyName)\\$(AppName)"
   LogPath: "$(TEMP)\\$(AppName)\\logs"
 
-executables:
+tasks:
   - name: "prepare_directories"
     path: "C:\\Windows\\System32\\cmd.exe"
     arguments: "/c mkdir $(AppPath) && mkdir $(LogPath)"

@@ -14,7 +14,7 @@
 # This will always work - no changes needed
 version: "1.0"
 
-executable:
+task:
   path: "nb.exe"
   arguments: "install --name MyApp"
   timeout: 120000
@@ -29,7 +29,7 @@ execution:
 # New optional features don't break anything
 version: "1.0"
 
-executable:
+task:
   path: "nb.exe"
   arguments: "install --name MyApp"
   timeout: 120000
@@ -58,7 +58,7 @@ execution:
 
 ### Level 1: Simple Execution (Current - No Changes)
 ```yaml
-executable:
+task:
   path: "app.exe"
   arguments: "--flag value"
 ```
@@ -66,7 +66,7 @@ executable:
 
 ### Level 2: Return Code Validation (New - Optional)
 ```yaml
-executable:
+task:
   path: "app.exe"
   arguments: "--flag value"
   expectedReturnCode: 0  # NEW
@@ -75,7 +75,7 @@ executable:
 
 ### Level 3: Output Assertions (New - Optional)
 ```yaml
-executable:
+task:
   path: "app.exe"
   arguments: "--flag value"
   expectedReturnCode: 0
@@ -87,7 +87,7 @@ executable:
 
 ### Level 4: Variable Extraction (New - Optional)
 ```yaml
-executables:
+tasks:
   - name: "step1"
     path: "get-version.exe"
     expectedReturnCode: 0
@@ -111,7 +111,7 @@ executables:
 ### New Optional Properties for Test Validation
 
 ```yaml
-executable:
+task:
   # ... existing properties (path, arguments, timeout, etc.) ...
   
   # NEW: Return code validation
@@ -196,7 +196,7 @@ executable:
 version: "1.0"
 description: "Verify app installed successfully"
 
-executable:
+task:
   path: "C:\\Program Files\\MyApp\\app.exe"
   arguments: "--version"
   expectedReturnCode: 0
@@ -219,7 +219,7 @@ execution:
 version: "1.0"
 description: "Verify installation output"
 
-executable:
+task:
   path: "installer.exe"
   arguments: "--install --verbose"
   expectedReturnCode: 0
@@ -252,7 +252,7 @@ execution:
 version: "1.0"
 description: "Multi-step deployment with variable flow"
 
-executables:
+tasks:
   - name: "get-latest-version"
     path: "gh.exe"
     arguments: "release list --repo mycompany/myapp --json --limit 1"
@@ -315,7 +315,7 @@ variables:
   TestProject: "C:\\src\\MyApp.Tests\\MyApp.Tests.csproj"
   ProjectPath: "C:\\src"
 
-executables:
+tasks:
   - name: "restore"
     path: "dotnet.exe"
     arguments: "restore"
@@ -371,7 +371,7 @@ execution:
 version: "1.0"
 description: "SDO test scenario - Multi-step with assertions"
 
-executables:
+tasks:
   - name: "get-work-item"
     path: "sdo.exe"
     arguments: "wi list --top 1 --json"
@@ -443,7 +443,7 @@ commands:
 # deploy/sdo-scenario.yaml (YAML launcher format)
 version: "1.0"
 
-executables:
+tasks:
   - name: "Get Work Item"
     path: "sdo.exe"
     arguments: "wi list --top 1 --json"
@@ -573,7 +573,7 @@ assertions:
 
 **YAML:**
 ```yaml
-executable:
+tasks:
   path: "installer.exe"
   arguments: "--install"
   expectedReturnCode: 0

@@ -21,7 +21,7 @@ All test-framework features (assertions, variable extraction) are **optional** p
 **Option A: Single Required Schema** ❌
 ```yaml
 # All properties required - breaks backward compatibility
-executable:
+task:
   name: "required"
   path: "required"
   expectedReturnCode: 0      # Required
@@ -42,11 +42,11 @@ schemaVersion: "2.0"    # For assertions/extraction
 **Option C: All Optional (Selected)** ✅
 ```yaml
 # Simple case (old YAML)
-executable:
+task:
   path: "app.exe"
 
 # Enhanced case (new YAML) - all optional additions
-executable:
+task:
   path: "app.exe"
   expectedReturnCode: 0
   assertions: []
@@ -297,7 +297,7 @@ Pre/post-execution hooks (before task runs, after task completes) are planned fo
 
 **Option A: Include Hooks in Phase 1** ❌
 ```yaml
-executable:
+task:
   preExecutionHook:
     command: "echo.exe"
     arguments: "Starting..."
@@ -356,7 +356,7 @@ Default execution mode is sequential with explicit dependencies, not automatical
 **Option A: Default Parallel** ❌
 ```yaml
 # This would run all tasks in parallel by default
-executables:
+tasks:
   - path: "task1.exe"
   - path: "task2.exe"
   - path: "task3.exe"
@@ -367,7 +367,7 @@ executables:
 **Option B: Default Sequential (Selected)** ✅
 ```yaml
 # Default: sequential execution
-executables:
+tasks:
   - path: "task1.exe"
   - path: "task2.exe"      # Runs after task1 completes
   - path: "task3.exe"      # Runs after task2 completes
@@ -463,7 +463,7 @@ Retry policies (exponential backoff, max attempts) planned for Phase 5, not Phas
 
 **Option A: Include Retries in Phase 1** ❌
 ```yaml
-executable:
+task:
   path: "flaky-service.exe"
   retryPolicy:
     maxAttempts: 3
@@ -564,7 +564,7 @@ When assertions are specified, output redirection (`redirectOutput: true`) is al
 
 **Option A: Error if Assertions Without Redirection** ❌
 ```yaml
-executable:
+task:
   path: "app.exe"
   redirectOutput: false    # Error! Can't validate output
   assertions:
@@ -576,7 +576,7 @@ executable:
 
 **Option B: Automatic Enable (Selected)** ✅
 ```yaml
-executable:
+task:
   path: "app.exe"
   # redirectOutput: false is ignored if assertions present
   assertions:
