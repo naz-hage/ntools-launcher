@@ -56,10 +56,16 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Set DOTNET_ROOT
-      run: echo "DOTNET_ROOT=$(dirname $(which dotnet))" >> $GITHUB_ENV
+      run: |
+        $dotnetPath = (Get-Command dotnet).Source | Split-Path -Parent
+        echo "DOTNET_ROOT=$dotnetPath" >> $env:GITHUB_ENV
+      shell: pwsh
 
     - name: Add .NET SDK to PATH
-      run: echo "$(dirname $(which dotnet))" >> $GITHUB_PATH
+      run: |
+        $dotnetPath = (Get-Command dotnet).Source | Split-Path -Parent
+        echo "$dotnetPath" | Out-File -FilePath $env:GITHUB_PATH -Append
+      shell: pwsh
 
     - name: Install ntools
       run: |
@@ -92,7 +98,7 @@ jobs:
 
     - name: Run build using ntools
       run: |
-        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.Build_Type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
+        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:
