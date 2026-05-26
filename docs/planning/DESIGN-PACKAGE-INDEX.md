@@ -27,7 +27,7 @@
 **Purpose:** Complete YAML syntax specification and examples
 - Quick reference guide
 - Complete schema definition with all properties
-- ExecutableConfig, ExecutionSettings, Variable objects
+- StepConfig, ExecutionSettings, Variable objects
 - Variable substitution patterns (predefined + custom)
 - 4 production examples (single, sequential, parallel, deployment)
 - Validation rules and best practices
