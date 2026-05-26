@@ -52,9 +52,6 @@ jobs:
         echo 'C:\Program Files\dotnet' | Out-File -FilePath $env:GITHUB_PATH -Append
       shell: pwsh
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v2
-
     - name: Set DOTNET_ROOT
       run: |
         $dotnetPath = (Get-Command dotnet).Source | Split-Path -Parent
