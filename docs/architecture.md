@@ -176,7 +176,19 @@ ntools-launcher/
 │   ├── ResultHelper.cs           # Process result handling
 │   ├── ResultDownload.cs         # Download result handling
 │   ├── SignatureVerifier.cs      # Digital signature verification
-│   └── VirusTotalChecker.cs      # VirusTotal integration
+│   ├── VirusTotalChecker.cs      # VirusTotal integration
+│   │
+│   └── YamlLauncher/             # YAML Launcher framework
+│       └── Models/               # Configuration and result models
+│           ├── LauncherConfig.cs         # Main configuration
+│           ├── StepConfig.cs             # Step configuration
+│           ├── ExecutionSettings.cs      # Execution settings
+│           ├── Assertion.cs              # Assertion rules
+│           ├── VariableExtraction.cs     # Variable extraction rules
+│           ├── LaunchResult.cs           # Execution result
+│           ├── ExecutionResult.cs        # Step result
+│           ├── AssertionResult.cs        # Assertion outcome
+│           └── ExtractionResult.cs       # Extraction outcome
 │
 ├── LauncherTest/                 # Test project
 │   ├── LauncherTest.csproj
@@ -222,6 +234,7 @@ ntools-launcher/
 - **System.Security.Cryptography.Pkcs v10.0.1**: Cryptographic operations
 - **System.Text.Json v10.0.1**: JSON processing
 - **System.Security.Principal.Windows v5.0.0**: Process elevation checks
+- **YamlDotNet v18.0.0**: YAML serialization/deserialization for launcher configuration
 
 ## Security Considerations
 
@@ -270,7 +283,139 @@ ntools-launcher/
 ### Distribution
 - **NuGet Package**: `ntools-launcher` on nuget.org
 - **GitHub Releases**: Source code and documentation
+- **GitHub Releases**: Source code and documentation
 - **Documentation Site**: MkDocs-generated static site
+
+## YAML Launcher Framework Architecture
+
+### Overview
+The YAML Launcher Framework extends ntools-launcher with a declarative configuration system for orchestrating complex executable execution workflows without ceremony-heavy Process setup code.
+
+### Model Classes (YamlLauncher.Models namespace)
+
+#### Configuration Models
+These models represent the YAML configuration structure:
+
+**LauncherConfig**
+- Main container for complete launcher configuration
+- Properties: version, description, execution settings, variables, steps
+- Alias properties: `steps`, `tasks`, `apps` (all equivalent for backward compatibility)
+- Supports YAML deserialization with YamlDotNet
+
+**StepConfig**
+- Individual step/task/app configuration
+- Properties: path, arguments, name, dependencies, continueOnError, expectedReturnCode
+- Nested support for assertions and variable extraction
+- Replaces legacy ExecutableConfig pattern
+
+**ExecutionSettings**
+- Controls execution behavior
+- Properties: mode (Sequential/Parallel), verbose, stopOnFirstError, maxConcurrency, timeout
+- ExecutionMode enum with Sequential (0) and Parallel (1) values
+
+**Assertion** & **VariableExtraction**
+- Assertion: Validates execution results (exitCode, stdout, JSON paths, regex patterns)
+- VariableExtraction: Extracts values from results (pattern, groupIndex, caseInsensitive)
+
+#### Result Models
+These models represent execution outcomes:
+
+**LaunchResult**
+- Overall execution result container
+- Properties: success, results (list of ExecutionResult), extractedVariables, errorMessage
+
+**ExecutionResult**
+- Result of a single step execution
+- Properties: name, success, exitCode, standardOutput, standardError
+- Nested: assertions (List<AssertionResult>), extractedVariables (List<ExtractionResult>)
+
+**AssertionResult** & **ExtractionResult**
+- AssertionResult: Assertion validation outcome (type, passed, message, expectedValue, actualValue)
+- ExtractionResult: Variable extraction outcome (name, value, success, message)
+
+### Integration Points
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              YAML Configuration File                        │
+│     (Using YamlDotNet deserializer with camelCase)         │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 │ Deserialize
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│         LauncherConfig Model                                │
+│  ├─ ExecutionSettings (Sequential/Parallel)                │
+│  ├─ List<StepConfig> (with dependencies, assertions)      │
+│  └─ Dictionary<string, string> Variables                  │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 │ Execute (future implementation)
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│      Existing ntools-launcher Components                   │
+│  (Launcher, ShellUtility, ResultHelper)                    │
+└────────────────┬────────────────────────────────────────────┘
+                 │
+                 │ Results
+                 ▼
+┌─────────────────────────────────────────────────────────────┐
+│         LaunchResult Model                                  │
+│  ├─ List<ExecutionResult>                                 │
+│  │  ├─ AssertionResults                                   │
+│  │  └─ ExtractionResults                                  │
+│  └─ Dictionary<string, string> ExtractedVariables         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Alias Properties (Backward Compatibility)
+
+LauncherConfig supports three property names that all reference the same underlying `steps` collection:
+
+```csharp
+config.Steps  // Canonical form (recommended)
+config.Tasks  // Alias for test-framework integration
+config.Apps   // Alias for nb integration context
+```
+
+This enables:
+- test-framework projects to use "tasks" in YAML
+- nb projects to use "apps" in YAML
+- All configurations to share the same model layer
+
+### YAML Schema Support
+
+All three property names work interchangeably:
+
+```yaml
+version: '1.0'
+execution:
+  mode: Sequential
+
+# Any of these work:
+steps:      # Modern, recommended
+  - name: step1
+    path: /usr/bin/cmd
+
+tasks:      # test-framework compatibility
+  - name: task1
+    path: /usr/bin/test
+
+apps:       # nb/ntools compatibility
+  - name: app1
+    path: /usr/bin/deploy
+```
+
+### Key Features
+
+- **Type-Safe Configuration**: C# models with full validation
+- **YAML Native**: Native YAML support via YamlDotNet
+- **Flexible Execution**: Sequential or parallel step orchestration
+- **Assertions**: Multi-type result validation (exitCode, pattern matching, JSON paths)
+- **Variable Extraction**: Extract values from outputs for downstream use
+- **Dependencies**: Declare step ordering and constraints
+- **Error Handling**: Per-step error behavior (continue or stop)
+- **Extensibility**: Model-based design enables future features (retry policies, timeouts, hooks)
 
 ## Future Enhancements
 

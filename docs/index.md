@@ -30,3 +30,4 @@ This library is used by the [ntools's](https://github.com/naz-hage/ntools) repo
 - **ResultDownload:** A helper class for retrieving the result of a downloaded file.
 - **CurrentProcess:** A class that provides a method to determine if the current process is elevated.
 - **ShellUtility:** A helper class for executing shell commands and retrieving the full path of a file from the Path environment variable.
+- **YAML Launcher Framework:** A declarative YAML-based configuration system for launching executables with support for sequential/parallel execution, assertions, variable extraction, and dependencies. Define complex execution workflows in YAML without writing ceremony-heavy Process setup code.

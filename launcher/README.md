@@ -18,6 +18,8 @@ The `ntools-launcher` is a NuGet package library that simplifies common tasks re
 
 - **ShellUtility:** A helper class for executing shell commands and retrieving the full path of a file from the Path environment variable.
 
+- **YAML Launcher Framework:** A declarative YAML-based configuration system for launching executables with support for sequential/parallel execution, assertions, variable extraction, and dependencies.
+
 ## Installation
 
 The `ntools-launcher` package is available on nuget.org. To install the package, run the following command in the Package Manager Console:
@@ -129,4 +131,80 @@ using Ntools;
 var isElevated = CurrentProcess.IsElevated();
 Console.WriteLine(isElevated);
 ```
+
+### YAML Launcher Framework
+
+The YAML Launcher framework provides a declarative way to configure and execute multiple steps (applications, tasks, or scripts) with support for sequential/parallel execution, assertions, variable extraction, and dependency management.
+
+#### Basic YAML Configuration
+
+Create a YAML file to define your execution steps:
+
+```yaml
+version: '1.0'
+description: 'Build and deploy application'
+execution:
+  mode: Sequential
+  verbose: true
+  stopOnFirstError: true
+steps:
+  - name: 'restore'
+    path: 'dotnet'
+    arguments: 'restore'
+    
+  - name: 'build'
+    path: 'dotnet'
+    arguments: 'build -c Release'
+    dependencies:
+      - 'restore'
+    assertions:
+      - type: 'exitCode'
+        expectedValue: '0'
+```
+
+#### Loading and Executing YAML Configuration
+
+```csharp
+using YamlLauncher.Models;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
+// Load YAML configuration
+var yaml = File.ReadAllText("launcher-config.yaml");
+var deserializer = new DeserializerBuilder()
+    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+    .Build();
+
+var config = deserializer.Deserialize<LauncherConfig>(yaml);
+
+// Execute steps (implementation requires launcher engine)
+// The framework supports:
+// - Sequential or Parallel execution modes
+// - Assertions for validating step results
+// - Variable extraction from step outputs
+// - Step dependencies for orchestration
+```
+
+#### Key Features
+
+- **Multiple Aliases**: Use `steps:`, `tasks:`, or `apps:` interchangeably in YAML
+- **Execution Modes**: Sequential or Parallel execution with configurable concurrency
+- **Assertions**: Validate exit codes, stdout/stderr output with pattern matching
+- **Variable Extraction**: Extract values from execution results using regex patterns
+- **Dependencies**: Define step ordering and execution constraints
+- **Error Handling**: Control behavior on failures (continue or stop)
+- **YAML Deserialization**: Full support for YamlDotNet serialization/deserialization
+
+#### Model Classes
+
+The framework includes comprehensive model classes for type-safe configuration:
+
+- `LauncherConfig`: Main configuration container with version, description, and execution settings
+- `StepConfig`: Individual step configuration with path, arguments, dependencies, assertions, and variable extraction
+- `ExecutionSettings`: Execution mode, verbosity, concurrency, and timeout settings
+- `Assertion`: Result validation rules (exitCode, stdout, JSON paths, patterns)
+- `VariableExtraction`: Rules for extracting variables from execution results
+- `LaunchResult`, `ExecutionResult`: Result objects containing execution outcomes
+
+For detailed architecture and design information, see [yaml-launcher-design.md](../docs/planning/yaml-launcher-design.md).
 
