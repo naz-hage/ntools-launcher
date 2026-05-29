@@ -1,18 +1,6 @@
 # NTools Launcher Architecture
 
-This document provides a comprehensive overview of the NTools Launcher architecture, a .NET library that simplifies common tasks related to launching executables, downloading files, executing shell commands, and checking process elevation.
-
-## Overview
-
-NTools Launcher is a NuGet package library written in .NET that provides robust functionality for:
-
-- **Process Launching**: Launch executables with digital signature verification
-- **File Downloading**: Secure file downloads with integrity checks
-- **Shell Command Execution**: Execute shell commands and retrieve results
-- **Process Elevation Checking**: Determine if the current process is elevated
-- **Security Features**: Digital signature verification, VirusTotal integration
-
-## Architecture Diagram
+Core library functions:
 
 ```mermaid
 graph TB
