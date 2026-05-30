@@ -16,4 +16,4 @@ Used by [ntools](https://github.com/naz-hage/ntools) repo:
 - **CurrentProcess** - Check process elevation status
 - **ResultHelper** - Handle process execution results
 - **ResultDownload** - Handle download operation results
-- **YAML Launcher Framework** - Declarative YAML-based system for complex execution workflows with sequential/parallel execution, assertions, and variable extraction
+- **YAML Launcher Framework** - Configuration models for declarative workflow definitions (execution engine planned for future release)

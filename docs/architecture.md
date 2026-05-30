@@ -271,7 +271,6 @@ ntools-launcher/
 ### Distribution
 - **NuGet Package**: `ntools-launcher` on nuget.org
 - **GitHub Releases**: Source code and documentation
-- **GitHub Releases**: Source code and documentation
 - **Documentation Site**: MkDocs-generated static site
 
 ## YAML Launcher Framework Architecture
@@ -396,14 +395,10 @@ apps:       # nb/ntools compatibility
 
 ### Key Features
 
-- **Type-Safe Configuration**: C# models with full validation
+- **Type-Safe Configuration**: C# models with optional validation (full validation layer planned)
 - **YAML Native**: Native YAML support via YamlDotNet
-- **Flexible Execution**: Sequential or parallel step orchestration
-- **Assertions**: Multi-type result validation (exitCode, pattern matching, JSON paths)
-- **Variable Extraction**: Extract values from outputs for downstream use
-- **Dependencies**: Declare step ordering and constraints
-- **Error Handling**: Per-step error behavior (continue or stop)
-- **Extensibility**: Model-based design enables future features (retry policies, timeouts, hooks)
+- **Configuration Models**: Models for sequential/parallel step orchestration (execution engine planned)
+- **Extensible Design**: Model-based architecture enables future features (assertions, variable extraction, retry policies, timeouts, hooks)
 
 ## Future Enhancements
 

@@ -18,7 +18,7 @@ The `ntools-launcher` is a NuGet package library that simplifies common tasks re
 
 - **ShellUtility:** A helper class for executing shell commands and retrieving the full path of a file from the Path environment variable.
 
-- **YAML Launcher Framework:** A declarative YAML-based configuration system for launching executables with support for sequential/parallel execution, assertions, variable extraction, and dependencies.
+- **YAML Launcher Framework:** Configuration models for declarative workflow definitions. Execution engine support is planned for future releases.
 
 ## Installation
 
