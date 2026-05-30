@@ -38,11 +38,7 @@ else
     }
 }
 ```
-The Launcher class exposes `LockVerifyStart` method which is useful in scenarios where you need to start a process and verify that the file is digitally signed before launching. Here are some scenarios where you might use this method:
-
-1. **Securely launching executables**: If you need to start an executable and want to ensure that it is digitally signed before launching, you can use this function to verify the digital signature of the file before starting the process.
-
-2. **Preventing unauthorized executables**: In scenarios where you want to prevent unauthorized executables from running on your system, you can use this function to verify the digital signature of the file before launching it.
+The `LockVerifyStart` method verifies digital signatures before launching processes, useful for secure executable launching and preventing unauthorized execution.
 
 
 ### NFile Class
@@ -72,13 +68,7 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
 }
 ```
-The `DownloadAsync` method is useful in scenarios where you need to download a file from the web. Here are some scenarios where you might use this method:
-
-1. **Downloading files from the web**: If you need to download a file from the web, you can use this function to do so.
-
-2. **Checking for virus**: In scenarios where you want to check the downloaded file for viruses, you can use this function to download the file and then check it using a virus scanning service such as VirusTotal.
-
-3. **Verifying file signature**: If you need to verify the digital signature of the downloaded file, you can use this function to do so.
+The `DownloadAsync` method downloads files and checks for viruses using VirusTotal, with optional digital signature verification.
 
 ### ShellUtility Class
 

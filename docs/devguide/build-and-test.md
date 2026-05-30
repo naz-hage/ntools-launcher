@@ -1,13 +1,13 @@
 ## Build and Test
-The project is built and tested using the `NTools` Standardized build tools.  The `Nb` tool is used to build msbuild targets defined in the `nbuild.targets` file. To build and test
 
-- Open a Developer command prompt for VS 2022
-- Run the following command in directory of the solution to create a local build to deploy and test:
+Use the `Nb` build tool to build msbuild targets defined in `nbuild.targets`:
 ```bash
-nb staging
+nb solution
 ```
-- Run the following command in directory of the solution to list the available build targets:
+
+List available targets:
 ```bash
 nb -c targets
 ```
-The [targets](./targets.md) file contains the list of available targets.
+
+See [targets.md](targets.md) for full target list.
