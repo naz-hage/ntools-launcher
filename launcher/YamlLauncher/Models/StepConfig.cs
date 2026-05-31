@@ -49,4 +49,21 @@ public class StepConfig
     /// Gets or sets the list of variables to extract from the execution results.
     /// </summary>
     public List<VariableExtraction>? ExtractVariables { get; set; }
+
+    /// <summary>
+    /// Gets or sets the working directory for process execution.
+    /// </summary>
+    public string? WorkingDirectory { get; set; }
+
+    /// <summary>
+    /// Gets or sets step-specific environment variables to pass to the process.
+    /// These are merged with global variables from the LauncherConfig.
+    /// </summary>
+    public Dictionary<string, string>? Environment { get; set; }
+
+    /// <summary>
+    /// Gets or sets the required digital signature for the executable (Windows only).
+    /// If specified, the executable's digital signature must match for execution to proceed.
+    /// </summary>
+    public string? RequireSignature { get; set; }
 }
