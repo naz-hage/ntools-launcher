@@ -39,7 +39,6 @@ public class LauncherConfig
     /// <summary>
     /// Gets or sets the tasks (alias for Steps, used for test-framework integration context).
     /// </summary>
-    [YamlIgnore]
     public List<StepConfig>? Tasks
     {
         get => Steps;
@@ -49,7 +48,6 @@ public class LauncherConfig
     /// <summary>
     /// Gets or sets the apps (alias for Steps, used for nb integration context).
     /// </summary>
-    [YamlIgnore]
     public List<StepConfig>? Apps
     {
         get => Steps;
