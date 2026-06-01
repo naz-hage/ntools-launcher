@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YamlLauncher.Models;
+using YamlLauncher.Logging;
 
 namespace YamlLauncher;
 
@@ -17,11 +18,11 @@ namespace YamlLauncher;
 /// </summary>
 public class StepExecutor : IStepExecutor
 {
-    private bool _verbose = false;
+    private readonly ILogger _logger;
 
     public StepExecutor(bool verbose = false)
     {
-        _verbose = verbose;
+        _logger = new Logger(verbose);
     }
 
     public async Task<LaunchResult> LaunchAsync(LauncherConfig config, int stepIndex)
@@ -69,6 +70,10 @@ public class StepExecutor : IStepExecutor
                     if (e.Data != null)
                     {
                         stdoutBuilder.AppendLine(e.Data);
+                        if (_logger.IsVerbose)
+                        {
+                            Console.WriteLine(e.Data);
+                        }
                     }
                 };
 
@@ -77,12 +82,22 @@ public class StepExecutor : IStepExecutor
                     if (e.Data != null)
                     {
                         stderrBuilder.AppendLine(e.Data);
+                        if (_logger.IsVerbose)
+                        {
+                            Console.Error.WriteLine(e.Data);
+                        }
                     }
                 };
 
-                if (_verbose)
+                if (_logger.IsVerbose)
                 {
-                    Log($"Starting process: {psi.FileName} {psi.Arguments}");
+                    var fullPath = Path.GetFullPath(psi.FileName);
+                    _logger.LogVerbose($"Executing: {fullPath} {psi.Arguments}");
+                    if (!string.IsNullOrEmpty(step.WorkingDirectory))
+                    {
+                        _logger.LogVerbose($"Working Directory: {step.WorkingDirectory}");
+                    }
+                    _logger.LogVerbose($"--- Command Output ---");
                 }
 
                 process.Start();
@@ -100,6 +115,10 @@ public class StepExecutor : IStepExecutor
                 {
                     process.Kill();
                     stopwatch.Stop();
+                    if (_logger.IsVerbose)
+                    {
+                        _logger.LogVerbose($"--- End Output ---");
+                    }
                     return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
                 }
 
@@ -109,9 +128,11 @@ public class StepExecutor : IStepExecutor
                 var stderr = stderrBuilder.ToString().TrimEnd();
                 var exitCode = process.ExitCode;
 
-                if (_verbose)
+                if (_logger.IsVerbose)
                 {
-                    Log($"Process exited with code: {exitCode}");
+                    _logger.LogVerbose($"--- End Output ---");
+                    _logger.LogVerbose($"Exit Code: {exitCode}");
+                    _logger.LogVerbose($"Duration: {stopwatch.ElapsedMilliseconds}ms");
                 }
 
                 return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
@@ -120,10 +141,7 @@ public class StepExecutor : IStepExecutor
         catch (Exception ex)
         {
             stopwatch.Stop();
-            if (_verbose)
-            {
-                Log($"Error executing step: {ex.Message}");
-            }
+            _logger.LogError($"Error executing step: {ex.Message}");
             return CreateFailureResult(step, startTime, stopwatch.Elapsed, ex.Message);
         }
     }
@@ -265,9 +283,9 @@ public class StepExecutor : IStepExecutor
         // Windows-specific digital signature verification
         if (!OperatingSystem.IsWindows())
         {
-            if (_verbose)
+            if (_logger.IsVerbose)
             {
-                Log($"Digital signature verification skipped on non-Windows platform");
+                _logger.LogVerbose($"Digital signature verification skipped on non-Windows platform");
             }
             return true;
         }
@@ -280,31 +298,25 @@ public class StepExecutor : IStepExecutor
                 // More detailed signature verification would require Windows API calls
                 if (!File.Exists(filePath))
                 {
-                    Log($"File not found for signature verification: {filePath}");
+                    _logger.LogError($"File not found for signature verification: {filePath}");
                     return false;
                 }
 
                 // Placeholder: actual implementation would use WinTrust API
                 // For this version, we just verify the file exists and is readable
-                if (_verbose)
+                if (_logger.IsVerbose)
                 {
-                    Log($"Signature verification passed for: {filePath}");
+                    _logger.LogVerbose($"Signature verification passed for: {filePath}");
                 }
                 return true;
             }
             catch (Exception ex)
             {
-                Log($"Error during signature verification: {ex.Message}");
+                _logger.LogError($"Error during signature verification: {ex.Message}");
                 return false;
             }
         });
     }
 
-    private void Log(string message)
-    {
-        if (_verbose)
-        {
-            System.Diagnostics.Debug.WriteLine($"[StepExecutor] {message}");
-        }
-    }
+
 }
