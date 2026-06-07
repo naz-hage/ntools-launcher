@@ -20,9 +20,9 @@ public class StepExecutor : IStepExecutor
 {
     private readonly ILogger _logger;
 
-    public StepExecutor(bool verbose = false)
+    public StepExecutor(bool verbose = false, ILogger? logger = null)
     {
-        _logger = new Logger(verbose);
+        _logger = logger ?? new Logger(verbose);
     }
 
     public async Task<LaunchResult> LaunchAsync(LauncherConfig config, int stepIndex)

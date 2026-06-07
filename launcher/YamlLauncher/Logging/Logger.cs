@@ -6,19 +6,22 @@ namespace YamlLauncher.Logging;
 
 /// <summary>
 /// Standard implementation of ILogger for ntools-launcher.
-/// Outputs messages with appropriate log level prefixes ([INFO], [WARN], [ERROR], [VERBOSE]).
+/// Outputs messages with appropriate log level prefixes ([LAUNCHER] [INFO], [LAUNCHER] [WARN], [LAUNCHER] [ERROR], [LAUNCHER] [VERBOSE]).
 /// </summary>
 public class Logger : ILogger
 {
     private readonly bool _verbose;
+    private readonly string _component;
 
     /// <summary>
     /// Creates a new Logger instance.
     /// </summary>
     /// <param name="verbose">Whether to enable verbose/debug logging.</param>
-    public Logger(bool verbose = false)
+    /// <param name="component">Component name for log prefix (default: LAUNCHER).</param>
+    public Logger(bool verbose = false, string component = "LAUNCHER")
     {
         _verbose = verbose;
+        _component = component;
     }
 
     /// <summary>
@@ -32,7 +35,7 @@ public class Logger : ILogger
     /// <param name="message">The message to log.</param>
     public void LogInfo(string message)
     {
-        Console.WriteLine($"[LAUNCHER] [INFO] {message}");
+        Console.WriteLine($"[{_component}] [INFO] {message}");
     }
 
     /// <summary>
@@ -41,7 +44,7 @@ public class Logger : ILogger
     /// <param name="message">The warning message to log.</param>
     public void LogWarning(string message)
     {
-        Console.Error.WriteLine($"[LAUNCHER] [WARN] {message}");
+        Console.Error.WriteLine($"[{_component}] [WARN] {message}");
     }
 
     /// <summary>
@@ -50,7 +53,7 @@ public class Logger : ILogger
     /// <param name="message">The error message to log.</param>
     public void LogError(string message)
     {
-        Console.Error.WriteLine($"[LAUNCHER] [ERROR] {message}");
+        Console.Error.WriteLine($"[{_component}] [ERROR] {message}");
     }
 
     /// <summary>
@@ -61,7 +64,7 @@ public class Logger : ILogger
     {
         if (_verbose)
         {
-            Console.WriteLine($"[LAUNCHER] [VERBOSE] {message}");
+            Console.WriteLine($"[{_component}] [VERBOSE] {message}");
         }
     }
 }

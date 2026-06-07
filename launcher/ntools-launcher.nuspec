@@ -22,7 +22,7 @@
 	  </dependencies>
   </metadata>
   <files>
-    <file src="..\Release\launcher.dll" target="lib\net10.0" />
+    <file src="..\Release\Launcher.dll" target="lib\net10.0" />
     <file src="README.md" target="" />
     <file src="LICENSE.txt" target="" />
   </files>
