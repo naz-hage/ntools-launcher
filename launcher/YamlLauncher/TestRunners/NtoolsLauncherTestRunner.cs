@@ -34,7 +34,7 @@ public class NtoolsLauncherTestRunner
         try
         {
             // Find the YAML file
-            var yamlFile = Path.Combine(_metadataPath, $"{testName}.ntools.yml");
+            var yamlFile = Path.Combine(_metadataPath, $"{testName}.yml");
             
             if (!File.Exists(yamlFile))
             {
@@ -191,19 +191,19 @@ public class NtoolsLauncherTestRunner
                 return;
             }
 
-            var yamlFiles = Directory.GetFiles(_metadataPath, "*.ntools.yml");
+            var yamlFiles = Directory.GetFiles(_metadataPath, "*.yml");
 
             if (yamlFiles.Length == 0)
             {
-                _logger.LogInfo("No ntools-launcher YAML test files found");
+                _logger.LogInfo("No YAML test files found");
                 return;
             }
 
-            _logger.LogInfo($"Available ntools-launcher tests ({yamlFiles.Length}):");
+            _logger.LogInfo($"Available tests ({yamlFiles.Length}):");
 
             foreach (var file in yamlFiles)
             {
-                var testName = Path.GetFileNameWithoutExtension(file).Replace(".ntools", "");
+                var testName = Path.GetFileNameWithoutExtension(file);
                 _logger.LogInfo($"  • {testName}");
             }
         }
