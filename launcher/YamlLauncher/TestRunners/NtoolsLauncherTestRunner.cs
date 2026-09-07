@@ -133,6 +133,12 @@ public class NtoolsLauncherTestRunner
                             allSuccess = false;
                         }
 
+                        if (!allSuccess && config.Execution?.StopOnFirstError == true)
+                        {
+                            _logger.LogError("[X] Stopping because stopOnFirstError is enabled");
+                            break;
+                        }
+
                         // Show extracted variables
                         if (executionResult.ExtractedVariables?.Count > 0)
                         {
@@ -160,6 +166,12 @@ public class NtoolsLauncherTestRunner
                     {
                         _logger.LogError($"Execution failed: {ex.Message}");
                         allSuccess = false;
+
+                        if (config.Execution?.StopOnFirstError == true)
+                        {
+                            _logger.LogError("[X] Stopping because stopOnFirstError is enabled");
+                            break;
+                        }
                     }
                 }
             }
