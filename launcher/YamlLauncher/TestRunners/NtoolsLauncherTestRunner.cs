@@ -250,7 +250,7 @@ public class NtoolsLauncherTestRunner
 
     private string? FindYamlFile(string testName)
     {
-        foreach (var extension in new[] { ".yaml", ".yml" })
+        foreach (var extension in new[] { ".yaml", ".ntools.yml", ".yml" })
         {
             var candidate = Path.Combine(_metadataPath, $"{testName}{extension}");
             if (File.Exists(candidate))

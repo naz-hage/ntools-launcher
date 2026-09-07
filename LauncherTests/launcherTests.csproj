@@ -39,4 +39,11 @@
     <ProjectReference Include="..\launcher\Launcher.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\Release\metadata\**\*">
+      <Link>metadata\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
