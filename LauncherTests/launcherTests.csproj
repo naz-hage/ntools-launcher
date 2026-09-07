@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\Release\metadata\**\*">
+    <Content Include="metadata\**\*">
       <Link>metadata\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

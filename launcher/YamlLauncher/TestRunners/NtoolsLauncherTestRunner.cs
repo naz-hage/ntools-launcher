@@ -275,9 +275,12 @@ public class NtoolsLauncherTestRunner
                 var fileName = Path.GetFileName(file);
                 return fileName.StartsWith("Test_", StringComparison.OrdinalIgnoreCase) &&
                     (fileName.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase) ||
+                     fileName.EndsWith(".ntools.yml", StringComparison.OrdinalIgnoreCase) ||
                      fileName.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)) ||
                     fileName.StartsWith("Validate_", StringComparison.OrdinalIgnoreCase) &&
-                    fileName.EndsWith(".yml", StringComparison.OrdinalIgnoreCase);
+                    (fileName.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase) ||
+                     fileName.EndsWith(".ntools.yml", StringComparison.OrdinalIgnoreCase) ||
+                     fileName.EndsWith(".yml", StringComparison.OrdinalIgnoreCase));
             })
             .ToArray();
     }
@@ -348,7 +351,9 @@ public class NtoolsLauncherTestRunner
                 {
                     _logger.LogVerbose($"Match found! Groups count: {match.Groups.Count}");
                     _logger.LogVerbose($"Match position: Index={match.Index}, Length={match.Length}, Value='{match.Value}'");
-                    _logger.LogVerbose($"Context: '{output.Substring(Math.Max(0, match.Index - 20), Math.Min(60, output.Length - match.Index + 20))}'");
+                    var contextStart = Math.Max(0, match.Index - 20);
+                    var contextLength = Math.Min(60, output.Length - contextStart);
+                    _logger.LogVerbose($"Context: '{output.Substring(contextStart, contextLength)}'");
                     for (int g = 0; g < match.Groups.Count; g++)
                     {
                         _logger.LogVerbose($"  Group[{g}] = '{match.Groups[g].Value}'");
