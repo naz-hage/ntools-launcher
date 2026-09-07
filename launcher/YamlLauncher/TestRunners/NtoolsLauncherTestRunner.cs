@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +21,7 @@ public class NtoolsLauncherTestRunner
     private readonly string _metadataPath;
     private readonly ILogger _logger;
 
-    public NtoolsLauncherTestRunner(bool verbose = false, ILogger logger = null, string metadataPath = null)
+    public NtoolsLauncherTestRunner(bool verbose = false, ILogger? logger = null, string? metadataPath = null)
     {
         _verbose = verbose;
         _metadataPath = metadataPath ?? Path.Combine(AppContext.BaseDirectory, "metadata");
@@ -33,12 +35,11 @@ public class NtoolsLauncherTestRunner
     {
         try
         {
-            // Find the YAML file
-            var yamlFile = Path.Combine(_metadataPath, $"{testName}.yml");
-            
-            if (!File.Exists(yamlFile))
+            var yamlFile = FindYamlFile(testName);
+
+            if (yamlFile == null)
             {
-                _logger.LogError($"Test YAML file not found: {yamlFile}");
+                _logger.LogError($"Test YAML file not found for test: {testName}");
                 return false;
             }
 
@@ -114,6 +115,11 @@ public class NtoolsLauncherTestRunner
                         // Extract variables from step output
                         ExtractVariables(step, executionResult, variables);
 
+                        if (!EvaluateAssertions(step, executionResult))
+                        {
+                            allSuccess = false;
+                        }
+
                         _logger.LogInfo($"Exit Code: {executionResult.ExitCode}");
                         _logger.LogInfo($"Duration: {executionResult.DurationMs}ms");
                         
@@ -179,6 +185,35 @@ public class NtoolsLauncherTestRunner
     }
 
     /// <summary>
+    /// Runs all discovered YAML test configurations in deterministic name order.
+    /// </summary>
+    public async Task<bool> RunAllTestsAsync()
+    {
+        var testNames = GetYamlTestFiles()
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(name => !string.IsNullOrEmpty(name))
+            .OrderBy(name => name, StringComparer.Ordinal)
+            .ToArray();
+
+        if (testNames.Length == 0)
+        {
+            _logger.LogInfo("No YAML test files found");
+            return true;
+        }
+
+        var allSuccess = true;
+        foreach (var testName in testNames)
+        {
+            if (!await RunTestAsync(testName!))
+            {
+                allSuccess = false;
+            }
+        }
+
+        return allSuccess;
+    }
+
+    /// <summary>
     /// Lists all available ntools-launcher YAML test files.
     /// </summary>
     public void ListTests()
@@ -191,7 +226,7 @@ public class NtoolsLauncherTestRunner
                 return;
             }
 
-            var yamlFiles = Directory.GetFiles(_metadataPath, "*.yml");
+            var yamlFiles = GetYamlTestFiles();
 
             if (yamlFiles.Length == 0)
             {
@@ -201,7 +236,7 @@ public class NtoolsLauncherTestRunner
 
             _logger.LogInfo($"Available tests ({yamlFiles.Length}):");
 
-            foreach (var file in yamlFiles)
+            foreach (var file in yamlFiles.OrderBy(file => file, StringComparer.Ordinal))
             {
                 var testName = Path.GetFileNameWithoutExtension(file);
                 _logger.LogInfo($"  • {testName}");
@@ -211,6 +246,40 @@ public class NtoolsLauncherTestRunner
         {
             _logger.LogError($"Error listing tests: {ex.Message}");
         }
+    }
+
+    private string? FindYamlFile(string testName)
+    {
+        foreach (var extension in new[] { ".yaml", ".yml" })
+        {
+            var candidate = Path.Combine(_metadataPath, $"{testName}{extension}");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private string[] GetYamlTestFiles()
+    {
+        if (!Directory.Exists(_metadataPath))
+        {
+            return Array.Empty<string>();
+        }
+
+        return Directory.GetFiles(_metadataPath)
+            .Where(file =>
+            {
+                var fileName = Path.GetFileName(file);
+                return fileName.StartsWith("Test_", StringComparison.OrdinalIgnoreCase) &&
+                    (fileName.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase) ||
+                     fileName.EndsWith(".yml", StringComparison.OrdinalIgnoreCase)) ||
+                    fileName.StartsWith("Validate_", StringComparison.OrdinalIgnoreCase) &&
+                    fileName.EndsWith(".yml", StringComparison.OrdinalIgnoreCase);
+            })
+            .ToArray();
     }
 
     /// <summary>
@@ -259,6 +328,12 @@ public class NtoolsLauncherTestRunner
                 if (string.IsNullOrEmpty(extraction.Pattern))
                 {
                     _logger.LogError($"Extraction '{extraction.Name}': No pattern defined");
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(extraction.Name))
+                {
+                    _logger.LogError("Extraction has no variable name defined");
                     continue;
                 }
 
@@ -311,5 +386,52 @@ public class NtoolsLauncherTestRunner
                 _logger.LogError($"[X] Error extracting variable {extraction.Name}: {ex.Message}");
             }
         }
+    }
+
+    private bool EvaluateAssertions(StepConfig step, ExecutionResult result)
+    {
+        if (step.Assertions == null || step.Assertions.Count == 0)
+        {
+            return true;
+        }
+
+        var output = string.Concat(result.StandardOutput, result.StandardError);
+        var allPassed = true;
+
+        foreach (var assertion in step.Assertions)
+        {
+            var comparison = assertion.CaseInsensitive
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+            var type = assertion.Type?.Trim().ToLowerInvariant();
+            var passed = type switch
+            {
+                "exit_code" => int.TryParse(assertion.Value, out var expectedExitCode) &&
+                    result.ExitCode == expectedExitCode,
+                "output_contains" => assertion.Value != null &&
+                    output.Contains(assertion.Value, comparison),
+                "output_matches" => !string.IsNullOrEmpty(assertion.Pattern) &&
+                    Regex.IsMatch(
+                        output,
+                        assertion.Pattern,
+                        assertion.CaseInsensitive ? RegexOptions.IgnoreCase : RegexOptions.None),
+                _ => false
+            };
+
+            if (passed)
+            {
+                _logger.LogInfo($"[✓] Assertion passed: {assertion.Type}");
+            }
+            else
+            {
+                var expected = assertion.Type?.Trim().Equals("output_matches", StringComparison.OrdinalIgnoreCase) == true
+                    ? assertion.Pattern ?? "<missing>"
+                    : assertion.Value ?? "<missing>";
+                _logger.LogError($"[X] Assertion failed: {assertion.Type}; expected '{expected}'");
+                allPassed = false;
+            }
+        }
+
+        return allPassed;
     }
 }

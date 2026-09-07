@@ -97,6 +97,10 @@ public class StepExecutor : IStepExecutor
                     {
                         _logger.LogVerbose($"Working Directory: {step.WorkingDirectory}");
                     }
+                    else
+                    {
+                        _logger.LogVerbose($"Working Directory Not Set:");
+                    }
                     _logger.LogVerbose($"--- Command Output ---");
                 }
 
