@@ -96,7 +96,7 @@ jobs:
 
     - name: Run build using ntools
       run: |
-        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
+        & "$env:ProgramFilesPath/nbuild/sdo.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:
