@@ -34,7 +34,7 @@ if (-not $result) {
 # install Nuget
 #########################
 Write-OutputMessage $fileName "Installing Nuget..."
-& $"$env:ProgramFiles/nbuild/sdo.exe" tool install -j .\nuget.json
+& "$env:ProgramFiles/nbuild/sdo.exe" tool install -j .\nuget.json
 if ($LASTEXITCODE -ne 0) {
     Write-OutputMessage $fileName "Error: Installation of nuget.json failed. Exiting script."
     exit 1
