@@ -1,11 +1,11 @@
 ---
-name: nb-test
+name: sdo-test
 description: "Run tests for the ntools-launcher project using the custom Nbuild test system. Use when: user says 'run tests', 'test', 'execute tests', or needs to verify that code works correctly."
 ---
 
-# NB Test
+# sdo test
 
-Use `nb test` to run all unit tests in the ntools-launcher project with the custom Nbuild test system.
+Use `sdo test` to run all unit tests in the ntools-launcher project with the custom Nbuild test system.
 
 ## When to Use
 
@@ -18,7 +18,7 @@ Use `nb test` to run all unit tests in the ntools-launcher project with the cust
 Run the following command in the terminal:
 
 ```bash
-nb test
+sdo test
 ```
 
 This command:
@@ -35,7 +35,7 @@ Tests are located in:
 
 ## Checking Test Results
 
-After running `nb test`, check the results in `nbuild.log`:
+After running `sdo test`, check the results in `nbuild.log`:
 
 ```bash
 cat nbuild.log

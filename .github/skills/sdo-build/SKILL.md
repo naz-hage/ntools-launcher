@@ -1,11 +1,11 @@
 ---
-name: nb-build
+name: sdo-build
 description: "Build the ntools-launcher project using the custom Nbuild system. Use when: user says 'build project', 'build', 'compile', or needs to compile the C# code."
 ---
 
-# NB Build
+# sdo solution
 
-Use `nb build` to compile the ntools-launcher project with the custom Nbuild build system.
+Use `sdo solution` to compile the ntools-launcher project with the custom Nbuild build system.
 
 ## When to Use
 
@@ -18,7 +18,7 @@ Use `nb build` to compile the ntools-launcher project with the custom Nbuild bui
 Run the following command in the terminal:
 
 ```bash
-nb build
+sdo solution
 ```
 
 This command:
@@ -28,7 +28,7 @@ This command:
 
 ## Checking Build Results
 
-After running `nb build`, check the results in `nbuild.log`:
+After running `sdo solution`, check the results in `nbuild.log`:
 
 ```bash
 cat nbuild.log
