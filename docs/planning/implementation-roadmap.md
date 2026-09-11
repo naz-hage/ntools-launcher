@@ -364,7 +364,7 @@ execution:
 
 ### Current Pattern
 ```csharp
-var executor = new CliTestExecutor("nb.exe", verbose: true);
+var executor = new CliTestExecutor("sdo.exe", verbose: true);
 var result = await executor.ExecuteAsync("install", new[] { "--name", "MyApp" });
 ```
 
@@ -375,13 +375,13 @@ version: "1.0"
 
 tasks:
   - name: "test_install_with_name"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --name MyApp"
     timeout: 120000
     verifySignature: true
   
   - name: "test_list_after_install"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "list"
     dependencies: ["test_install_with_name"]
 ```
@@ -417,17 +417,17 @@ version: "1.0"
 
 tasks:
   - name: "download"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "download --json tools.json"
   
   - name: "install"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --json tools.json"
     dependencies: ["download"]
     verifySignature: true
   
   - name: "verify"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "list --json tools.json"
     dependencies: ["install"]
 ```

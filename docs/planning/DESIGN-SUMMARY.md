@@ -319,7 +319,7 @@ nb list                             # List available apps
 ```yaml
 # Simple case: Single step
 step:
-  path: "nb.exe"
+  path: "sdo.exe"
   arguments: "install --name MyApp"
 
 # Complex deployments: Multi-step orchestration

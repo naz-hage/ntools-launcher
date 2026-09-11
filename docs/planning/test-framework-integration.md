@@ -15,7 +15,7 @@
 version: "1.0"
 
 task:
-  path: "nb.exe"
+  path: "sdo.exe"
   arguments: "install --name MyApp"
   timeout: 120000
 
@@ -30,7 +30,7 @@ execution:
 version: "1.0"
 
 task:
-  path: "nb.exe"
+  path: "sdo.exe"
   arguments: "install --name MyApp"
   timeout: 120000
   
