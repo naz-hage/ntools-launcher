@@ -16,7 +16,7 @@ on:
 env:
   Ntools: Nbuild
   build_type: ${{ github.ref == 'refs/heads/main' && 'prod' || github.event.inputs.build_type || 'stage' }}
-  nToolsVersion: "1.80.4"
+  nToolsVersion: "1.80.6"
   Enable_Logging: true # Enable additional logging
 
 jobs:
