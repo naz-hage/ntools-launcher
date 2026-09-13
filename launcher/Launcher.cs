@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Launcher.Helpers;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -102,7 +103,7 @@ namespace Ntools
                 Directory.SetCurrentDirectory(process.StartInfo.WorkingDirectory);
                 if (verbose)
                 {
-                    Console.WriteLine($"Working Directory when launching Process: {Directory.GetCurrentDirectory()}");
+                    ConsoleHelper.WriteVerbose ($"Working Directory when launching Process: {Directory.GetCurrentDirectory()}");
                 }
 
                 if (process.Start())
@@ -129,11 +130,11 @@ namespace Ntools
                 // display exit code and process.output
                 if (verbose)
                 {
-                    Console.WriteLine($" -Code: {process.ExitCode}");
-                    Console.WriteLine($" -Output:");
+                    ConsoleHelper.WriteVerbose ($" -Code: {process.ExitCode}");
+                    ConsoleHelper.WriteVerbose ($" -Output:");
                     foreach (var line in result.Output)
                     {
-                        Console.WriteLine($"   {line}");
+                        ConsoleHelper.WriteVerbose ($"   {line}");
                     }
                 }
 
@@ -147,7 +148,7 @@ namespace Ntools
                 Directory.SetCurrentDirectory(currentDir);
                 if (verbose)
                 {
-                    Console.WriteLine($"Working Directory After launching Process: {Directory.GetCurrentDirectory()}");
+                    ConsoleHelper.WriteVerbose ($"Working Directory After launching Process: {Directory.GetCurrentDirectory()}");
                 }
 
             }
@@ -210,7 +211,7 @@ namespace Ntools
                     {
                         Thread.CurrentThread.IsBackground = true;
                         Process.Start(startInfo);
-                        Console.WriteLine($"Started {startInfo.FileName} {startInfo.Arguments}");
+                        ConsoleHelper.WriteInfo($"Started {startInfo.FileName} {startInfo.Arguments}");
                     }
                     catch (Exception ex)
                     {
@@ -222,7 +223,7 @@ namespace Ntools
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}");
+                ConsoleHelper.WriteError($"Exception: {ex.Message}");
                 return ResultHelper.Fail(message: ex.Message);
             }
         }
