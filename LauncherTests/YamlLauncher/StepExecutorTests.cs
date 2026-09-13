@@ -100,6 +100,33 @@ public class StepExecutorTests
     }
 
     [TestMethod]
+    public async Task LaunchAsync_WhenExecutionExceedsTimeout_ReturnsTimeoutFailure()
+    {
+        var config = new LauncherConfig
+        {
+            Version = "1.0",
+            Execution = new ExecutionSettings { Timeout = 1 },
+            Steps = new List<StepConfig>
+            {
+                new StepConfig
+                {
+                    Name = "timeout",
+                    Path = "cmd.exe",
+                    Arguments = "/c \"ping 127.0.0.1 -n 6 > nul\"",
+                    ExpectedReturnCode = 0
+                }
+            }
+        };
+
+        var result = await _executor.LaunchAsync(config, 0);
+
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(-1, result.Results![0].ExitCode);
+        Assert.IsTrue(result.Results[0].StdErr!.Contains("Timeout"));
+    }
+
+    [TestMethod]
     public async Task LaunchAsync_WithStdErr_CapturesError()
     {
         var config = new LauncherConfig

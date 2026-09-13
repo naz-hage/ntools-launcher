@@ -1,5 +1,13 @@
 ## [Latest Release](https://github.com/naz-hage/ntools-launcher/releases)
 
+### Unreleased - September 2026
+- [issue #27] Upgrade the project and test dependencies to .NET 10 / MSTest 4.
+- [issue #31] Add YamlDotNet 18.0.0 and the YAML launcher foundation.
+- [issue #33] Add YAML launcher configuration and result models, including `steps:`, `tasks:`, and `apps:` aliases.
+- [issue #35] Add YAML loading and validation from files, strings, and streams.
+- [issue #36] Add single-step execution with output capture, timeouts, environment variables, working directories, exit-code checks, and optional signature verification.
+- [issue #37] Add comprehensive Phase 1 YAML launcher tests, including deterministic timeout coverage.
+
 ### Version 1.6.0 - 14-nov-24
 - [issue #14](https://github.com/naz-hage/ntools-launcher/issues/14) - Feature: Publish documentation using mkdocs
 - [issue #17](https://github.com/naz-hage/ntools-launcher/issues/14) - Bug:Microsoft Security Advisory CVE-2024-43485 | .NET Denial of Service Vulnerability

@@ -16,4 +16,6 @@ Used by [ntools](https://github.com/naz-hage/ntools) repo:
 - **CurrentProcess** - Check process elevation status
 - **ResultHelper** - Handle process execution results
 - **ResultDownload** - Handle download operation results
-- **YAML Launcher Framework** - Configuration models for declarative workflow definitions (execution engine planned for future release)
+- **YAML Launcher Framework** - YAML parsing, validation, and single-step process execution with output capture, timeouts, environment variables, and optional signature checks
+
+The package targets .NET 10.0 and uses YamlDotNet 18.0.0 for YAML configuration support. See the [YAML Launcher usage guide](usage.md#yaml-launcher-framework) for the current API and supported configuration fields.

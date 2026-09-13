@@ -337,11 +337,11 @@ These models represent execution outcomes:
 │  └─ Dictionary<string, string> Variables                  │
 └────────────────┬────────────────────────────────────────────┘
                  │
-                 │ Execute (future implementation)
+                 │ Validate and execute selected step
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│      Existing ntools-launcher Components                   │
-│  (Launcher, ShellUtility, ResultHelper)                    │
+│      YAML Launcher Services                                 │
+│  YamlLauncherConfigLoader -> StepExecutor -> ILogger        │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  │ Results
@@ -395,10 +395,11 @@ apps:       # nb/ntools compatibility
 
 ### Key Features
 
-- **Type-Safe Configuration**: C# models with optional validation (full validation layer planned)
+- **Type-Safe Configuration**: C# models validated by `LauncherConfigValidator`
 - **YAML Native**: Native YAML support via YamlDotNet
-- **Configuration Models**: Models for sequential/parallel step orchestration (execution engine planned)
-- **Extensible Design**: Model-based architecture enables future features (assertions, variable extraction, retry policies, timeouts, hooks)
+- **Single-Step Execution**: `StepExecutor` captures output, validates exit codes, applies environment and working-directory settings, and enforces timeouts
+- **Structured Logging**: `ILogger` and `Logger` provide optional `[LAUNCHER]`-prefixed output
+- **Extensible Design**: Model-based architecture leaves room for dependency orchestration, variable substitution, retries, and hooks
 
 ## Future Enhancements
 
