@@ -16,6 +16,7 @@ on:
 env:
   Ntools: Nbuild
   build_type: ${{ github.ref == 'refs/heads/main' && 'prod' || github.event.inputs.build_type || 'stage' }}
+  nToolsVersion: "1.80.6"
   Enable_Logging: true # Enable additional logging
 
 jobs:
@@ -67,7 +68,7 @@ jobs:
     - name: Install ntools
       run: |
         cd ./dev-setup
-        ./install-dependencies.ps1
+        ./install-dependencies.ps1 -nToolsVersion ${{ env.nToolsVersion }} 
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
@@ -95,7 +96,7 @@ jobs:
 
     - name: Run build using ntools
       run: |
-        & "$env:ProgramFilesPath/nbuild/nb.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
+        & "$env:ProgramFilesPath/nbuild/sdo.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:

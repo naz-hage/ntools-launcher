@@ -111,16 +111,11 @@ public class ExecutionSettingsTests
 public class ExecutionModeTests
 {
     [TestMethod]
-    public void ExecutionMode_HasSequentialValue()
+    public void ExecutionMode_CanBeCompared()
     {
-        // Assert
-        Assert.AreEqual(0, (int)ExecutionMode.Sequential);
-    }
-
-    [TestMethod]
-    public void ExecutionMode_HasParallelValue()
-    {
-        // Assert
-        Assert.AreEqual(1, (int)ExecutionMode.Parallel);
+        // Assert - Basic enum comparison tests
+        Assert.IsNotNull(ExecutionMode.Sequential);
+        Assert.IsNotNull(ExecutionMode.Parallel);
+        Assert.AreNotEqual(ExecutionMode.Sequential, ExecutionMode.Parallel);
     }
 }

@@ -91,3 +91,45 @@ using Ntools;
 var isElevated = CurrentProcess.IsElevated();
 Console.WriteLine(isElevated);
 ```
+
+### YAML Launcher Framework
+
+The YAML Launcher framework loads a validated `LauncherConfig` and executes one configured step at a time. Use `steps:` as the canonical YAML property; `tasks:` and `apps:` are supported aliases that map to the same collection.
+
+```yaml
+version: "1.0"
+description: "Build the application"
+variables:
+  Configuration: "Release"
+execution:
+  verbose: true
+  timeout: 60
+steps:
+  - name: build
+    path: dotnet
+    arguments: "build -c $(Configuration)"
+    expectedReturnCode: 0
+```
+
+Load, validate, and execute the first step:
+
+```csharp
+using YamlLauncher;
+using YamlLauncher.Models;
+
+var loader = new YamlLauncherConfigLoader();
+LauncherConfig config = await loader.LoadFromFileAsync("launcher.yaml");
+
+var executor = new StepExecutor(config.Execution?.Verbose ?? false);
+LaunchResult result = await executor.LaunchAsync(config, stepIndex: 0);
+
+var execution = result.Results[0];
+Console.WriteLine($"Exit code: {execution.ExitCode}");
+Console.WriteLine(execution.StdOut);
+```
+
+`LoadFromStringAsync` and `LoadFromStreamAsync` are also available. Invalid YAML, missing required configuration, dangling dependencies, and invalid regular expressions are reported through `LauncherConfigException`; YAML syntax errors include line and column information.
+
+`StepExecutor` captures standard output and standard error, applies global and step-specific environment variables, validates an optional working directory, enforces the configured timeout in seconds, and returns exit code `-1` when execution times out or cannot start. Verbose logging uses `[LAUNCHER]` prefixes and child processes run without creating a console window.
+
+The current framework executes individual steps. Dependency orchestration, variable substitution between steps, and full assertion evaluation remain planned extensions.

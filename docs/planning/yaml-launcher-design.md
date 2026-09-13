@@ -25,7 +25,7 @@ This design creates a new API layer for ntools-launcher that accepts YAML config
 
 #### Pattern A: test-framework/CliTestExecutor
 ```csharp
-var executor = new CliTestExecutor("nb.exe", verbose: true);
+var executor = new CliTestExecutor("sdo.exe", verbose: true);
 var result = await executor.ExecuteAsync("install", new[] { "--name", "MyApp" });
 ```
 - **Strengths:** Handles environment vars, output capture, working directory
@@ -392,12 +392,12 @@ var result = await executor.LaunchAsync("app-config.yaml");
 version: "1.0"
 tasks:
   - name: "test_install_with_name"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --name MyApp"
     verifySignature: true
   
   - name: "test_install_with_json"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --json manifest.json"
     verifySignature: true
 ```
@@ -412,17 +412,17 @@ tasks:
 version: "1.0"
 tasks:
   - name: "download"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "download --json tools.json"
   
   - name: "install"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --json tools.json"
     dependencies: ["download"]
     verifySignature: true
   
   - name: "verify"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "list"
     dependencies: ["install"]
 ```

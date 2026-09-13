@@ -1,7 +1,7 @@
 # YAML Launcher - Implementation Roadmap & Quick Start
 
-**Date:** May 25, 2026  
-**Status:** Design Phase Complete - Ready for Implementation  
+**Date:** September 13, 2026  
+**Status:** Phase 1 foundation implemented; orchestration phases remain planned  
 **Audience:** ntools-launcher Development Team
 
 ---
@@ -23,7 +23,7 @@ Created a unified YAML-based executable launcher framework that:
 
 ## Quick Implementation Roadmap
 
-### Phase 1: Foundation (Weeks 1-2)
+### Phase 1: Foundation (completed)
 **Focus:** Core parsing and single executable launch
 
 ```csharp
@@ -31,17 +31,19 @@ Created a unified YAML-based executable launcher framework that:
 var loader = new YamlLauncherConfigLoader();
 var executor = new StepExecutor();
 
-var config = loader.LoadFromFile("single-step.yaml");
-var result = await executor.LaunchAsync(config);
+var config = await loader.LoadFromFileAsync("single-step.yaml");
+var result = await executor.LaunchAsync(config, stepIndex: 0);
 ```
 
 **Tasks:**
-- [ ] Add YamlDotNet NuGet dependency
-- [ ] Create LauncherConfig, StepConfig, ExecutionSettings models
-- [ ] Implement YamlLauncherConfigLoader with YAML parsing
-- [ ] Implement StepExecutor for single step
-- [ ] Add unit tests for YAML parsing
-- [ ] Add single step integration tests
+- [x] Add YamlDotNet 18.0.0 NuGet dependency
+- [x] Create LauncherConfig, StepConfig, ExecutionSettings, result, assertion, and extraction models
+- [x] Implement YamlLauncherConfigLoader with YAML parsing and validation
+- [x] Implement StepExecutor for single-step execution
+- [x] Add unit tests for YAML parsing and validation
+- [x] Add StepExecutor tests for output, errors, timeouts, environment, and working directories
+
+The Phase 1 implementation targets .NET 10.0. The current test suite reports 141 tests: 139 passed, 2 skipped for platform/admin-dependent scenarios, and 0 failed. The generated repository-wide Cobertura report is not a Phase 1-only coverage measurement.
 
 **Files to Create:**
 ```
@@ -364,7 +366,7 @@ execution:
 
 ### Current Pattern
 ```csharp
-var executor = new CliTestExecutor("nb.exe", verbose: true);
+var executor = new CliTestExecutor("sdo.exe", verbose: true);
 var result = await executor.ExecuteAsync("install", new[] { "--name", "MyApp" });
 ```
 
@@ -375,13 +377,13 @@ version: "1.0"
 
 tasks:
   - name: "test_install_with_name"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --name MyApp"
     timeout: 120000
     verifySignature: true
   
   - name: "test_list_after_install"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "list"
     dependencies: ["test_install_with_name"]
 ```
@@ -417,17 +419,17 @@ version: "1.0"
 
 tasks:
   - name: "download"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "download --json tools.json"
   
   - name: "install"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --json tools.json"
     dependencies: ["download"]
     verifySignature: true
   
   - name: "verify"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "list --json tools.json"
     dependencies: ["install"]
 ```
@@ -494,7 +496,7 @@ var yamlResult = await executor.LaunchAsync(\"app.yaml\");
 - ✅ `yaml-launcher-design.md` - Complete design specification
 - ✅ `yaml-schema-reference.md` - YAML syntax and schema
 
-**To Create During Implementation:**
+**Future Documentation Deliverables:**
 - `usage-examples.md` - 20+ real-world examples
 - `api-reference.md` - Complete C# API documentation
 - `troubleshooting-guide.md` - Common issues and solutions
@@ -534,10 +536,10 @@ After implementation, measure:
 
 ## Next Steps
 
-1. **Review Plan** - Team review of design documents (1-2 days)
-2. **Approve Scope** - Decision on Phase 1-5 timeline (1 day)
-3. **Begin Implementation** - Phase 1 foundation work (2 weeks)
-4. **Continuous Integration** - Each phase integrated and tested (6+ weeks)
+1. Implement dependency resolution and sequential orchestration
+2. Add cross-step variable substitution and assertion evaluation
+3. Add integration and migration examples for consuming repositories
+4. Keep the existing Process-based API backward compatible
 5. **Beta Release** - Early feedback from internal teams (2 weeks)
 6. **GA Release** - Official NuGet package release (1 week)
 

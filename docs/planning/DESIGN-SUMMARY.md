@@ -1,7 +1,7 @@
 # YAML Launcher Design Summary: Unified Framework with Backward Compatibility
 
 **Date:** May 25, 2026  
-**Status:** Design Phase Complete - Ready for Implementation  
+**Status:** Design baseline; Phase 1 foundation implemented, later phases remain planned  
 **Audience:** Architecture Review, Development Teams
 
 ---
@@ -319,7 +319,7 @@ nb list                             # List available apps
 ```yaml
 # Simple case: Single step
 step:
-  path: "nb.exe"
+  path: "sdo.exe"
   arguments: "install --name MyApp"
 
 # Complex deployments: Multi-step orchestration
