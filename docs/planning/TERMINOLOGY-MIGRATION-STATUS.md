@@ -24,7 +24,7 @@
 - Updated YAML examples to use canonical `steps:` form with note about `tasks:` and `apps:` aliases
 - Updated model to show:
   - `StepConfig` class name
-  - Three alias properties: `Steps`, `Tasks` (test-framework), `Apps` (nb)
+  - Three alias properties: `Steps`, `Tasks` (test-framework), `Apps` (sdooo)
 - Updated section headers to reference "steps" terminology
 - Updated code examples to use `StepConfig` and reference canonical naming
 
@@ -74,14 +74,14 @@
 ### Why This Works
 1. **Canonical form (`steps:`)** - Clear, neutral, industry-standard
 2. **Test-framework alias (`tasks:`)** - Natural for sequential test context
-3. **nb alias (`apps:`)** - Natural for application deployment context
+3. **sdooo alias (`apps:`)** - Natural for application deployment context
 4. **Parser support** - All three parse to identical internal model (List<StepConfig>)
 5. **Backward compatibility** - Old YAML with `executables:` can upgrade gradually
 
 ### User Experience
 - **New users:** Learn canonical `steps:` form
 - **test-framework developers:** Can use familiar `tasks:` in their configs
-- **nb developers:** Can use familiar `apps:` in their configs
+- **sdo developers:** Can use familiar `apps:` in their configs
 - **Unified internally:** No duplication of code or logic
 
 ### Model Structure
@@ -153,4 +153,4 @@ c:\source\ntools-launcher\.temp\
 ---
 
 **Prepared by:** Design Team  
-**Review:** Check that terminology is consistent across all three contexts (canonical, test-framework, nb)
+**Review:** Check that terminology is consistent across all three contexts (canonical, test-framework, sdo)

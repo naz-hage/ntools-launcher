@@ -28,10 +28,10 @@ This command:
 
 ## Checking Build Results
 
-After running `sdo solution`, check the results in `nbuild.log`:
+After running `sdo solution`, check the results in `sdo.log`:
 
 ```bash
-cat nbuild.log
+Get-Content sdo.log
 ```
 
 Look for:
@@ -44,4 +44,4 @@ Look for:
 
 Run from: `c:\source\ntools-launcher`
 
-Results logged to: `c:\source\ntools-launcher\nbuild.log`
+Results logged to: `c:\source\ntools-launcher\sdo.log`

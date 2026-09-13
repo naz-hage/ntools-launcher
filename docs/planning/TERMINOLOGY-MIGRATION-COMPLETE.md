@@ -11,7 +11,7 @@
 All three forms parse to identical internal model:
 - **`steps:`** - Canonical form (recommended for new configurations)
 - **`tasks:`** - Alias for test-framework context  
-- **`apps:`** - Alias for nb deployment context
+- **`apps:`** - Alias for sdoooo deployment context
 
 **Internal Model:** All use `StepConfig` class (not ExecutableConfig)
 
@@ -105,7 +105,7 @@ IExecutableLauncher      IStepExecutor        C# interface
 ExecutableLauncher       StepExecutor         C# implementation
 executable:              steps:               YAML config (canonical)
                          tasks:               YAML config (test alias)
-                         apps:                YAML config (nb alias)
+                         apps:                YAML config (sdoo alias)
 ```
 
 ### Document Locations by Role
@@ -127,8 +127,8 @@ executable:              steps:               YAML config (canonical)
 - Pattern: Levels 1-4 show incremental schema support
 - Examples: `integration-examples.md` - Example 1 shows test scenario
 
-**🚀 nb Team:**
-- Start: `integration-examples.md` - "Example 3: nb Deployment"
+**🚀 sdo Team:**
+- Start: `integration-examples.md` - "Example 3: sdo Deployment"
 - Aliases: Can use `apps:` instead of `steps:` in configs
 - Model: All contexts use identical `StepConfig` internally
 

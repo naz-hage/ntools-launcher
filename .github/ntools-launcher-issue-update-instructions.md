@@ -39,7 +39,7 @@ The skill will:
 
 1. **Implement features/fixes** according to acceptance criteria
 2. **Commit changes** to your feature branch
-3. **Run tests** to verify implementation (`nb test`)
+3. **Run tests** to verify implementation (`sdo test`)
 4. **Update issue** to track progress (`update issue <number>`)
 5. **Review changes** in the issue file
 6. **Create pull request** when issue is marked Done ✅
@@ -89,8 +89,8 @@ Checks if StepExecutor.cs exists, validates all 14 tests pass, updates status to
 ## Integration with Build System
 
 The issue update process complements the custom build system:
-- `nb build` - Compile code
-- `nb test` - Run tests and verify implementation
+- `sdo build` - Compile code
+- `sdo test` - Run tests and verify implementation
 - `update issue <number>` - Track progress
 
 This workflow ensures automated tracking of implementation status without manual status updates.

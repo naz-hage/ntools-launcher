@@ -46,7 +46,7 @@ public class LauncherConfig
     }
 
     /// <summary>
-    /// Gets or sets the apps (alias for Steps, used for nb integration context).
+    /// Gets or sets the apps (alias for Steps, used for sdoooo integration context).
     /// </summary>
     public List<StepConfig>? Apps
     {

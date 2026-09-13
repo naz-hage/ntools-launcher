@@ -151,7 +151,7 @@ ntools-launcher/
 ├── README.md                     # Project documentation
 ├── targets.md                    # Build targets documentation
 ├── coverage.cobertura.xml        # Test coverage report
-├── nbuild.targets                # MSBuild targets
+├── sdo.targets                # MSBuild targets
 ├── unit-tests.targets            # Unit test targets
 ├── e2e-tests.targets             # E2E test targets
 │
@@ -362,12 +362,12 @@ LauncherConfig supports three property names that all reference the same underly
 ```csharp
 config.Steps  // Canonical form (recommended)
 config.Tasks  // Alias for test-framework integration
-config.Apps   // Alias for nb integration context
+config.Apps   // Alias for sdo integration context
 ```
 
 This enables:
 - test-framework projects to use "tasks" in YAML
-- nb projects to use "apps" in YAML
+- sdo projects to use "apps" in YAML
 - All configurations to share the same model layer
 
 ### YAML Schema Support
@@ -388,7 +388,7 @@ tasks:      # test-framework compatibility
   - name: task1
     path: /usr/bin/test
 
-apps:       # nb/ntools compatibility
+apps:       # sdo/ntools compatibility
   - name: app1
     path: /usr/bin/deploy
 ```

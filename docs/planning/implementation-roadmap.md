@@ -9,7 +9,7 @@
 ## Design Summary
 
 Created a unified YAML-based executable launcher framework that:
-- Eliminates Process boilerplate code across test-framework, nb, and ntools-launcher
+- Eliminates Process boilerplate code across test-framework, sdoooo, and ntools-launcher
 - Supports single executable and multi-task pipelines (sequential and parallel)
 - Includes digital signature verification and timeout management
 - Enables variable substitution for cross-environment portability
@@ -372,7 +372,7 @@ var result = await executor.ExecuteAsync("install", new[] { "--name", "MyApp" })
 
 ### New Pattern (YAML-based)
 ```yaml
-# tests/nb-scenarios.yaml
+# tests/sdo-scenarios.yaml
 version: "1.0"
 
 tasks:
@@ -390,7 +390,7 @@ tasks:
 
 ```csharp
 var executor = new StepExecutor();
-var result = await executor.LaunchAsync(\"tests/nb-scenarios.yaml\");
+var result = await executor.LaunchAsync(\"tests/sdo-scenarios.yaml\");
 
 // Same result object, but organized differently
 foreach (var execResult in result.Results)
@@ -401,7 +401,7 @@ foreach (var execResult in result.Results)
 
 ---
 
-## Integration with nb Commands
+## Integration with sdo Commands
 
 ### Before (Current - Manual JSON)
 ```json

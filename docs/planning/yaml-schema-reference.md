@@ -22,7 +22,7 @@ execution:
 tasks:
   - path: "app.exe"
 
-# nb context
+# sdooooo context
 apps:
   - path: "app.exe"
 ```
@@ -72,7 +72,7 @@ variables:
 | `description` | string | No | "" | Human-readable description of the configuration |
 | `steps` | StepConfig[] | * | - | Execution steps (canonical form, mutually exclusive with `tasks` or `apps`) |
 | `tasks` | StepConfig[] | * | - | Execution steps (test-framework alias, equivalent to `steps`) |
-| `apps` | StepConfig[] | * | - | Execution steps (nb alias, equivalent to `steps`) |
+| `apps` | StepConfig[] | * | - | Execution steps (sdo alias, equivalent to `steps`) |
 | `execution` | ExecutionSettings | Yes | - | Execution mode and options |
 | `variables` | Dictionary<string, string> | No | {} | Custom variable substitutions |
 

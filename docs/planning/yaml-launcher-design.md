@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This design creates a new API layer for ntools-launcher that accepts YAML configuration files instead of Process objects. The framework unifies executable launching patterns across three codebases (test-framework, nb, ntools-launcher) into a single, extensible design.
+This design creates a new API layer for ntools-launcher that accepts YAML configuration files instead of Process objects. The framework unifies executable launching patterns across three codebases (test-framework, sdooo, ntools-launcher) into a single, extensible design.
 
 **Key Benefits:**
 - Declarative YAML-based configuration eliminates boilerplate Process creation code
@@ -41,7 +41,7 @@ var result = process.LockVerifyStart(verbose);  // with signature verification
 - **Weakness:** Manual Process setup, ceremony-heavy
 - **Use Case:** Production executable launches with security requirements
 
-#### Pattern C: nb Command/ntools.json
+#### Pattern C: sdoo Command/ntools.json
 ```json
 {
   "Name": "MyApp",
@@ -197,7 +197,7 @@ namespace Ntools.Launcher
         public StepConfig? Step { get; set; }
     public List<StepConfig>? Steps { get; set; }
     public List<StepConfig>? Tasks { get; set; }  // Alias for test-framework
-    public List<StepConfig>? Apps { get; set; }    // Alias for nb
+    public List<StepConfig>? Apps { get; set; }    // Alias for sdo
         
         // Execution settings
         public ExecutionSettings Execution { get; set; }
@@ -402,7 +402,7 @@ tasks:
     verifySignature: true
 ```
 
-### 6.3 nb Installation Scenarios
+### 6.3 sdo Installation Scenarios
 
 **Current:** Hardcoded in ntools.json with limited orchestration  
 **New:** Complex installation pipelines with pre/post steps
@@ -553,7 +553,7 @@ await launcher.LaunchAsync("app-config.yaml");
 - [ ] Documentation with 10+ usage examples
 - [ ] NuGet package published
 - [ ] test-framework integration complete
-- [ ] nb deployment scenarios tested
+- [ ] sdo deployment scenarios tested
 
 ---
 

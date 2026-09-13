@@ -43,7 +43,7 @@
 - Per-phase deliverables and test files
 - Usage patterns with real-world YAML
 - test-framework integration examples
-- nb deployment examples
+- sdo deployment examples
 - Testing strategy and performance benchmarks
 - Backward compatibility guarantees
 - Documentation deliverables
@@ -72,7 +72,7 @@
 ### 5. [integration-examples.md](integration-examples.md)
 **Purpose:** Concrete examples for all three use cases
 - test-framework scenario migration (SDO multi-step workflow)
-- nb deployment with verification
+- sdo deployment with verification
 - ntools-launcher complex orchestration
 - Parallel testing (multi-framework test matrix)
 - Cross-repository coordination
@@ -92,7 +92,7 @@
 - Backward compatibility strategy (3 levels)
 - Core design decisions (5 decisions)
 - Key features & capabilities matrix
-- test-framework/nb/ntools-launcher compatibility
+- test-framework/sdo/ntools-launcher compatibility
 - 7 assertion types
 - Timeline and deliverables
 - Risk mitigation
@@ -140,8 +140,8 @@
 2. Examples: [integration-examples.md](integration-examples.md) - Test scenario migration
 3. Reference: [yaml-schema-reference.md](yaml-schema-reference.md) - New properties
 
-### For nb Team
-1. Start: [integration-examples.md](integration-examples.md#example-2-nb-installation-with-verification) - nb example
+### For sdo Team
+1. Start: [integration-examples.md](integration-examples.md#example-2-sdo-installation-with-verification) - sdo example
 2. Reference: [test-framework-integration.md](test-framework-integration.md) - Assertions/extraction
 3. Schema: [yaml-schema-reference.md](yaml-schema-reference.md) - Complete reference
 
@@ -245,12 +245,12 @@ Level 4: Variable Extraction & Passing (new)
 ## ✅ Design Completeness Checklist
 
 ### Requirements Met ✅
-- Unifies test-framework, nb, ntools-launcher patterns
+- Unifies test-framework, sdo, ntools-launcher patterns
 - Maintains 100% backward compatibility
 - Supports output assertions (test-framework pattern)
 - Supports variable extraction (test-framework pattern)
 - Supports variable passing (test-framework pattern)
-- Supports return code validation (nb pattern)
+- Supports return code validation (sdo pattern)
 - Supports digital signatures (ntools-launcher pattern)
 - Supports sequential pipelines
 - Supports parallel execution
@@ -294,7 +294,7 @@ Level 4: Variable Extraction & Passing (new)
 ```
 Before (3 separate approaches):
   - test-framework: assertions + extraction
-  - nb: return codes + JSON
+  - sdo: return codes + JSON
   - ntools-launcher: signatures + orchestration
 
 After (1 unified approach):
@@ -342,7 +342,7 @@ After (1 unified approach):
 
 ### External References
 - test-framework docs: `../../test-framework/docs/METADATA_DRIVEN_TESTING.md`
-- nb docs: `../../ntools/docs/nbuild.md`
+- sdo docs: `../../ntools/docs/nbuild.md`
 - ntools-launcher: `../launcher/Launcher.cs`
 
 ---
@@ -392,14 +392,14 @@ After (1 unified approach):
 ## ✨ Design Highlights
 
 ### Innovation
-- 🎯 **Unified Framework:** First unified language for test-framework, nb, ntools-launcher
+- 🎯 **Unified Framework:** First unified language for test-framework, sdo, ntools-launcher
 - 📊 **Declarative:** Complex deployments described in YAML, not code
 - 🔄 **Variable Flow:** Automatic variable extraction and passing between steps
 - ⚡ **Parallel Ready:** Foundation for concurrent execution
 
 ### Proven Patterns
 - ✅ Based on test-framework's battle-tested patterns
-- ✅ Aligns with nb's JSON manifest approach
+- ✅ Aligns with sdo's JSON manifest approach
 - ✅ Respects ntools-launcher's signature verification
 - ✅ Uses industry-standard YAML format
 
@@ -416,7 +416,7 @@ After (1 unified approach):
 - 3 separate execution models across 3 repos
 - Duplicated logic for assertions, error handling, result passing
 - No unified way to orchestrate cross-repository workflows
-- test-framework capabilities not available in nb or ntools-launcher
+- test-framework capabilities not available in sdo or ntools-launcher
 
 ### After (With YAML Launcher)
 - 1 unified execution model across all repos

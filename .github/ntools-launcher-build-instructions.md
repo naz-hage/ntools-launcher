@@ -1,7 +1,7 @@
 ---
 name: ntools-launcher-build-instructions
 applyTo: "**"
-description: "Build and test instructions for ntools-launcher project. Use when: working with the ntools-launcher project - always route build commands to 'nb build' and test commands to 'nb test'."
+description: "Build and test instructions for ntools-launcher project. Use when: working with the ntools-launcher project - always route build commands to 'sdo build' and test commands to 'sdo test'."
 ---
 
 # ntools-launcher Build & Test Instructions
@@ -10,23 +10,23 @@ description: "Build and test instructions for ntools-launcher project. Use when:
 
 When the user asks to build, compile, or check the project:
 
-1. **Always use**: `nb build` from the `c:\source\ntools-launcher` directory
+1. **Always use**: `sdo build` from the `c:\source\ntools-launcher` directory
 2. **Never use**: `dotnet build` directly
-3. The `nb build` command uses the custom Nbuild build system defined in `nbuild.targets`
+3. The `sdo build` command uses the custom Nbuild build system defined in `sdo.targets`
 
 Example: If user says "build the project", run:
 ```bash
 cd c:\source\ntools-launcher
-nb build
+sdo build
 ```
 
 ## Test Command
 
 When the user asks to run tests, execute tests, or verify functionality:
 
-1. **Always use**: `nb test` from the `c:\source\ntools-launcher` directory
+1. **Always use**: `sdo test` from the `c:\source\ntools-launcher` directory
 2. **Never use**: `dotnet test` directly
-3. The `nb test` command uses the custom Nbuild test system with code coverage collection
+3. The `sdo test` command uses the custom Nbuild test system with code coverage collection
 4. Test results include:
    - Pass/fail count
    - Code coverage metrics
@@ -35,13 +35,13 @@ When the user asks to run tests, execute tests, or verify functionality:
 Example: If user says "run tests", run:
 ```bash
 cd c:\source\ntools-launcher
-nb test
+sdo test
 ```
 
 ## Project Structure
 
 - **Source Code**: `launcher/`, `LauncherTests/`
-- **Build System**: `nbuild.targets`, `Nbuild.bat`
+- **Build System**: `sdo.targets`
 - **Configuration**: `ntools-launcher.sln`
 - **Models**: `launcher/YamlLauncher/Models/`
 - **Implementation**: `launcher/YamlLauncher/`
@@ -55,5 +55,5 @@ nb test
 ## Default Behavior
 
 - When building: Always check compilation first
-- When testing: Always run full test suite via `nb test`
+- When testing: Always run full test suite via `sdo test`
 - Code coverage target: 90%+ for implementation files
