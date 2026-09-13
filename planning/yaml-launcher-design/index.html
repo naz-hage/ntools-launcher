@@ -1,0 +1,1408 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content=".NET library for secure process launching, file downloading, and shell operations">
+      
+      
+        <meta name="author" content="naz-hage">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>YAML-Based Steps Launcher Design Plan - NTools Launcher</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#yaml-based-steps-launcher-design-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="NTools Launcher" class="md-header__button md-logo" aria-label="NTools Launcher" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            NTools Launcher
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              YAML-Based Steps Launcher Design Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/naz-hage/ntools-launcher" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ntools-launcher
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../devguide/dependencies/" class="md-tabs__link">
+          
+  
+  
+  Development Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../revisions/changelog/" class="md-tabs__link">
+          
+  
+  
+  Revisions
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="NTools Launcher" class="md-nav__button md-logo" aria-label="NTools Launcher" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    NTools Launcher
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/naz-hage/ntools-launcher" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ntools-launcher
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/build-and-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/targets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build Targets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Revisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Revisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../revisions/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="yaml-based-steps-launcher-design-plan">YAML-Based Steps Launcher Design Plan<a class="headerlink" href="#yaml-based-steps-launcher-design-plan" title="Anchor link to this section for reference">&para;</a></h1>
+<p><strong>Date:</strong> May 25, 2026<br />
+<strong>Purpose:</strong> Design a unified YAML-based executable launcher framework to extend ntools-launcher NuGet package<br />
+<strong>Scope:</strong> Single file containing one or many executables with exe and arguments, supporting sequential or parallel execution patterns</p>
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary<a class="headerlink" href="#1-executive-summary" title="Anchor link to this section for reference">&para;</a></h2>
+<p>This design creates a new API layer for ntools-launcher that accepts YAML configuration files instead of Process objects. The framework unifies executable launching patterns across three codebases (test-framework, nb, ntools-launcher) into a single, extensible design.</p>
+<p><strong>Key Benefits:</strong>
+- Declarative YAML-based configuration eliminates boilerplate Process creation code
+- Support for single and multiple executable sequences with dependency management
+- Extensible design supports future features (retry policies, timeout handling, hooks)
+- Reusable NuGet package for downstream projects
+- Single source of truth for application deployment</p>
+<hr />
+<h2 id="2-existing-patterns-analysis">2. Existing Patterns Analysis<a class="headerlink" href="#2-existing-patterns-analysis" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="21-current-executable-launching-patterns">2.1 Current Executable Launching Patterns<a class="headerlink" href="#21-current-executable-launching-patterns" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="pattern-a-test-frameworkclitestexecutor">Pattern A: test-framework/CliTestExecutor<a class="headerlink" href="#pattern-a-test-frameworkclitestexecutor" title="Anchor link to this section for reference">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">CliTestExecutor</span><span class="p">(</span><span class="s">"sdo.exe"</span><span class="p">,</span><span class="w"> </span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">ExecuteAsync</span><span class="p">(</span><span class="s">"install"</span><span class="p">,</span><span class="w"> </span><span class="k">new</span><span class="p">[]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"--name"</span><span class="p">,</span><span class="w"> </span><span class="s">"MyApp"</span><span class="w"> </span><span class="p">});</span>
+</code></pre></div>
+- <strong>Strengths:</strong> Handles environment vars, output capture, working directory
+- <strong>Weakness:</strong> Hard-coded arguments in test code, no declarative configuration
+- <strong>Use Case:</strong> E2E testing, CLI validation</p>
+<h4 id="pattern-b-ntools-launcherlauncher">Pattern B: ntools-launcher/Launcher<a class="headerlink" href="#pattern-b-ntools-launcherlauncher" title="Anchor link to this section for reference">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">process</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">);</span><span class="w">  </span><span class="c1">// with signature verification</span>
+</code></pre></div>
+- <strong>Strengths:</strong> Digital signature verification, file locking, atomic operations
+- <strong>Weakness:</strong> Manual Process setup, ceremony-heavy
+- <strong>Use Case:</strong> Production executable launches with security requirements</p>
+<h4 id="pattern-c-nb-commandntoolsjson">Pattern C: nb Command/ntools.json<a class="headerlink" href="#pattern-c-nb-commandntoolsjson" title="Anchor link to this section for reference">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"Name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MyApp"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"AppFileName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$(InstallPath)\\app.exe"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"InstallArgs"</span><span class="p">:</span><span class="w"> </span><span class="s2">"-Command Expand-Archive -Path $(Version).zip"</span>
+<span class="p">}</span>
+</code></pre></div>
+- <strong>Strengths:</strong> Variable substitution, manifest-based, declarative
+- <strong>Weakness:</strong> Installation-focused, not general executable orchestration
+- <strong>Use Case:</strong> Application installation/deployment</p>
+<hr />
+<h2 id="3-proposed-yaml-schema">3. Proposed YAML Schema<a class="headerlink" href="#3-proposed-yaml-schema" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="31-single-step-basic">3.1 Single Step (Basic)<a class="headerlink" href="#31-single-step-basic" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># single-step-launcher.yaml (or use 'tasks:' or 'apps:')</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Deploy</span><span class="nv"> </span><span class="s">MyApp</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">signature</span><span class="nv"> </span><span class="s">verification"</span>
+
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Program</span><span class="nv"> </span><span class="s">Files\\MyCompany\\myapp.exe"</span>
+<span class="w">    </span><span class="nt">workingDirectory</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Temp"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--config</span><span class="nv"> </span><span class="s">settings.json</span><span class="nv"> </span><span class="s">--verbose"</span>
+
+<span class="w">    </span><span class="c1"># Optional: Environment variable overrides</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">LOG_LEVEL</span><span class="p">:</span><span class="w"> </span><span class="s">"DEBUG"</span>
+<span class="w">      </span><span class="nt">CUSTOM_PATH</span><span class="p">:</span><span class="w"> </span><span class="s">"$(InstallPath)"</span>
+
+<span class="w">    </span><span class="c1"># Optional: Execution settings</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000</span><span class="w">  </span><span class="c1"># milliseconds</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># Requires digital signing</span>
+<span class="w">    </span><span class="nt">redirectOutput</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="nt">execution</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"DeployApp"</span>
+<span class="w">  </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<h3 id="32-multiple-steps-sequence">3.2 Multiple Steps (Sequence)<a class="headerlink" href="#32-multiple-steps-sequence" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># multi-step-launcher.yaml (or use 'tasks:' or 'apps:')</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Sequential</span><span class="nv"> </span><span class="s">deployment</span><span class="nv"> </span><span class="s">pipeline"</span>
+
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"prepare"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\scripts\\prepare.bat"</span>
+<span class="w">    </span><span class="nt">workingDirectory</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Temp"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--env</span><span class="nv"> </span><span class="s">prod"</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60000</span>
+<span class="w">    </span><span class="nt">continueOnError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># Pipeline stops if this fails</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"install"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Program</span><span class="nv"> </span><span class="s">Files\\installer.exe"</span>
+<span class="w">    </span><span class="nt">workingDirectory</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Temp"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--package</span><span class="nv"> </span><span class="s">myapp.zip</span><span class="nv"> </span><span class="s">--destination</span><span class="nv"> </span><span class="s">$(InstallPath)"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"prepare"</span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># Run after 'prepare' succeeds</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120000</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"verify"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Program</span><span class="nv"> </span><span class="s">Files\\validator.exe"</span>
+<span class="w">    </span><span class="nt">workingDirectory</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Temp"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--check</span><span class="nv"> </span><span class="s">$(InstallPath)\\myapp.exe"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"install"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30000</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"cleanup"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\scripts\\cleanup.bat"</span>
+<span class="w">    </span><span class="nt">workingDirectory</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Temp"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--dir</span><span class="nv"> </span><span class="s">$(DownloadsPath)"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"verify"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">continueOnError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># Always cleanup, even if verify fails</span>
+
+<span class="nt">execution</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="s">"sequential"</span><span class="w">  </span><span class="c1"># sequential | parallel</span>
+<span class="w">  </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">stopOnFirstError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># Don't stop entire pipeline, but mark result</span>
+
+<span class="nt">variables</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">InstallPath</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\Program</span><span class="nv"> </span><span class="s">Files\\MyCompany"</span>
+<span class="w">  </span><span class="nt">DownloadsPath</span><span class="p">:</span><span class="w"> </span><span class="s">"C:\\NToolsDownloads"</span>
+</code></pre></div>
+<h3 id="33-parallel-executables-independent-tasks">3.3 Parallel Executables (Independent Tasks)<a class="headerlink" href="#33-parallel-executables-independent-tasks" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># parallel-launcher.yaml</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Independent</span><span class="nv"> </span><span class="s">parallel</span><span class="nv"> </span><span class="s">verification"</span>
+
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"test_unit"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"dotnet.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"test</span><span class="nv"> </span><span class="s">--no-build"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"test_integration"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"dotnet.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"test</span><span class="nv"> </span><span class="s">--filter</span><span class="nv"> </span><span class="s">Category=Integration"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"lint"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"dotnet.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"format</span><span class="nv"> </span><span class="s">--verify-no-changes"</span>
+
+<span class="nt">execution</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="s">"parallel"</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300000</span><span class="w">  </span><span class="c1"># Global timeout for all</span>
+<span class="w">  </span><span class="nt">maxConcurrency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">  </span><span class="nt">verbose</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<hr />
+<h2 id="4-core-api-design">4. Core API Design<a class="headerlink" href="#4-core-api-design" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="41-new-public-apis-for-ntools-launcher">4.1 New Public APIs for ntools-launcher<a class="headerlink" href="#41-new-public-apis-for-ntools-launcher" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="k">namespace</span><span class="w"> </span><span class="nn">Ntools.Launcher</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Loads and parses YAML executable configuration files.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">ILauncherConfigLoader</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">LauncherConfig</span><span class="w"> </span><span class="nf">LoadFromFile</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">yamlFilePath</span><span class="p">);</span>
+<span class="w">        </span><span class="n">LauncherConfig</span><span class="w"> </span><span class="nf">LoadFromString</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">yamlContent</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Orchestrates executable launching from YAML configurations.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">interface</span><span class="w"> </span><span class="n">IStepExecutor</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Task</span><span class="o">&lt;</span><span class="n">LaunchResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">LaunchAsync</span><span class="p">(</span><span class="n">LauncherConfig</span><span class="w"> </span><span class="n">config</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Task</span><span class="o">&lt;</span><span class="n">LaunchResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">LaunchAsync</span><span class="p">(</span><span class="kt">string</span><span class="w"> </span><span class="n">yamlFilePath</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Configuration model parsed from YAML.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">LauncherConfig</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Version</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Description</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Single or multiple executables</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">StepConfig</span><span class="o">?</span><span class="w"> </span><span class="n">Step</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">StepConfig</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">Steps</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">StepConfig</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">Tasks</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">  </span><span class="c1">// Alias for test-framework</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">StepConfig</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">Apps</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w">    </span><span class="c1">// Alias for nb</span>
+
+<span class="w">        </span><span class="c1">// Execution settings</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">ExecutionSettings</span><span class="w"> </span><span class="n">Execution</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Variable substitution</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">Dictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">Variables</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Individual step configuration.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">StepConfig</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Path</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">Arguments</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">WorkingDirectory</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">Dictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">Environment</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">Timeout</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30000</span><span class="p">;</span><span class="w">  </span><span class="c1">// milliseconds</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">VerifySignature</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">RedirectOutput</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// Dependency and flow control</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;?</span><span class="w"> </span><span class="n">Dependencies</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">ContinueOnError</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Execution mode and settings.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ExecutionSettings</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Mode</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"sequential"</span><span class="p">;</span><span class="w">  </span><span class="c1">// sequential | parallel</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">Verbose</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">StopOnFirstError</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span><span class="p">;</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">MaxConcurrency</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Result of executable launch operation.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">LaunchResult</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ExitCode</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ExecutionResult</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Results</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">ErrorMessage</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">Duration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">/// &lt;summary&gt;</span>
+<span class="w">    </span><span class="c1">/// Result of individual executable execution.</span>
+<span class="w">    </span><span class="c1">/// &lt;/summary&gt;</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ExecutionResult</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ExitCode</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">StdOut</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">StdErr</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">Success</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="kt">string?</span><span class="w"> </span><span class="n">FailureReason</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="k">public</span><span class="w"> </span><span class="n">TimeSpan</span><span class="w"> </span><span class="n">Duration</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="42-usage-examples">4.2 Usage Examples<a class="headerlink" href="#42-usage-examples" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="example-1-single-step-extends-current-launcher">Example 1: Single Step (Extends current Launcher)<a class="headerlink" href="#example-1-single-step-extends-current-launcher" title="Anchor link to this section for reference">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">loader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">YamlLauncherConfigLoader</span><span class="p">();</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepExecutor</span><span class="p">();</span>
+
+<span class="kt">var</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loader</span><span class="p">.</span><span class="n">LoadFromFile</span><span class="p">(</span><span class="s">"single-app-launcher.yaml"</span><span class="p">);</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">Success</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$"✓ {config.Description} completed in {result.Duration.TotalSeconds}s"</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">else</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$"✗ Failed: {result.ErrorMessage}"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="example-2-multiple-sequential-pipeline">Example 2: Multiple Sequential (Pipeline)<a class="headerlink" href="#example-2-multiple-sequential-pipeline" title="Anchor link to this section for reference">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"multi-app-launcher.yaml"</span><span class="p">);</span>
+
+<span class="k">foreach</span><span class="w"> </span><span class="p">(</span><span class="kt">var</span><span class="w"> </span><span class="n">execResult</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Results</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">execResult</span><span class="p">.</span><span class="n">Success</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">"✓"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s">"✗"</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$"{status} {execResult.Name}: exit code {execResult.ExitCode}"</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="kt">string</span><span class="p">.</span><span class="n">IsNullOrEmpty</span><span class="p">(</span><span class="n">execResult</span><span class="p">.</span><span class="n">StdOut</span><span class="p">))</span>
+<span class="w">        </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$"  Output: {execResult.StdOut}"</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+<h4 id="example-3-parallel-independent-tasks">Example 3: Parallel (Independent Tasks)<a class="headerlink" href="#example-3-parallel-independent-tasks" title="Anchor link to this section for reference">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">launcher</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"parallel-launcher.yaml"</span><span class="p">);</span>
+
+<span class="c1">// All tasks run concurrently, results include all outputs</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">failedCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">Results</span><span class="p">.</span><span class="n">Count</span><span class="p">(</span><span class="n">r</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="o">!</span><span class="n">r</span><span class="p">.</span><span class="n">Success</span><span class="p">);</span>
+<span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$"Completed: {result.Results.Count - failedCount}/{result.Results.Count} tasks successful"</span><span class="p">);</span>
+</code></pre></div>
+<hr />
+<h2 id="5-implementation-strategy">5. Implementation Strategy<a class="headerlink" href="#5-implementation-strategy" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="51-phase-1-core-framework-foundation">5.1 Phase 1: Core Framework (Foundation)<a class="headerlink" href="#51-phase-1-core-framework-foundation" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Timeline:</strong> Week 1</p>
+<p><strong>Deliverables:</strong>
+- YAML schema definition with comments
+- <code>ILauncherConfigLoader</code> with YAML parsing (using YamlDotNet NuGet)
+- <code>IStepExecutor</code> for single step execution
+- <code>LauncherConfig</code>, <code>StepConfig</code>, <code>LaunchResult</code> models
+- Unit tests for YAML parsing and single execution</p>
+<p><strong>Dependencies:</strong>
+- YamlDotNet NuGet package</p>
+<h3 id="52-phase-2-extend-launchercs-integration">5.2 Phase 2: Extend Launcher.cs (Integration)<a class="headerlink" href="#52-phase-2-extend-launchercs-integration" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Timeline:</strong> Week 2</p>
+<p><strong>Deliverables:</strong>
+- Refactor <code>Launcher.LockVerifyStart()</code> to use new framework
+- Refactor <code>Launcher.LockStart()</code> to use new framework
+- Add <code>LaunchAsync(string yamlPath)</code> extension methods
+- Signature verification integration with new framework
+- Integration tests with real executables</p>
+<h3 id="53-phase-3-sequential-pipeline-orchestration">5.3 Phase 3: Sequential Pipeline (Orchestration)<a class="headerlink" href="#53-phase-3-sequential-pipeline-orchestration" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Timeline:</strong> Week 2-3</p>
+<p><strong>Deliverables:</strong>
+- Dependency resolution (DAG builder for execution order)
+- Sequential execution orchestrator
+- <code>continueOnError</code> and <code>stopOnFirstError</code> support
+- Pipeline result aggregation and reporting</p>
+<h3 id="54-phase-4-parallel-execution-concurrency">5.4 Phase 4: Parallel Execution (Concurrency)<a class="headerlink" href="#54-phase-4-parallel-execution-concurrency" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Timeline:</strong> Week 3</p>
+<p><strong>Deliverables:</strong>
+- Parallel execution engine with <code>maxConcurrency</code> control
+- Thread-safe result collection
+- Timeout management for parallel tasks
+- Stress tests with concurrent executables</p>
+<h3 id="55-phase-5-advanced-features-extensions">5.5 Phase 5: Advanced Features (Extensions)<a class="headerlink" href="#55-phase-5-advanced-features-extensions" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Timeline:</strong> Week 4+</p>
+<p><strong>Deliverables:</strong>
+- Retry policies (exponential backoff)
+- Pre/post execution hooks
+- Output filtering and parsing
+- Template variable substitution patterns
+- Schema validation and error reporting</p>
+<hr />
+<h2 id="6-integration-points">6. Integration Points<a class="headerlink" href="#6-integration-points" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="61-ntools-launcher-nuget-package">6.1 ntools-launcher NuGet Package<a class="headerlink" href="#61-ntools-launcher-nuget-package" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Current:</strong> Manual Process creation and signature verification<br />
+<strong>New:</strong> YAML-based configuration + signature verification built-in</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// Before</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ProcessStartInfo</span><span class="p">(...)</span><span class="w"> </span><span class="p">};</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">process</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">);</span>
+
+<span class="c1">// After</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepExecutor</span><span class="p">();</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"app-config.yaml"</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="62-test-framework-integration">6.2 test-framework Integration<a class="headerlink" href="#62-test-framework-integration" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Current:</strong> <code>CliTestExecutor</code> with hard-coded arguments<br />
+<strong>New:</strong> Declare test scenarios in YAML, reuse across test suites</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># tests/cli-scenarios.yaml</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"test_install_with_name"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"install</span><span class="nv"> </span><span class="s">--name</span><span class="nv"> </span><span class="s">MyApp"</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"test_install_with_json"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"install</span><span class="nv"> </span><span class="s">--json</span><span class="nv"> </span><span class="s">manifest.json"</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+<h3 id="63-nb-installation-scenarios">6.3 nb Installation Scenarios<a class="headerlink" href="#63-nb-installation-scenarios" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Current:</strong> Hardcoded in ntools.json with limited orchestration<br />
+<strong>New:</strong> Complex installation pipelines with pre/post steps</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># deployment/installation-pipeline.yaml</span>
+<span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"download"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"download</span><span class="nv"> </span><span class="s">--json</span><span class="nv"> </span><span class="s">tools.json"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"install"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"install</span><span class="nv"> </span><span class="s">--json</span><span class="nv"> </span><span class="s">tools.json"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"download"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"verify"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"list"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"install"</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<hr />
+<h2 id="7-yaml-schema-details">7. YAML Schema Details<a class="headerlink" href="#7-yaml-schema-details" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="71-variable-substitution-patterns">7.1 Variable Substitution Patterns<a class="headerlink" href="#71-variable-substitution-patterns" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Predefined variables (runtime-injected)</span>
+<span class="l l-Scalar l-Scalar-Plain">$(InstallPath)</span><span class="w">       </span><span class="c1"># Target installation directory</span>
+<span class="l l-Scalar l-Scalar-Plain">$(DownloadsPath)</span><span class="w">     </span><span class="c1"># Temporary downloads location</span>
+<span class="l l-Scalar l-Scalar-Plain">$(Version)</span><span class="w">           </span><span class="c1"># Application version</span>
+<span class="l l-Scalar l-Scalar-Plain">$(WorkspaceRoot)</span><span class="w">     </span><span class="c1"># Project/workspace root</span>
+
+<span class="c1"># Custom variables (user-defined in YAML)</span>
+<span class="nt">Variables</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">CustomVar</span><span class="p">:</span><span class="w"> </span><span class="s">"value"</span>
+<span class="w">  </span><span class="nt">EnvironmentPath</span><span class="p">:</span><span class="w"> </span><span class="s">"$(InstallPath)\\bin"</span>
+</code></pre></div>
+<h3 id="72-timeout-and-error-handling">7.2 Timeout and Error Handling<a class="headerlink" href="#72-timeout-and-error-handling" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Global timeout overrides individual task timeout</span>
+<span class="nt">execution</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300000</span><span class="w">  </span><span class="c1"># All tasks must complete within this</span>
+
+<span class="c1"># Per-task timeout</span>
+<span class="nt">executable</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60000</span><span class="w">   </span><span class="c1"># This task times out after 60s</span>
+
+<span class="c1"># Error handling strategies</span>
+<span class="w">  </span><span class="nt">continueOnError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">   </span><span class="c1"># Skip remaining tasks if this fails</span>
+
+<span class="nt">execution</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">stopOnFirstError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># Collect all errors, don't stop pipeline</span>
+</code></pre></div>
+<h3 id="73-environment-variable-management">7.3 Environment Variable Management<a class="headerlink" href="#73-environment-variable-management" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Inherit parent environment + override/add</span>
+<span class="nt">environment</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">LOG_LEVEL</span><span class="p">:</span><span class="w"> </span><span class="s">"DEBUG"</span>
+<span class="w">  </span><span class="nt">PATH</span><span class="p">:</span><span class="w"> </span><span class="s">"$(PATH);$(CustomPath)"</span><span class="w">  </span><span class="c1"># Extend existing PATH</span>
+<span class="w">  </span><span class="nt">CUSTOM_VAR</span><span class="p">:</span><span class="w"> </span><span class="s">"custom_value"</span><span class="w">     </span><span class="c1"># New variable</span>
+</code></pre></div>
+<hr />
+<h2 id="8-file-organization">8. File Organization<a class="headerlink" href="#8-file-organization" title="Anchor link to this section for reference">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>ntools-launcher/
+├── launcher/
+│   ├── Launcher.cs                    (existing, refactored)
+│   ├── YamlLauncher/
+│   │   ├── ILauncherConfigLoader.cs
+│   │   ├── YamlLauncherConfigLoader.cs
+   │   ├── IStepExecutor.cs
+   │   ├── StepExecutor.cs
+│   │   ├── SequentialExecutionOrchestrator.cs
+│   │   ├── ParallelExecutionOrchestrator.cs
+│   │   ├── DependencyResolver.cs
+│   │   └── VariableSubstitutionEngine.cs
+│   └── Models/
+│       ├── LauncherConfig.cs
+│       ├── StepConfig.cs
+│       ├── ExecutionSettings.cs
+│       ├── LaunchResult.cs
+│       └── ExecutionResult.cs
+├── docs/
+│   ├── yaml-launcher-design.md        (this file)
+│   ├── yaml-schema-reference.md
+│   ├── usage-examples.md
+│   └── migration-guide.md
+└── tests/
+    ├── YamlLauncher.Tests/
+    │   ├── YamlConfigLoaderTests.cs
+    │   ├── SingleStepTests.cs
+    │   ├── SequentialPipelineTests.cs
+    │   ├── ParallelExecutionTests.cs
+    │   └── fixtures/
+    │       ├── single-app.yaml
+    │       ├── pipeline.yaml
+    │       └── parallel.yaml
+</code></pre></div>
+<hr />
+<h2 id="9-migration-path">9. Migration Path<a class="headerlink" href="#9-migration-path" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="91-from-current-process-model">9.1 From Current Process Model<a class="headerlink" href="#91-from-current-process-model" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// Current code</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ProcessStartInfo</span><span class="p">(...)</span><span class="w"> </span><span class="p">};</span>
+<span class="n">process</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">);</span>
+
+<span class="c1">// Transitional (works both ways)</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepConfig</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">Path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"..."</span><span class="p">,</span><span class="w"> </span><span class="n">Arguments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"..."</span><span class="w"> </span><span class="p">};</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepExecutor</span><span class="p">();</span>
+<span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="n">config</span><span class="p">);</span>
+
+<span class="c1">// Future (YAML-based)</span>
+<span class="k">await</span><span class="w"> </span><span class="n">launcher</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"app-config.yaml"</span><span class="p">);</span>
+</code></pre></div>
+<h3 id="92-backward-compatibility">9.2 Backward Compatibility<a class="headerlink" href="#92-backward-compatibility" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Existing <code>Launcher</code> extension methods remain unchanged</li>
+<li>New YAML-based APIs live in separate <code>YamlLauncher</code> namespace</li>
+<li>No breaking changes to public API</li>
+</ul>
+<hr />
+<h2 id="10-success-criteria">10. Success Criteria<a class="headerlink" href="#10-success-criteria" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>[ ] YAML schema supports single and multiple steps</li>
+<li>[ ] Signature verification integrated into YAML launcher</li>
+<li>[ ] Sequential pipelines with dependency resolution</li>
+<li>[ ] Parallel execution with concurrency control</li>
+<li>[ ] Variable substitution working correctly</li>
+<li>[ ] 90%+ code coverage on core modules</li>
+<li>[ ] Documentation with 10+ usage examples</li>
+<li>[ ] NuGet package published</li>
+<li>[ ] test-framework integration complete</li>
+<li>[ ] nb deployment scenarios tested</li>
+</ul>
+<hr />
+<h2 id="11-risk-mitigation">11. Risk Mitigation<a class="headerlink" href="#11-risk-mitigation" title="Anchor link to this section for reference">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YAML parsing complexity</td>
+<td>Use well-tested YamlDotNet library; thorough schema validation</td>
+</tr>
+<tr>
+<td>Signature verification failures</td>
+<td>Fallback to non-signed mode; log detailed diagnostics</td>
+</tr>
+<tr>
+<td>Timeout handling edge cases</td>
+<td>Comprehensive unit tests; configurable timeout behavior</td>
+</tr>
+<tr>
+<td>Backward compatibility</td>
+<td>Keep existing Launcher API; no breaking changes</td>
+</tr>
+<tr>
+<td>Performance with parallel tasks</td>
+<td>Load testing; configurable max concurrency</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-future-extensions-not-in-scope">12. Future Extensions (Not in Scope)<a class="headerlink" href="#12-future-extensions-not-in-scope" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Docker container execution</li>
+<li>Remote execution (SSH, WinRM)</li>
+<li>Distributed orchestration (Kubernetes-like)</li>
+<li>GUI launcher for YAML file editing</li>
+<li>CI/CD pipeline integration helpers</li>
+<li>Monitoring and alerting hooks</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

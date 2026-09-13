@@ -1,0 +1,1501 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content=".NET library for secure process launching, file downloading, and shell operations">
+      
+      
+        <meta name="author" content="naz-hage">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Architectural Decisions & Tradeoffs - NTools Launcher</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architectural-decisions-tradeoffs" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="NTools Launcher" class="md-header__button md-logo" aria-label="NTools Launcher" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            NTools Launcher
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architectural Decisions &amp; Tradeoffs
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/naz-hage/ntools-launcher" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ntools-launcher
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../devguide/dependencies/" class="md-tabs__link">
+          
+  
+  
+  Development Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../revisions/changelog/" class="md-tabs__link">
+          
+  
+  
+  Revisions
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="NTools Launcher" class="md-nav__button md-logo" aria-label="NTools Launcher" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    NTools Launcher
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/naz-hage/ntools-launcher" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ntools-launcher
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/build-and-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/targets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build Targets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Revisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Revisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../revisions/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="architectural-decisions-tradeoffs">Architectural Decisions &amp; Tradeoffs<a class="headerlink" href="#architectural-decisions-tradeoffs" title="Anchor link to this section for reference">&para;</a></h1>
+<p><strong>Date:</strong> May 25, 2026<br />
+<strong>Purpose:</strong> Document key design choices and reasoning<br />
+<strong>Audience:</strong> Architecture Review, Future Maintainers</p>
+<hr />
+<h2 id="adr-001-optional-schema-properties-for-backward-compatibility">ADR-001: Optional Schema Properties for Backward Compatibility<a class="headerlink" href="#adr-001-optional-schema-properties-for-backward-compatibility" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision">Decision<a class="headerlink" href="#decision" title="Anchor link to this section for reference">&para;</a></h3>
+<p>All test-framework features (assertions, variable extraction) are <strong>optional</strong> properties in ExecutableConfig. The YAML schema will support both minimal and enhanced configurations.</p>
+<h3 id="context">Context<a class="headerlink" href="#context" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Need to unify three codebases' capabilities</li>
+<li>Must maintain 100% backward compatibility</li>
+<li>Different use cases require different feature levels (simple execution vs. complex pipelines)</li>
+</ul>
+<h3 id="options-considered">Options Considered<a class="headerlink" href="#options-considered" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Single Required Schema</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="c1"># All properties required - breaks backward compatibility</span>
+<span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"required"</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"required"</span>
+<span class="w">  </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">      </span><span class="c1"># Required</span>
+<span class="w">  </span><span class="nt">assertions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w">              </span><span class="c1"># Required</span>
+<span class="w">  </span><span class="nt">extractVariables</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w">        </span><span class="c1"># Required</span>
+</code></pre></div>
+<strong>Pros:</strong> Consistent, no hidden complexity
+<strong>Cons:</strong> Breaks existing YAML configs, higher barrier to adoption</p>
+<p><strong>Option B: Multiple Schema Versions</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">schemaVersion</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span><span class="w">    </span><span class="c1"># For simple execution</span>
+<span class="nt">schemaVersion</span><span class="p">:</span><span class="w"> </span><span class="s">"2.0"</span><span class="w">    </span><span class="c1"># For assertions/extraction</span>
+</code></pre></div>
+<strong>Pros:</strong> Clear separation of concerns
+<strong>Cons:</strong> Complex parser, validation logic duplicated, confusing for users</p>
+<p><strong>Option C: All Optional (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="c1"># Simple case (old YAML)</span>
+<span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+
+<span class="c1"># Enhanced case (new YAML) - all optional additions</span>
+<span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">  </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">  </span><span class="nt">assertions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<span class="w">  </span><span class="nt">extractVariables</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</code></pre></div>
+<strong>Pros:</strong> Single schema version, 100% backward compatible, simple parser, gradual adoption
+<strong>Cons:</strong> Requires nil-checking in code, some properties contextually related (e.g., extractVariables only useful with redirectOutput)</p>
+<h3 id="decision-rationale">Decision Rationale<a class="headerlink" href="#decision-rationale" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option C chosen because:
+1. <strong>Backward compatibility:</strong> Existing YAML configs work unchanged
+2. <strong>Single parser:</strong> No version detection logic needed
+3. <strong>Gradual adoption:</strong> Teams migrate at their own pace
+4. <strong>Simple implementation:</strong> Optional properties are easier to implement than version branching</p>
+<h3 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Zero breaking changes</li>
+<li>✅ User can adopt features incrementally</li>
+<li>⚠️ Parser must handle nil values gracefully</li>
+<li>⚠️ Documentation must clarify which properties are contextually related</li>
+</ul>
+<hr />
+<h2 id="adr-002-dictionary-for-variable-flow">ADR-002: Dictionary<string, string> for Variable Flow<a class="headerlink" href="#adr-002-dictionary-for-variable-flow" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_1">Decision<a class="headerlink" href="#decision_1" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Variables extracted from step output are stored in a simple <code>Dictionary&lt;string, string&gt;</code> and passed through the execution context to subsequent steps.</p>
+<h3 id="context_1">Context<a class="headerlink" href="#context_1" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>test-framework extracts variables and passes them to next steps</li>
+<li>Need to flow variables in both sequential and parallel pipelines</li>
+<li>Variable substitution must work in arguments, paths, environment variables</li>
+</ul>
+<h3 id="options-considered_1">Options Considered<a class="headerlink" href="#options-considered_1" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Individual Variable Objects</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ExtractedVariable</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Name</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="n">Value</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">StepNumber</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">public</span><span class="w"> </span><span class="n">DateTime</span><span class="w"> </span><span class="n">ExtractedAt</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">get</span><span class="p">;</span><span class="w"> </span><span class="k">set</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">var</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">ExtractedVariable</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="c1">// Complex to manage, maintain history, validate</span>
+</code></pre></div>
+<strong>Pros:</strong> Rich metadata about each variable
+<strong>Cons:</strong> Overcomplicated, difficult to substitute, ordering ambiguous</p>
+<p><strong>Option B: Nested Dictionary by Step</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Dictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="n">Dictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="na">["step1"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"version"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"1.0.0"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="na">["step2"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">"branch"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"main"</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+<strong>Pros:</strong> Variables scoped to step
+<strong>Cons:</strong> Complex namespacing, collision possibility when merging</p>
+<p><strong>Option C: Flat String Dictionary (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">variables</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Dictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;</span><span class="p">(</span><span class="n">StringComparer</span><span class="p">.</span><span class="n">OrdinalIgnoreCase</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="na">["version"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"1.0.0"</span><span class="p">,</span>
+<span class="w">    </span><span class="na">["branch"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"main"</span><span class="p">,</span>
+<span class="w">    </span><span class="na">["commit"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"abc123"</span>
+<span class="p">};</span>
+
+<span class="c1">// Use in arguments: "app.exe --version $(version)"</span>
+</code></pre></div>
+<strong>Pros:</strong> Simple, testable, substitution straightforward, matches test-framework pattern
+<strong>Cons:</strong> Global namespace (potential collisions), last value wins if duplicate</p>
+<h3 id="decision-rationale_1">Decision Rationale<a class="headerlink" href="#decision-rationale_1" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option C chosen because:
+1. <strong>Simplicity:</strong> Single flat namespace easy to understand
+2. <strong>Test-framework alignment:</strong> Matches existing proven approach
+3. <strong>Substitution:</strong> Direct string replacement without parsing complexity
+4. <strong>Case-insensitive keys:</strong> Support various naming conventions</p>
+<h3 id="consequences_1">Consequences<a class="headerlink" href="#consequences_1" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Simple variable substitution: <code>$(varname)</code></li>
+<li>✅ Works identically in sequential and parallel</li>
+<li>✅ Testable: Just dictionary assertions</li>
+<li>⚠️ Variable name collisions possible (last-write-wins)</li>
+<li>⚠️ No scoping or shadowing possible</li>
+<li>⚠️ Requires naming convention to avoid conflicts</li>
+</ul>
+<hr />
+<h2 id="adr-003-regex-based-variable-extraction-not-structured-parsing">ADR-003: Regex-based Variable Extraction (Not Structured Parsing)<a class="headerlink" href="#adr-003-regex-based-variable-extraction-not-structured-parsing" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_2">Decision<a class="headerlink" href="#decision_2" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Variables are extracted via regex patterns with capture groups, not structured parsers (JSON/XML).</p>
+<h3 id="context_2">Context<a class="headerlink" href="#context_2" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Executables output unstructured text (timestamps, progress messages, mixed formats)</li>
+<li>Need to support: JSON output, plain text, formatted tables, XML, binary with text headers</li>
+<li>test-framework uses regex patterns successfully</li>
+</ul>
+<h3 id="options-considered_2">Options Considered<a class="headerlink" href="#options-considered_2" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Structured Parsing</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">extractVariables</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"version"</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"json"</span>
+<span class="w">    </span><span class="nt">jsonPath</span><span class="p">:</span><span class="w"> </span><span class="s">"$.version"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"timestamp"</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"xml"</span>
+<span class="w">    </span><span class="nt">xmlPath</span><span class="p">:</span><span class="w"> </span><span class="s">"/root/timestamp"</span>
+</code></pre></div>
+<strong>Pros:</strong> Type-safe, clear intent, supports structured formats
+<strong>Cons:</strong> Requires parser for each format, complex code, doesn't handle mixed formats well</p>
+<p><strong>Option B: Regex Pattern (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="nt">extractVariables</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"version"</span>
+<span class="w">    </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">'"version":\s*"([^"]+)"'</span><span class="w">  </span><span class="c1"># For JSON</span>
+<span class="w">    </span><span class="nt">groupIndex</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"timestamp"</span>
+<span class="w">    </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">'Timestamp:</span><span class="nv"> </span><span class="s">(\d{4}-\d{2}-\d{2})'</span><span class="w">  </span><span class="c1"># For plain text</span>
+<span class="w">    </span><span class="nt">groupIndex</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"branch"</span>
+<span class="w">    </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">'Branch:</span><span class="nv"> </span><span class="s">(\S+)'</span><span class="w">  </span><span class="c1"># For any text containing "Branch: VALUE"</span>
+<span class="w">    </span><span class="nt">groupIndex</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</code></pre></div>
+<strong>Pros:</strong> Universal (works for any text), flexible, proven in test-framework, minimal dependencies
+<strong>Cons:</strong> Requires regex knowledge, harder to learn than declarative JSON path</p>
+<p><strong>Option C: Custom Extractor Functions</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">extractors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Dictionary</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="n">Func</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="na">["version"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">JsonDocument</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">RootElement</span><span class="p">.</span><span class="n">GetProperty</span><span class="p">(</span><span class="s">"version"</span><span class="p">).</span><span class="n">GetString</span><span class="p">(),</span>
+<span class="w">    </span><span class="na">["branch"]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="n">Regex</span><span class="p">.</span><span class="n">Match</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="s">"Branch: (\\S+)"</span><span class="p">).</span><span class="n">Groups</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">Value</span>
+<span class="p">};</span>
+</code></pre></div>
+<strong>Pros:</strong> Most flexible, supports any logic
+<strong>Cons:</strong> Requires code, not declarative, hard to configure</p>
+<h3 id="decision-rationale_2">Decision Rationale<a class="headerlink" href="#decision-rationale_2" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option B chosen because:
+1. <strong>Universal:</strong> Single approach works for all output formats
+2. <strong>Test-framework proven:</strong> Already used successfully in production
+3. <strong>Declarative:</strong> Defined in YAML, not code
+4. <strong>Simple:</strong> One regex pattern per variable, easy to understand
+5. <strong>Flexible:</strong> Can extract from JSON, XML, plain text, binary headers - anything with text</p>
+<h3 id="consequences_2">Consequences<a class="headerlink" href="#consequences_2" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Works for any executable output format</li>
+<li>✅ No dependency on specific parser libraries</li>
+<li>✅ Pattern validation at load time catches errors early</li>
+<li>⚠️ Users must know regex syntax</li>
+<li>⚠️ Complex patterns can be hard to debug</li>
+<li>📋 <strong>Mitigation:</strong> Provide pattern examples library and validation helper</li>
+</ul>
+<hr />
+<h2 id="adr-004-assertion-types-based-on-test-framework">ADR-004: Assertion Types Based on test-framework<a class="headerlink" href="#adr-004-assertion-types-based-on-test-framework" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_3">Decision<a class="headerlink" href="#decision_3" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Assertion types are based on test-framework's proven set (output_contains, output_matches, etc.), not inventing new types.</p>
+<h3 id="context_3">Context<a class="headerlink" href="#context_3" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>test-framework has successfully used assertions in production for years</li>
+<li>Need to reuse battle-tested validation logic</li>
+<li>Avoid reinventing wheels for common scenarios</li>
+</ul>
+<h3 id="options-considered_3">Options Considered<a class="headerlink" href="#options-considered_3" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Minimal Set</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"success"</span><span class="w">        </span><span class="c1"># Just pass/fail</span>
+</code></pre></div>
+<strong>Pros:</strong> Simple
+<strong>Cons:</strong> Not expressive enough for real-world needs (need to validate output content)</p>
+<p><strong>Option B: Extensive Custom Set</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_not_contains"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_matches"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_starts_with"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_ends_with"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_json_path"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_xml_path"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"exit_code"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"file_exists"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"file_size_gt"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"performance_under_ms"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"...</span><span class="nv"> </span><span class="s">(20+</span><span class="nv"> </span><span class="s">custom</span><span class="nv"> </span><span class="s">types)"</span>
+</code></pre></div>
+<strong>Pros:</strong> Comprehensive coverage
+<strong>Cons:</strong> Bloated, maintenance nightmare, hard to learn</p>
+<p><strong>Option C: test-framework Proven Set (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_not_contains"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_matches"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_equals"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"exit_code"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"file_exists"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"custom_json"</span><span class="w">       </span><span class="c1"># Extensible via JSONPath</span>
+</code></pre></div>
+<strong>Pros:</strong> Proven, minimal, covers 80% of use cases, test-framework alignment
+<strong>Cons:</strong> May not cover all edge cases (extensible via custom_json for advanced)</p>
+<h3 id="decision-rationale_3">Decision Rationale<a class="headerlink" href="#decision-rationale_3" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option C chosen because:
+1. <strong>Proven:</strong> test-framework uses these in production
+2. <strong>Minimal:</strong> Only 7 types covers most scenarios
+3. <strong>Extensible:</strong> <code>custom_json</code> allows advanced validation
+4. <strong>Maintenance:</strong> Easier to support small set
+5. <strong>Documentation:</strong> Leverage existing test-framework docs</p>
+<h3 id="consequences_3">Consequences<a class="headerlink" href="#consequences_3" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Familiar to test-framework users</li>
+<li>✅ Well-documented with examples</li>
+<li>✅ Proven behavior and error messages</li>
+<li>⚠️ Users requiring advanced assertions need <code>custom_json</code></li>
+<li>⚠️ Not expandable without code changes (design goal: keep YAML simple)</li>
+</ul>
+<hr />
+<h2 id="adr-005-no-prepost-execution-hooks-in-phase-1">ADR-005: No Pre/Post-Execution Hooks in Phase 1<a class="headerlink" href="#adr-005-no-prepost-execution-hooks-in-phase-1" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_4">Decision<a class="headerlink" href="#decision_4" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Pre/post-execution hooks (before task runs, after task completes) are planned for Phase 5, not Phase 1.</p>
+<h3 id="context_4">Context<a class="headerlink" href="#context_4" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Hooks would enable cleanup logic, notifications, monitoring integration</li>
+<li>Test-framework doesn't have hooks (not required for basic functionality)</li>
+<li>Adds complexity to Phase 1 (focus on core features)</li>
+</ul>
+<h3 id="options-considered_4">Options Considered<a class="headerlink" href="#options-considered_4" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Include Hooks in Phase 1</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">preExecutionHook</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="s">"echo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"Starting..."</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">  </span><span class="nt">postExecutionHook</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="s">"echo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"Done"</span>
+</code></pre></div>
+<strong>Pros:</strong> Complete feature set from day 1, enables cleanup patterns
+<strong>Cons:</strong> Delays Phase 1 delivery, adds parser complexity, unclear hook semantics</p>
+<p><strong>Option B: No Hooks (Selected for Phase 1)</strong> ✅
+<strong>Phase 1:</strong> Core execution with assertions/extraction
+<strong>Phase 5:</strong> Add hooks after foundation proven</p>
+<p><strong>Pros:</strong> Focused Phase 1, faster delivery, test core features before adding complexity
+<strong>Cons:</strong> Cleanup requires multiple tasks for now (acceptable workaround)</p>
+<h3 id="decision-rationale_4">Decision Rationale<a class="headerlink" href="#decision-rationale_4" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option B chosen because:
+1. <strong>Focused delivery:</strong> Phase 1 delivers core value without hooks
+2. <strong>Test framework first:</strong> Validate core design before adding complexity
+3. <strong>Workaround available:</strong> Use <code>continueOnError: true</code> with separate cleanup tasks
+4. <strong>Iterative:</strong> Add in Phase 5 once foundation proven</p>
+<h3 id="consequences_4">Consequences<a class="headerlink" href="#consequences_4" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Faster Phase 1 delivery (2 weeks vs. 3 weeks)</li>
+<li>✅ Simpler initial design (easier to review)</li>
+<li>✅ Foundation proven before adding hooks</li>
+<li>⚠️ Cleanup requires explicit tasks in YAML (not implicit hooks)</li>
+<li>📋 <strong>Workaround:</strong> Use this pattern for cleanup:
+  <div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"install"</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"installer.exe"</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"cleanup"</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"cleanup.exe"</span>
+<span class="w">  </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"install"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">continueOnError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># Always run, even if install fails</span>
+</code></pre></div></li>
+</ul>
+<hr />
+<h2 id="adr-006-sequential-default-not-implicit-parallel">ADR-006: Sequential Default, Not Implicit Parallel<a class="headerlink" href="#adr-006-sequential-default-not-implicit-parallel" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_5">Decision<a class="headerlink" href="#decision_5" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Default execution mode is sequential with explicit dependencies, not automatically parallel.</p>
+<h3 id="context_5">Context<a class="headerlink" href="#context_5" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Parallel is faster but riskier (ordering bugs, race conditions)</li>
+<li>Sequential is easier to debug and understand</li>
+<li>test-framework is sequential by default (step 1, 2, 3...)</li>
+</ul>
+<h3 id="options-considered_5">Options Considered<a class="headerlink" href="#options-considered_5" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Default Parallel</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="c1"># This would run all tasks in parallel by default</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"task1.exe"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"task2.exe"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"task3.exe"</span>
+</code></pre></div>
+<strong>Pros:</strong> Fast execution, naturally efficient
+<strong>Cons:</strong> Ordering bugs hard to debug, variable extraction order unclear</p>
+<p><strong>Option B: Default Sequential (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="c1"># Default: sequential execution</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"task1.exe"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"task2.exe"</span><span class="w">      </span><span class="c1"># Runs after task1 completes</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"task3.exe"</span><span class="w">      </span><span class="c1"># Runs after task2 completes</span>
+
+<span class="c1"># Opt-in parallel with explicit mode</span>
+<span class="nt">execution</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mode</span><span class="p">:</span><span class="w"> </span><span class="s">"parallel"</span>
+<span class="w">  </span><span class="nt">maxConcurrency</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</code></pre></div>
+<strong>Pros:</strong> Predictable, test-framework aligned, variables flow clearly, easy to debug
+<strong>Cons:</strong> Slower by default (user must opt-in to parallel)</p>
+<h3 id="decision-rationale_5">Decision Rationale<a class="headerlink" href="#decision-rationale_5" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option B chosen because:
+1. <strong>Debuggability:</strong> Sequential ordering easier to trace
+2. <strong>Correctness:</strong> Variable extraction order unambiguous
+3. <strong>test-framework alignment:</strong> Steps numbered 1, 2, 3...
+4. <strong>Safety:</strong> Dependencies clear, less room for mistakes
+5. <strong>Performance:</strong> Users who need it can opt-in</p>
+<h3 id="consequences_5">Consequences<a class="headerlink" href="#consequences_5" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Predictable execution order</li>
+<li>✅ Variables flow clearly between steps</li>
+<li>✅ Familiar to test-framework users</li>
+<li>⚠️ Slower by default (require <code>execution.mode: "parallel"</code>)</li>
+<li>⚠️ Users must opt-in for parallel benefits</li>
+<li>📋 <strong>Rationale:</strong> Speed vs. safety. Sequential safer, parallel available when needed.</li>
+</ul>
+<hr />
+<h2 id="adr-007-no-runtime-configuration-validation-errors">ADR-007: No Runtime Configuration Validation Errors<a class="headerlink" href="#adr-007-no-runtime-configuration-validation-errors" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_6">Decision<a class="headerlink" href="#decision_6" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Errors in YAML structure/values caught at <strong>load time</strong> (parsing), not runtime (execution).</p>
+<h3 id="context_6">Context<a class="headerlink" href="#context_6" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Syntax errors in YAML should fail fast during YamlLauncherConfigLoader</li>
+<li>Invalid regex patterns should fail during parsing</li>
+<li>Missing dependencies should fail during DependencyResolver (before execution)</li>
+</ul>
+<h3 id="options-considered_6">Options Considered<a class="headerlink" href="#options-considered_6" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Lenient Parsing</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="c1">// Load silently, error during execution</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loader</span><span class="p">.</span><span class="n">LoadFromFile</span><span class="p">(</span><span class="s">"app.yaml"</span><span class="p">);</span><span class="w">  </span><span class="c1">// No errors</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">launcher</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="n">config</span><span class="p">);</span><span class="w">  </span><span class="c1">// Error here ("pattern invalid")</span>
+</code></pre></div>
+<strong>Pros:</strong> Flexible, doesn't fail until needed
+<strong>Cons:</strong> Errors discovered late, harder to debug, confusing user experience</p>
+<p><strong>Option B: Strict Load-Time Validation (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="c1">// Validate everything during load</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loader</span><span class="p">.</span><span class="n">LoadFromFile</span><span class="p">(</span><span class="s">"app.yaml"</span><span class="p">);</span><span class="w">  </span><span class="c1">// Throws if invalid</span>
+<span class="c1">// Regex patterns validated</span>
+<span class="c1">// JSON structure validated</span>
+<span class="c1">// Dependencies validated (DAG verified)</span>
+<span class="c1">// All errors caught here, before execution</span>
+
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">launcher</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="n">config</span><span class="p">);</span><span class="w">  </span><span class="c1">// No validation errors here</span>
+</code></pre></div>
+<strong>Pros:</strong> Fast failure, clear error messages, fewer runtime surprises, better UX
+<strong>Cons:</strong> Stricter parsing, must validate deeply</p>
+<h3 id="decision-rationale_6">Decision Rationale<a class="headerlink" href="#decision-rationale_6" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option B chosen because:
+1. <strong>Fast feedback:</strong> Errors caught immediately
+2. <strong>Clear messages:</strong> Load-time validation can be detailed
+3. <strong>Debugging:</strong> User knows config is valid before execution
+4. <strong>User experience:</strong> "Fix your YAML now" is better than "error during step 3"</p>
+<h3 id="consequences_6">Consequences<a class="headerlink" href="#consequences_6" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Errors caught before execution</li>
+<li>✅ Clear validation error messages</li>
+<li>✅ No surprises during long-running tasks</li>
+<li>⚠️ Must validate deeply (regex compilation, JSON path syntax, etc.)</li>
+<li>⚠️ Strict parsing might reject some edge cases</li>
+</ul>
+<hr />
+<h2 id="adr-008-no-retry-logic-in-phase-1">ADR-008: No Retry Logic in Phase 1<a class="headerlink" href="#adr-008-no-retry-logic-in-phase-1" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_7">Decision<a class="headerlink" href="#decision_7" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Retry policies (exponential backoff, max attempts) planned for Phase 5, not Phase 1.</p>
+<h3 id="context_7">Context<a class="headerlink" href="#context_7" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Retries complex (when to retry? which errors?)</li>
+<li>test-framework doesn't have retries</li>
+<li>Phase 1 focuses on core execution</li>
+</ul>
+<h3 id="options-considered_7">Options Considered<a class="headerlink" href="#options-considered_7" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Include Retries in Phase 1</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"flaky-service.exe"</span>
+<span class="w">  </span><span class="nt">retryPolicy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">maxAttempts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<span class="w">    </span><span class="nt">backoffMs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+</code></pre></div>
+<strong>Pros:</strong> Handles flaky processes from day 1
+<strong>Cons:</strong> Adds complexity, semantics unclear (retry on any error? only certain ones?)</p>
+<p><strong>Option B: No Retries in Phase 1 (Selected)</strong> ✅
+<strong>Phase 1:</strong> Core execution, if task fails it fails
+<strong>Phase 5:</strong> Add retry policies with clear semantics</p>
+<p><strong>Pros:</strong> Simpler Phase 1, clear when retries added
+<strong>Cons:</strong> Flaky processes need manual handling for now</p>
+<h3 id="consequences_7">Consequences<a class="headerlink" href="#consequences_7" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Simpler Phase 1 design</li>
+<li>✅ Faster delivery</li>
+<li>⚠️ Users with flaky processes need workarounds</li>
+<li>📋 <strong>Workaround:</strong> Run task multiple times with conditional logic
+  <div class="highlight"><pre><span></span><code><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"attempt1"</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">  </span><span class="nt">continueOnError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"attempt2"</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">  </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"attempt1"</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">continueOnError</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div></li>
+</ul>
+<hr />
+<h2 id="adr-009-string-based-value-comparison-in-assertions">ADR-009: String-based Value Comparison in Assertions<a class="headerlink" href="#adr-009-string-based-value-comparison-in-assertions" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_8">Decision<a class="headerlink" href="#decision_8" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Assertion values are always compared as strings, not parsed to specific types.</p>
+<h3 id="context_8">Context<a class="headerlink" href="#context_8" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Different output formats (JSON, CSV, plain text)</li>
+<li>Type coercion complex and error-prone</li>
+<li>String comparison universal</li>
+</ul>
+<h3 id="options-considered_8">Options Considered<a class="headerlink" href="#options-considered_8" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Type Inference</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"exit_code"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">              </span><span class="c1"># Integer?</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"abc"</span><span class="w">          </span><span class="c1"># String</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"custom_json"</span>
+<span class="w">    </span><span class="nt">expectedValue</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">   </span><span class="c1"># Boolean?</span>
+</code></pre></div>
+<strong>Pros:</strong> Semantically accurate types
+<strong>Cons:</strong> Complex parsing, ambiguous (is "0" a number or string?), error-prone</p>
+<p><strong>Option B: String Comparison (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"exit_code"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"0"</span><span class="w">            </span><span class="c1"># Compared as string</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"abc"</span><span class="w">          </span><span class="c1"># Compared as string</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"custom_json"</span>
+<span class="w">    </span><span class="nt">expectedValue</span><span class="p">:</span><span class="w"> </span><span class="s">"true"</span><span class="w"> </span><span class="c1"># Compared as string</span>
+</code></pre></div>
+<strong>Pros:</strong> Consistent, simple, unambiguous, always works
+<strong>Cons:</strong> Type mismatches harder to catch (0 vs "0" look same)</p>
+<h3 id="decision-rationale_7">Decision Rationale<a class="headerlink" href="#decision-rationale_7" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option B chosen because:
+1. <strong>Universal:</strong> Works for all assertion types
+2. <strong>Simple:</strong> Single comparison logic
+3. <strong>Safe:</strong> No type coercion bugs
+4. <strong>Explicit:</strong> YAML clearly shows what's compared</p>
+<h3 id="consequences_8">Consequences<a class="headerlink" href="#consequences_8" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Consistent behavior across all assertion types</li>
+<li>✅ No type inference bugs</li>
+<li>⚠️ Numbers compared as strings (0 == "0" but not 0 == "")</li>
+<li>📋 <strong>Best Practice:</strong> Always use strings in YAML values</li>
+</ul>
+<hr />
+<h2 id="adr-010-output-redirection-always-on-for-assertions">ADR-010: Output Redirection Always On for Assertions<a class="headerlink" href="#adr-010-output-redirection-always-on-for-assertions" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision_9">Decision<a class="headerlink" href="#decision_9" title="Anchor link to this section for reference">&para;</a></h3>
+<p>When assertions are specified, output redirection (<code>redirectOutput: true</code>) is always enabled, regardless of property value.</p>
+<h3 id="context_9">Context<a class="headerlink" href="#context_9" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Assertions validate output content</li>
+<li>Can't validate output if not captured</li>
+<li>Default behavior should enable what's needed</li>
+</ul>
+<h3 id="options-considered_9">Options Considered<a class="headerlink" href="#options-considered_9" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Option A: Error if Assertions Without Redirection</strong> ❌
+<div class="highlight"><pre><span></span><code><span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">  </span><span class="nt">redirectOutput</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">    </span><span class="c1"># Error! Can't validate output</span>
+<span class="w">  </span><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"success"</span>
+</code></pre></div>
+<strong>Pros:</strong> Forces user to be explicit
+<strong>Cons:</strong> Confusing error message, extra step required</p>
+<p><strong>Option B: Automatic Enable (Selected)</strong> ✅
+<div class="highlight"><pre><span></span><code><span class="nt">task</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">  </span><span class="c1"># redirectOutput: false is ignored if assertions present</span>
+<span class="w">  </span><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">      </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"success"</span>
+<span class="c1"># Automatically: redirectOutput = true (implicitly)</span>
+</code></pre></div>
+<strong>Pros:</strong> Works as expected, no surprises, convenient
+<strong>Cons:</strong> Magic behavior (implicit behavior not obvious)</p>
+<h3 id="decision-rationale_8">Decision Rationale<a class="headerlink" href="#decision-rationale_8" title="Anchor link to this section for reference">&para;</a></h3>
+<p>Option B chosen because:
+1. <strong>Convenience:</strong> User doesn't need to remember both properties
+2. <strong>Works intuitively:</strong> "I want to validate output" automatically captures it
+3. <strong>Less config:</strong> One less thing to get wrong
+4. <strong>Documentation:</strong> Clear in schema that assertions require output capture</p>
+<h3 id="consequences_9">Consequences<a class="headerlink" href="#consequences_9" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Assertions work intuitively</li>
+<li>✅ One less configuration step</li>
+<li>⚠️ Implicit behavior (might confuse some users)</li>
+<li>📋 <strong>Documentation:</strong> Must clearly state this rule</li>
+</ul>
+<hr />
+<h2 id="summary-table-key-tradeoffs">Summary Table: Key Tradeoffs<a class="headerlink" href="#summary-table-key-tradeoffs" title="Anchor link to this section for reference">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Decision</th>
+<th>Chosen</th>
+<th>Alternative</th>
+<th>Tradeoff</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema Properties</td>
+<td>All Optional</td>
+<td>Single Required</td>
+<td>Backward Compatibility vs. Consistency</td>
+</tr>
+<tr>
+<td>Variable Flow</td>
+<td>Dictionary<string></td>
+<td>Object Model</td>
+<td>Simplicity vs. Metadata</td>
+</tr>
+<tr>
+<td>Variable Extraction</td>
+<td>Regex Patterns</td>
+<td>Structured Parsing</td>
+<td>Flexibility vs. Learnability</td>
+</tr>
+<tr>
+<td>Assertion Types</td>
+<td>test-framework Set</td>
+<td>Extended Set</td>
+<td>Simplicity vs. Coverage</td>
+</tr>
+<tr>
+<td>Execution Mode</td>
+<td>Sequential Default</td>
+<td>Parallel Default</td>
+<td>Safety vs. Performance</td>
+</tr>
+<tr>
+<td>Validation Timing</td>
+<td>Load-Time</td>
+<td>Runtime</td>
+<td>Fast Feedback vs. Flexibility</td>
+</tr>
+<tr>
+<td>Retry Logic</td>
+<td>Phase 5</td>
+<td>Phase 1</td>
+<td>Focused Delivery vs. Feature Complete</td>
+</tr>
+<tr>
+<td>Pre/Post Hooks</td>
+<td>Phase 5</td>
+<td>Phase 1</td>
+<td>Focused Delivery vs. Feature Complete</td>
+</tr>
+<tr>
+<td>Comparison Type</td>
+<td>Strings</td>
+<td>Type Inference</td>
+<td>Simplicity vs. Type Safety</td>
+</tr>
+<tr>
+<td>Output Redirect</td>
+<td>Auto-On (assertions)</td>
+<td>Manual Enable</td>
+<td>Convenience vs. Explicitness</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="review-approval">Review &amp; Approval<a class="headerlink" href="#review-approval" title="Anchor link to this section for reference">&para;</a></h2>
+<p><strong>Architecture Decision Review:</strong>
+- [ ] Design approach sound
+- [ ] Tradeoffs acceptable
+- [ ] No critical gaps identified
+- [ ] Ready for implementation</p>
+<p><strong>Reviewers:</strong>
+- [ ] Architecture Lead - Date: <strong><em>_</em></strong><em>
+- [ ] Development Lead - Date: <strong><em>_</em></strong></em>
+- [ ] QA Lead - Date: <strong><em>_</em></strong>_</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

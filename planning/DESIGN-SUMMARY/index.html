@@ -1,0 +1,1860 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content=".NET library for secure process launching, file downloading, and shell operations">
+      
+      
+        <meta name="author" content="naz-hage">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>YAML Launcher Design Summary: Unified Framework with Backward Compatibility - NTools Launcher</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#yaml-launcher-design-summary-unified-framework-with-backward-compatibility" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="NTools Launcher" class="md-header__button md-logo" aria-label="NTools Launcher" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            NTools Launcher
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              YAML Launcher Design Summary: Unified Framework with Backward Compatibility
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/naz-hage/ntools-launcher" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ntools-launcher
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../devguide/dependencies/" class="md-tabs__link">
+          
+  
+  
+  Development Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../revisions/changelog/" class="md-tabs__link">
+          
+  
+  
+  Revisions
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="NTools Launcher" class="md-nav__button md-logo" aria-label="NTools Launcher" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    NTools Launcher
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/naz-hage/ntools-launcher" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ntools-launcher
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/dependencies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Dependencies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/build-and-test/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build and Test
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../devguide/targets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build Targets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Revisions
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Revisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../revisions/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="yaml-launcher-design-summary-unified-framework-with-backward-compatibility">YAML Launcher Design Summary: Unified Framework with Backward Compatibility<a class="headerlink" href="#yaml-launcher-design-summary-unified-framework-with-backward-compatibility" title="Anchor link to this section for reference">&para;</a></h1>
+<p><strong>Date:</strong> May 25, 2026<br />
+<strong>Status:</strong> Design baseline; Phase 1 foundation implemented, later phases remain planned<br />
+<strong>Audience:</strong> Architecture Review, Development Teams</p>
+<hr />
+<h2 id="problem-statement">Problem Statement<a class="headerlink" href="#problem-statement" title="Anchor link to this section for reference">&para;</a></h2>
+<p>Three codebases (test-framework, nb, ntools-launcher) independently solve similar problems:
+- <strong>test-framework:</strong> Metadata-driven execution with output capture, assertions, variable extraction
+- <strong>nb:</strong> Currently uses JSON manifests for app installation with verification (will migrate to YAML)
+- <strong>ntools-launcher:</strong> Process orchestration with signature verification</p>
+<p><strong>Current State:</strong> 
+- Each has its own approach to orchestration
+- test-framework's output assertions/variable extraction not available in nb or ntools-launcher
+- No unified way to describe multi-step deployments across repositories
+- Duplicated logic for assertion validation, error handling, result passing</p>
+<p><strong>Goal:</strong> Create unified YAML-based launcher that:
+1. Supports all existing functionality from three codebases
+2. Adds new capabilities (parallel execution, output assertions, variable passing)
+3. Maintains 100% backward compatibility
+4. Enables cross-repository orchestration</p>
+<hr />
+<h2 id="solution-architecture">Solution Architecture<a class="headerlink" href="#solution-architecture" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="layered-design">Layered Design<a class="headerlink" href="#layered-design" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>┌─────────────────────────────────────────────────────┐
+│  YAML Schema                                         │
+│  ✅ Backward Compatible (all new features optional) │
+└─────────────────────────────────────────────────────┘
+         ↓
+┌─────────────────────────────────────────────────────┐
+│  Execution Models                                    │
+│  • Simple: Just run executable                      │
+│  • Validated: With assertions                       │
+│  • Piped: Variables extracted and passed            │
+│  • Orchestrated: Complex multi-step pipelines       │
+└─────────────────────────────────────────────────────┘
+         ↓
+┌─────────────────────────────────────────────────────┐
+│  Core Engines                                        │
+│  • YamlLauncherConfigLoader (parsing)               │
+│  • StepExecutor (single step)                       │
+│  • SequentialExecutionOrchestrator (sequential)     │
+│  • ParallelExecutionOrchestrator (parallel)         │
+│  • AssertionValidator (output validation)           │
+│  • VariableExtractor (regex-based extraction)       │
+│  • VariableSubstitutionEngine ($(var) replacement)  │
+└─────────────────────────────────────────────────────┘
+</code></pre></div>
+<h3 id="backward-compatibility-strategy">Backward Compatibility Strategy<a class="headerlink" href="#backward-compatibility-strategy" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="level-1-schema-backward-compatibility">Level 1: Schema Backward Compatibility<a class="headerlink" href="#level-1-schema-backward-compatibility" title="Anchor link to this section for reference">&para;</a></h4>
+<ul>
+<li><strong>Old Code:</strong> All existing YAML configs continue to work unchanged</li>
+<li><strong>New Code:</strong> Can use optional new properties (assertions, extractVariables, expectedReturnCode)</li>
+<li><strong>Parser:</strong> Handles both old and new YAML seamlessly</li>
+</ul>
+<h4 id="level-2-api-backward-compatibility">Level 2: API Backward Compatibility<a class="headerlink" href="#level-2-api-backward-compatibility" title="Anchor link to this section for reference">&para;</a></h4>
+<ul>
+<li><strong>Existing API:</strong> Current <code>Launcher.LockVerifyStart()</code>, <code>LockStart()</code>, <code>Start()</code> methods remain unchanged</li>
+<li>All public method signatures stay exactly the same</li>
+<li>Legacy code requires zero modifications</li>
+<li><strong>New Planned API:</strong> <code>IStepExecutor.LaunchAsync(config)</code> introduced in Phase 1</li>
+<li>New interface for internal refactoring</li>
+<li>Existing methods will delegate to this internally in Phase 2</li>
+<li><strong>Result Models:</strong> Extended with optional fields (AssertionResults, ExtractedVariables)</li>
+<li>Old code ignores new fields automatically</li>
+<li>New code can use them for advanced features</li>
+</ul>
+<h4 id="level-3-runtime-behavior-compatibility">Level 3: Runtime Behavior Compatibility<a class="headerlink" href="#level-3-runtime-behavior-compatibility" title="Anchor link to this section for reference">&para;</a></h4>
+<ul>
+<li><strong>Simple Case:</strong> Old YAML with no assertions → behaves exactly like before</li>
+<li><strong>New Case:</strong> New YAML with assertions → validates and fails if assertions fail</li>
+<li><strong>Mixed:</strong> Sequential pipeline → respects both old and new style tasks</li>
+</ul>
+<hr />
+<h2 id="core-design-decisions">Core Design Decisions<a class="headerlink" href="#core-design-decisions" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="decision-1-optional-features-alias-support">Decision 1: Optional Features &amp; Alias Support<a class="headerlink" href="#decision-1-optional-features-alias-support" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Every new feature is optional, and schema supports multiple naming conventions:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># Canonical form (recommended)</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--version"</span>
+
+<span class="c1"># Alternative: tasks (preferred for test-framework context)</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--version"</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">    </span><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Version"</span>
+
+<span class="c1"># Alternative: apps (preferred for nb context)</span>
+<span class="nt">apps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--version"</span>
+</code></pre></div></p>
+<p><strong>All three forms (<code>steps</code>, <code>tasks</code>, <code>apps</code>) are equivalent and parse to the same internal model.</strong></p>
+<p><strong>Why?</strong> Allows gradual adoption. Teams can migrate at their own pace.</p>
+<h3 id="decision-2-extracted-variables-as-dictionary">Decision 2: Extracted Variables as Dictionary<a class="headerlink" href="#decision-2-extracted-variables-as-dictionary" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Variables flow via execution context:</strong>
+<div class="highlight"><pre><span></span><code><span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"step1"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"get-version.exe"</span>
+<span class="w">    </span><span class="nt">extractVariables</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"my_version"</span>
+<span class="w">        </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">"Version:</span><span class="nv"> </span><span class="s">(.+)"</span>
+<span class="w">        </span><span class="nt">groupIndex</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"step2"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"install.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--version</span><span class="nv"> </span><span class="s">$(my_version)"</span><span class="w">  </span><span class="c1"># Uses extracted value</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"step1"</span><span class="p p-Indicator">]</span>
+</code></pre></div></p>
+<p><strong>Why?</strong> Simple, testable, works for both sequential and parallel with proper ordering.</p>
+<h3 id="decision-3-assertion-types-match-test-framework">Decision 3: Assertion Types Match test-framework<a class="headerlink" href="#decision-3-assertion-types-match-test-framework" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Assertion types reuse test-framework's proven approach:</strong>
+- <code>output_contains</code> - Substring search
+- <code>output_not_contains</code> - Negative assertion
+- <code>output_matches</code> - Regex pattern
+- <code>exit_code</code> - Return code validation
+- <code>file_exists</code> - File presence check
+- <code>custom_json</code> - JSONPath validation</p>
+<p><strong>Why?</strong> Test-framework already has well-designed, battle-tested assertion types. No need to reinvent.</p>
+<h3 id="decision-4-dependency-resolution-via-names">Decision 4: Dependency Resolution via Names<a class="headerlink" href="#decision-4-dependency-resolution-via-names" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Steps reference dependencies by name (not step number):</strong>
+<div class="highlight"><pre><span></span><code><span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"download"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"downloader.exe"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"install"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"download"</span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># By name, not index</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"installer.exe"</span>
+</code></pre></div></p>
+<p><strong>Why?</strong> Easier to reorder, comment out, or insert steps without breaking references.</p>
+<h3 id="decision-5-sequential-is-default-mode">Decision 5: Sequential is Default Mode<a class="headerlink" href="#decision-5-sequential-is-default-mode" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Default execution: sequential with dependency ordering:</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># No explicit dependencies needed</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"step1.exe"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"step2.exe"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"step3.exe"</span>
+</code></pre></div></p>
+<p><strong>Why?</strong> Matches test-framework behavior (steps numbered 1, 2, 3...). Explicit dependencies required only for complex ordering.</p>
+<hr />
+<h2 id="yaml-schema-extensions">YAML Schema Extensions<a class="headerlink" href="#yaml-schema-extensions" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="minimal-change-most-backward-compatible">Minimal Change (Most Backward Compatible)<a class="headerlink" href="#minimal-change-most-backward-compatible" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span><span class="w">  </span><span class="c1"># Already required</span>
+
+<span class="c1"># Canonical form</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="c1"># Add these optional properties:</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">          </span><span class="c1"># NEW</span>
+<span class="w">    </span><span class="nt">assertions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w">                  </span><span class="c1"># NEW</span>
+<span class="w">    </span><span class="nt">extractVariables</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span><span class="w">            </span><span class="c1"># NEW</span>
+
+<span class="c1"># Also valid (test-framework context)</span>
+<span class="nt">tasks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+
+<span class="c1"># Also valid (nb context)</span>
+<span class="nt">apps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</code></pre></div>
+<h3 id="what-stays-unchanged">What Stays Unchanged<a class="headerlink" href="#what-stays-unchanged" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li><code>path</code>, <code>arguments</code>, <code>workingDirectory</code>, <code>timeout</code> properties</li>
+<li><code>environment</code> variable handling</li>
+<li><code>verifySignature</code> digital signature verification</li>
+<li><code>dependencies</code> ordering (already in schema)</li>
+<li>Parallel/sequential execution modes</li>
+</ul>
+<h3 id="what-gets-added">What Gets Added<a class="headerlink" href="#what-gets-added" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li><code>expectedReturnCode</code> - Alternative to implicit 0 assumption</li>
+<li><code>assertions</code> - Output validation rules</li>
+<li><code>extractVariables</code> - Regex-based output capture</li>
+</ul>
+<hr />
+<h2 id="implementation-phases">Implementation Phases<a class="headerlink" href="#implementation-phases" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="phase-1-foundation-weeks-1-2-design-complete">Phase 1: Foundation (Weeks 1-2) ✓ <strong>Design Complete</strong><a class="headerlink" href="#phase-1-foundation-weeks-1-2-design-complete" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Models: StepConfig, AssertionConfig, VariableExtractionConfig</li>
+<li>Parser: YamlLauncherConfigLoader (supports <code>steps</code>, <code>tasks</code>, <code>apps</code> aliases)</li>
+<li>Single step executor: StepExecutor</li>
+<li>Result: LaunchResult with assertion/extraction tracking</li>
+</ul>
+<h3 id="phase-2-integration-week-2-design-complete">Phase 2: Integration (Week 2) ✓ <strong>Design Complete</strong><a class="headerlink" href="#phase-2-integration-week-2-design-complete" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Refactor existing Launcher.LockVerifyStart() to use new framework</li>
+<li>Ensure backward compatibility</li>
+<li>All legacy code continues to work</li>
+</ul>
+<h3 id="phase-3-sequential-pipeline-week-3-design-complete">Phase 3: Sequential Pipeline (Week 3) ✓ <strong>Design Complete</strong><a class="headerlink" href="#phase-3-sequential-pipeline-week-3-design-complete" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>DependencyResolver - Build execution DAG</li>
+<li>SequentialExecutionOrchestrator - Execute with ordering</li>
+<li>Variable substitution in arguments</li>
+</ul>
+<h3 id="phase-4-parallel-execution-week-3-4-design-complete">Phase 4: Parallel Execution (Week 3-4) ✓ <strong>Design Complete</strong><a class="headerlink" href="#phase-4-parallel-execution-week-3-4-design-complete" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>ParallelExecutionOrchestrator - Concurrent execution</li>
+<li>Thread-safe result collection</li>
+<li>Global timeout management</li>
+</ul>
+<h3 id="phase-5-advanced-features-week-4-design-complete">Phase 5: Advanced Features (Week 4+) ✓ <strong>Design Complete</strong><a class="headerlink" href="#phase-5-advanced-features-week-4-design-complete" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Variable substitution engine (predefined + custom)</li>
+<li>Retry policies and exponential backoff</li>
+<li>Pre/post execution hooks</li>
+<li>Output filtering</li>
+</ul>
+<hr />
+<h2 id="key-features-capabilities">Key Features &amp; Capabilities<a class="headerlink" href="#key-features-capabilities" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="feature-matrix">Feature Matrix<a class="headerlink" href="#feature-matrix" title="Anchor link to this section for reference">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Description</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Simple Execution</strong></td>
+<td>Run executable, capture output</td>
+<td>Basic app launch</td>
+</tr>
+<tr>
+<td><strong>Return Code Validation</strong></td>
+<td>Assert exit code matches expectation</td>
+<td>Verify success</td>
+</tr>
+<tr>
+<td><strong>Output Assertions</strong></td>
+<td>Validate output contains/matches strings</td>
+<td>Test verification</td>
+</tr>
+<tr>
+<td><strong>Variable Extraction</strong></td>
+<td>Regex patterns extract values from output</td>
+<td>Flow data between steps</td>
+</tr>
+<tr>
+<td><strong>Variable Substitution</strong></td>
+<td><code>$(variable)</code> replaced in arguments/paths</td>
+<td>Cross-step communication</td>
+</tr>
+<tr>
+<td><strong>Sequential Pipeline</strong></td>
+<td>Steps run in order with dependencies</td>
+<td>Multi-step deployments</td>
+</tr>
+<tr>
+<td><strong>Parallel Execution</strong></td>
+<td>Steps run concurrently (with ordering)</td>
+<td>Speed up test runs</td>
+</tr>
+<tr>
+<td><strong>Digital Signatures</strong></td>
+<td>Verify executable signature before launch</td>
+<td>Security validation</td>
+</tr>
+<tr>
+<td><strong>Timeout Management</strong></td>
+<td>Per-task and global timeouts</td>
+<td>Prevent hangs</td>
+</tr>
+<tr>
+<td><strong>Error Handling</strong></td>
+<td>continueOnError for resilience</td>
+<td>Cleanup even if failed</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="test-framework-compatibility">Test-Framework Compatibility<a class="headerlink" href="#test-framework-compatibility" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="current-test-framework-pattern">Current test-framework Pattern<a class="headerlink" href="#current-test-framework-pattern" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># test-framework metadata format</span>
+<span class="nt">commands</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">step</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Get</span><span class="nv"> </span><span class="s">version"</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"--version"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">expected_exit_code</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">    </span><span class="nt">variable_extractions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"version"</span>
+<span class="w">        </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">"Version:</span><span class="nv"> </span><span class="s">(\\d+)"</span>
+<span class="w">        </span><span class="nt">group_index</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Version"</span>
+</code></pre></div>
+<h3 id="equivalent-yaml-launcher-format">Equivalent YAML Launcher Format<a class="headerlink" href="#equivalent-yaml-launcher-format" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># YAML launcher format (unified)</span>
+<span class="c1"># Note: Can also use 'tasks:' or 'apps:' - all equivalent</span>
+<span class="nt">steps</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Get</span><span class="nv"> </span><span class="s">version"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"app.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--version"</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">    </span><span class="nt">extractVariables</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"version"</span>
+<span class="w">        </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">"Version:</span><span class="nv"> </span><span class="s">(\\d+)"</span>
+<span class="w">        </span><span class="nt">groupIndex</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Version"</span>
+</code></pre></div>
+<p><strong>Migration:</strong> Minimal - just rename properties (snake_case → camelCase).</p>
+<hr />
+<h2 id="nb-command-compatibility">nb Command Compatibility<a class="headerlink" href="#nb-command-compatibility" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="current-nb-pattern-to-migrate">Current nb Pattern (to migrate)<a class="headerlink" href="#current-nb-pattern-to-migrate" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>nb<span class="w"> </span>install<span class="w"> </span>--json<span class="w"> </span>tools.json<span class="w">        </span><span class="c1"># Current: JSON manifest (deprecated)</span>
+nb<span class="w"> </span>install<span class="w"> </span>--name<span class="w"> </span>MyApp<span class="w">             </span><span class="c1"># Install from default location</span>
+nb<span class="w"> </span>list<span class="w">                             </span><span class="c1"># List available apps</span>
+</code></pre></div>
+<h3 id="new-unified-yaml-format">New Unified YAML Format<a class="headerlink" href="#new-unified-yaml-format" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Simple case: Single step</span>
+<span class="nt">step</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">  </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"install</span><span class="nv"> </span><span class="s">--name</span><span class="nv"> </span><span class="s">MyApp"</span>
+
+<span class="c1"># Complex deployments: Multi-step orchestration</span>
+<span class="nt">steps</span><span class="p">:</span><span class="w">  </span><span class="c1"># Canonical form; can also use 'tasks' or 'apps'</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"download"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"downloader.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"--version</span><span class="nv"> </span><span class="s">1.0.0"</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"install"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"installer.exe"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"download"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+<span class="w">    </span><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Installation</span><span class="nv"> </span><span class="s">complete"</span>
+</code></pre></div>
+<p><strong>Unified Approach:</strong>
+1. <strong>YAML is the single standard format</strong> across all three repositories
+2. <strong>Auto-conversion tooling provided</strong> to migrate existing JSON manifests to YAML
+3. <strong>Phase 1:</strong> Implement YAML launcher with nb support
+4. <strong>Phase 2:</strong> Provide <code>json-to-yaml</code> migration utility
+5. <strong>Phase 3:</strong> Gradually deprecate JSON format (keep read support for backward compat)
+6. <strong>Result:</strong> All three repos speak same language (YAML), simpler maintenance</p>
+<hr />
+<h2 id="ntools-launcher-compatibility">ntools-launcher Compatibility<a class="headerlink" href="#ntools-launcher-compatibility" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="current-process-based-pattern">Current Process-Based Pattern<a class="headerlink" href="#current-process-based-pattern" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span>
+<span class="n">process</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span><span class="w">  </span><span class="c1">// Existing API</span>
+</code></pre></div>
+<h3 id="new-yaml-based-pattern">New YAML-Based Pattern<a class="headerlink" href="#new-yaml-based-pattern" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="kt">var</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepExecutor</span><span class="p">();</span>
+<span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"deploy.yaml"</span><span class="p">);</span><span class="w">  </span><span class="c1">// New API</span>
+</code></pre></div>
+<h3 id="compatibility-guarantee">Compatibility Guarantee<a class="headerlink" href="#compatibility-guarantee" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// This continues to work forever (unchanged)</span>
+<span class="n">process</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+
+<span class="c1">// This also works (new parallel API)</span>
+<span class="k">await</span><span class="w"> </span><span class="n">launcher</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"deploy.yaml"</span><span class="p">);</span>
+
+<span class="c1">// Both approaches coexist in same codebase</span>
+</code></pre></div>
+<p><strong>Migration:</strong> Optional. Teams can adopt YAML gradually while keeping existing code.</p>
+<hr />
+<h2 id="assertion-types">Assertion Types<a class="headerlink" href="#assertion-types" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="type-output_contains">Type: output_contains<a class="headerlink" href="#type-output_contains" title="Anchor link to this section for reference">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_contains"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Success"</span>
+<span class="w">    </span><span class="nt">caseInsensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+Checks if stdout contains substring.</p>
+<h3 id="type-output_not_contains">Type: output_not_contains<a class="headerlink" href="#type-output_not_contains" title="Anchor link to this section for reference">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_not_contains"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"Error"</span>
+<span class="w">    </span><span class="nt">caseInsensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</code></pre></div>
+Checks that stdout does NOT contain substring.</p>
+<h3 id="type-output_matches">Type: output_matches<a class="headerlink" href="#type-output_matches" title="Anchor link to this section for reference">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"output_matches"</span>
+<span class="w">    </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">"^Completed</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">\\d+</span><span class="nv"> </span><span class="s">ms$"</span>
+</code></pre></div>
+Checks stdout against regex pattern.</p>
+<h3 id="type-exit_code">Type: exit_code<a class="headerlink" href="#type-exit_code" title="Anchor link to this section for reference">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"exit_code"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</code></pre></div>
+Validates process exit code (redundant with expectedReturnCode, but explicit).</p>
+<h3 id="type-file_exists">Type: file_exists<a class="headerlink" href="#type-file_exists" title="Anchor link to this section for reference">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"file_exists"</span>
+<span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">"$(InstallPath)\\app.exe"</span>
+</code></pre></div>
+Checks file exists on disk (supports variable substitution).</p>
+<h3 id="type-custom_json">Type: custom_json<a class="headerlink" href="#type-custom_json" title="Anchor link to this section for reference">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code><span class="nt">assertions</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">"custom_json"</span>
+<span class="w">    </span><span class="nt">jsonPath</span><span class="p">:</span><span class="w"> </span><span class="s">"$.status"</span>
+<span class="w">    </span><span class="nt">expectedValue</span><span class="p">:</span><span class="w"> </span><span class="s">"success"</span>
+</code></pre></div>
+Parses JSON output and validates with JSONPath.</p>
+<hr />
+<h2 id="error-messages-diagnostics">Error Messages &amp; Diagnostics<a class="headerlink" href="#error-messages-diagnostics" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="assertion-failure-example">Assertion Failure Example<a class="headerlink" href="#assertion-failure-example" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>❌ Task 'install' failed
+   Expected return code: 0
+   Actual return code: 1
+
+   Assertion 1 FAILED: output_contains
+   Expected substring: "Installation complete"
+
+   Actual output (first 500 chars):
+   ─────────────────────────────────────────
+   Preparing installation...
+   Error: Insufficient permissions
+   ─────────────────────────────────────────
+
+   Suggestion: Run installer with elevated privileges
+</code></pre></div>
+<h3 id="variable-extraction-failure">Variable Extraction Failure<a class="headerlink" href="#variable-extraction-failure" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>⚠️  Task 'extract-version' warning
+   Variable extraction: version
+   Pattern: Version: (\d+\.\d+\.\d+)
+
+   Pattern did not match output
+   Output searched:
+   ─────────────────────────────────────────
+   Usage: app --help
+   ─────────────────────────────────────────
+
+   Note: Variable not extracted, skipping dependent tasks
+</code></pre></div>
+<hr />
+<h2 id="success-criteria">Success Criteria<a class="headerlink" href="#success-criteria" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="functional-success">Functional Success<a class="headerlink" href="#functional-success" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ All current YAML launcher configs work unchanged</li>
+<li>✅ All test-framework scenarios can be expressed in YAML launcher</li>
+<li>✅ All nb deployments can be orchestrated in YAML launcher</li>
+<li>✅ All ntools-launcher orchestrations can be described in YAML launcher</li>
+</ul>
+<h3 id="api-success">API Success<a class="headerlink" href="#api-success" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ IStepExecutor interface unchanged</li>
+<li>✅ Process.LockVerifyStart() continues to work</li>
+<li>✅ CliTestExecutor.ExecuteAsync() continues to work</li>
+<li>✅ Zero breaking changes</li>
+</ul>
+<h3 id="user-success">User Success<a class="headerlink" href="#user-success" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ Developers can describe complex deployments in YAML (not code)</li>
+<li>✅ Test scenarios more maintainable and reusable</li>
+<li>✅ Variables flow naturally between steps (no manual passing)</li>
+<li>✅ Clear, actionable error messages on assertion failures</li>
+</ul>
+<h3 id="quality-success">Quality Success<a class="headerlink" href="#quality-success" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>✅ 90%+ unit test coverage</li>
+<li>✅ Comprehensive integration tests</li>
+<li>✅ E2E tests with real executables</li>
+<li>✅ Performance tests for parallel execution</li>
+</ul>
+<hr />
+<h2 id="timeline-deliverables">Timeline &amp; Deliverables<a class="headerlink" href="#timeline-deliverables" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="week-1-2-phase-1-foundation">Week 1-2: Phase 1 (Foundation)<a class="headerlink" href="#week-1-2-phase-1-foundation" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Model classes (LauncherConfig, ExecutableConfig, etc.)</li>
+<li>YAML parsing with YamlDotNet</li>
+<li>Single executable execution</li>
+<li>Unit tests</li>
+</ul>
+<p><strong>Deliverable:</strong> <code>YamlLauncherConfigLoader</code> and <code>StepExecutor</code> working</p>
+<h3 id="week-2-phase-2-integration">Week 2: Phase 2 (Integration)<a class="headerlink" href="#week-2-phase-2-integration" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Refactor existing Launcher.cs</li>
+<li>Backward compatibility verified</li>
+<li>All legacy tests passing</li>
+</ul>
+<p><strong>Deliverable:</strong> Existing code continues to work unchanged</p>
+<h3 id="week-3-phase-3-sequential-pipeline">Week 3: Phase 3 (Sequential Pipeline)<a class="headerlink" href="#week-3-phase-3-sequential-pipeline" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>DependencyResolver class</li>
+<li>SequentialExecutionOrchestrator class</li>
+<li>Variable substitution in arguments</li>
+<li>Comprehensive tests</li>
+</ul>
+<p><strong>Deliverable:</strong> Multi-step deployments with variable passing</p>
+<h3 id="week-3-4-phase-4-parallel-execution">Week 3-4: Phase 4 (Parallel Execution)<a class="headerlink" href="#week-3-4-phase-4-parallel-execution" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>ParallelExecutionOrchestrator class</li>
+<li>Thread-safe result collection</li>
+<li>Stress tests with many concurrent tasks</li>
+</ul>
+<p><strong>Deliverable:</strong> Parallel test matrix execution</p>
+<h3 id="week-4-phase-5-advanced-features">Week 4+: Phase 5 (Advanced Features)<a class="headerlink" href="#week-4-phase-5-advanced-features" title="Anchor link to this section for reference">&para;</a></h3>
+<ul>
+<li>Advanced variable substitution</li>
+<li>Retry policies</li>
+<li>Pre/post hooks</li>
+<li>Output filtering</li>
+</ul>
+<p><strong>Deliverable:</strong> Production-ready advanced features</p>
+<p><strong>Total Timeline:</strong> 8-10 weeks</p>
+<hr />
+<h2 id="documentation-deliverables">Documentation Deliverables<a class="headerlink" href="#documentation-deliverables" title="Anchor link to this section for reference">&para;</a></h2>
+<p>✅ <strong>Completed Design Phase:</strong>
+1. yaml-launcher-design.md - Complete architecture specification
+2. yaml-schema-reference.md - YAML schema and syntax guide
+3. implementation-roadmap.md - Phased implementation plan
+4. test-framework-integration.md - Integration with test-framework
+5. integration-examples.md - Real-world examples for all three repos
+6. DESIGN-SUMMARY.md (this file) - Architecture overview</p>
+<p>📝 <strong>To Create During Implementation:</strong>
+1. API-reference.md - C# API documentation
+2. migration-guide.md - How to migrate from old approaches
+3. troubleshooting-guide.md - Common issues and solutions
+4. performance-tuning.md - Optimization tips
+5. sample-configurations/ - Template YAML files</p>
+<hr />
+<h2 id="risk-mitigation">Risk Mitigation<a class="headerlink" href="#risk-mitigation" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="risk-1-breaking-changes">Risk 1: Breaking Changes<a class="headerlink" href="#risk-1-breaking-changes" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Mitigation:</strong> All new properties optional. Existing code path unchanged.
+- Old YAML → works exactly as before
+- New YAML → opt-in new features
+- Legacy APIs → remain unchanged</p>
+<h3 id="risk-2-performance-regression">Risk 2: Performance Regression<a class="headerlink" href="#risk-2-performance-regression" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Mitigation:</strong> No additional overhead for simple case (no assertions).
+- Assertion validation only if assertions specified
+- Variable extraction only if extractVariables specified
+- Benchmarking in Phase 4 to validate overhead &lt; 5%</p>
+<h3 id="risk-3-adoption-barrier">Risk 3: Adoption Barrier<a class="headerlink" href="#risk-3-adoption-barrier" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Mitigation:</strong> Gradual migration path.
+- Phase 1: Just core functionality (no assertions needed)
+- Phase 2: Integration (legacy code continues)
+- Phase 3-5: Optional advanced features</p>
+<h3 id="risk-4-complex-dependency-graphs">Risk 4: Complex Dependency Graphs<a class="headerlink" href="#risk-4-complex-dependency-graphs" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Mitigation:</strong> DependencyResolver validates DAG before execution.
+- Circular dependency detection
+- Missing dependency errors
+- Clear error messages</p>
+<hr />
+<h2 id="questions-answers">Questions &amp; Answers<a class="headerlink" href="#questions-answers" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="q-how-is-this-different-from-test-frameworks-metadata">Q: How is this different from test-framework's metadata?<a class="headerlink" href="#q-how-is-this-different-from-test-frameworks-metadata" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>A:</strong> This unifies test-framework's approach with nb's and ntools-launcher's patterns. Test-framework has assertions/extraction; this extends those to all three codebases.</p>
+<h3 id="q-will-existing-test-framework-tests-still-work">Q: Will existing test-framework tests still work?<a class="headerlink" href="#q-will-existing-test-framework-tests-still-work" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>A:</strong> Yes. Can coexist. MetadataTestExecutor can be compatibility layer or gradually migrated to StepExecutor.</p>
+<h3 id="q-what-about-nb-commands-that-dont-fit-this-pattern">Q: What about nb commands that don't fit this pattern?<a class="headerlink" href="#q-what-about-nb-commands-that-dont-fit-this-pattern" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>A:</strong> Those continue using <code>nb install --name MyApp</code>. YAML launcher is for complex orchestrations, not simple cases.</p>
+<h3 id="q-do-i-have-to-rewrite-my-code">Q: Do I have to rewrite my code?<a class="headerlink" href="#q-do-i-have-to-rewrite-my-code" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>A:</strong> No. All existing code continues to work. YAML launcher is additive, not replacement.</p>
+<h3 id="q-what-about-variable-conflicts-with-environment-variables">Q: What about $(variable) conflicts with environment variables?<a class="headerlink" href="#q-what-about-variable-conflicts-with-environment-variables" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>A:</strong> Precedence: Extracted variables &gt; Environment variables &gt; Predefined variables. Explicit rules prevent conflicts.</p>
+<h3 id="q-can-i-use-this-without-assertions">Q: Can I use this without assertions?<a class="headerlink" href="#q-can-i-use-this-without-assertions" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>A:</strong> Absolutely. Assertions are completely optional. YAML launcher works fine for simple execution.</p>
+<hr />
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Anchor link to this section for reference">&para;</a></h2>
+<ol>
+<li><strong>Architecture Review</strong> (1 day)</li>
+<li>Review this design with team</li>
+<li>Approve scope and timeline</li>
+<li>
+<p>Identify any concerns</p>
+</li>
+<li>
+<p><strong>Phase 1 Kickoff</strong> (Day 1 of Week 1)</p>
+</li>
+<li>Create model classes</li>
+<li>Set up YAML parsing</li>
+<li>
+<p>Begin unit tests</p>
+</li>
+<li>
+<p><strong>Continuous Integration</strong> (Ongoing)</p>
+</li>
+<li>Weekly sync-ups</li>
+<li>Integration with existing codebases</li>
+<li>
+<p>Test coverage validation</p>
+</li>
+<li>
+<p><strong>Beta Release</strong> (After Week 4)</p>
+</li>
+<li>Early feedback from internal teams</li>
+<li>Real-world scenario testing</li>
+<li>
+<p>Documentation updates</p>
+</li>
+<li>
+<p><strong>GA Release</strong> (Week 5-6)</p>
+</li>
+<li>Official NuGet package</li>
+<li>Public documentation</li>
+<li>Team training</li>
+</ol>
+<hr />
+<h2 id="rolling-adoption-strategy-unified-single-design-across-all-repositories">Rolling Adoption Strategy: Unified Single Design Across All Repositories<a class="headerlink" href="#rolling-adoption-strategy-unified-single-design-across-all-repositories" title="Anchor link to this section for reference">&para;</a></h2>
+<h3 id="final-goal-single-yaml-launcher-framework">Final Goal: Single YAML Launcher Framework<a class="headerlink" href="#final-goal-single-yaml-launcher-framework" title="Anchor link to this section for reference">&para;</a></h3>
+<p>This design <strong>enables complete replacement</strong> of existing code in all three repositories with the unified YAML launcher approach. The final requirement is:</p>
+<blockquote>
+<p><strong>Within 6 months: All executable orchestration across ntools-launcher, nb, and test-framework uses the single YAML launcher framework.</strong></p>
+</blockquote>
+<hr />
+<h3 id="phase-breakdown-replacing-legacy-code">Phase Breakdown: Replacing Legacy Code<a class="headerlink" href="#phase-breakdown-replacing-legacy-code" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="phase-1-2-ntools-launcher-transition-weeks-1-4">Phase 1-2: ntools-launcher Transition (Weeks 1-4)<a class="headerlink" href="#phase-1-2-ntools-launcher-transition-weeks-1-4" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Current State:</strong> Process.LockVerifyStart() and manual orchestration in C#</p>
+<p><strong>Transition Strategy:</strong>
+1. <strong>Week 1-2 (Foundation):</strong> New YAML launcher deployed alongside existing code
+   - Existing: <code>process.LockVerifyStart(verbose)</code> continues to work
+   - New: <code>await launcher.LaunchAsync("deployment.yaml")</code> available
+   - Status: <strong>Coexistence</strong></p>
+<ol>
+<li><strong>Week 2-4 (Integration &amp; Refactoring):</strong></li>
+<li>All internal ntools-launcher orchestrations migrated to YAML</li>
+<li>Launcher.cs refactored to use new framework internally</li>
+<li>External API remains unchanged (backward compatible)</li>
+<li>
+<p>Status: <strong>Internal Migration Complete</strong></p>
+</li>
+<li>
+<p><strong>Post-Week 4 (Documentation):</strong></p>
+</li>
+<li>Deprecation notice: Process-based approach marked for removal in v2.0</li>
+<li>Migration guide provided for external users</li>
+<li>New projects default to YAML approach</li>
+<li>Status: <strong>Legacy Path Documented</strong></li>
+</ol>
+<p><strong>Requirement:</strong> By end of Week 4, 100% of ntools-launcher's new functionality uses YAML launcher.</p>
+<hr />
+<h4 id="phase-2-3-nb-integration-weeks-2-6">Phase 2-3: nb Integration (Weeks 2-6)<a class="headerlink" href="#phase-2-3-nb-integration-weeks-2-6" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Current State:</strong> JSON manifest for simple installs, no complex orchestration</p>
+<p><strong>Transition Strategy:</strong>
+1. <strong>Week 2-3:</strong> YAML launcher deployed for nb with migration tooling
+   - New: <code>nb install --yaml deployment.yaml</code> command added
+   - Tooling: <code>nb migrate --json-to-yaml tools.json</code> converts JSON manifests to YAML
+   - Old: <code>nb install --json tools.json</code> still works (internally uses YAML after conversion)
+   - Status: <strong>Single Format Foundation</strong></p>
+<ol>
+<li><strong>Week 3-4:</strong> All complex deployments use YAML</li>
+<li>Multi-step deployments (download, verify, install, register) use YAML</li>
+<li>Simple single-app installs can still use JSON (auto-converted)</li>
+<li>
+<p>Status: <strong>Unified Internal Format</strong></p>
+</li>
+<li>
+<p><strong>Week 5-6:</strong> JSON becomes optional/legacy</p>
+</li>
+<li>JSON files automatically converted to YAML at read time</li>
+<li><code>nb install --json tools.json</code> transparently converts to YAML</li>
+<li>Users see no change; implementation unified on YAML</li>
+<li>
+<p>Status: <strong>Transparent YAML Foundation</strong></p>
+</li>
+<li>
+<p><strong>Post-Week 6:</strong> YAML is primary format</p>
+</li>
+<li>Deprecation: JSON input marked for v2.0 removal</li>
+<li>Migration guide provided for all JSON users</li>
+<li>New nb features only support YAML</li>
+<li>Status: <strong>Pure YAML Format</strong></li>
+</ol>
+<p><strong>Requirement:</strong> By end of Week 6, all nb configurations standardized on YAML launcher (with backward-compatible JSON-to-YAML conversion).</p>
+<hr />
+<h4 id="phase-3-4-test-framework-integration-weeks-3-8">Phase 3-4: test-framework Integration (Weeks 3-8)<a class="headerlink" href="#phase-3-4-test-framework-integration-weeks-3-8" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Current State:</strong> Separate MetadataTestExecutor with assertions and extraction</p>
+<p><strong>Transition Strategy:</strong>
+1. <strong>Week 3-4:</strong> Compatibility layer established
+   - MetadataTestExecutor delegates to StepExecutor
+   - Existing test-framework YAML continues to work
+   - Behind the scenes: Using new framework
+   - Status: <strong>Invisible Migration</strong></p>
+<ol>
+<li><strong>Week 4-6:</strong> New test scenarios use unified schema</li>
+<li>New tests written in unified YAML format</li>
+<li>Old tests migrated gradually as maintained</li>
+<li>Property name migration: snake_case → camelCase</li>
+<li>
+<p>Status: <strong>Mixed Mode</strong></p>
+</li>
+<li>
+<p><strong>Week 6-8:</strong> Complete consolidation</p>
+</li>
+<li>All test-framework scenarios use unified schema</li>
+<li>MetadataTestExecutor becomes thin wrapper</li>
+<li>Single assertion/extraction engine across framework</li>
+<li>
+<p>Status: <strong>Engine Consolidated</strong></p>
+</li>
+<li>
+<p><strong>Post-Week 8:</strong> Pure YAML framework</p>
+</li>
+<li>Deprecation: MetadataTestExecutor marked as legacy</li>
+<li>New tests use StepExecutor directly</li>
+<li>Status: <strong>Single Framework</strong></li>
+</ol>
+<p><strong>Requirement:</strong> By end of Week 8, all test-framework test scenarios use unified YAML launcher.</p>
+<hr />
+<h3 id="unified-end-state-weeks-1-12">Unified End State (Weeks 1-12)<a class="headerlink" href="#unified-end-state-weeks-1-12" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="architecture-after-adoption">Architecture After Adoption<a class="headerlink" href="#architecture-after-adoption" title="Anchor link to this section for reference">&para;</a></h4>
+<div class="highlight"><pre><span></span><code>Before (Current - 3 Separate Systems):
+┌──────────────────────┐  ┌──────────────┐  ┌─────────────────────┐
+│ ntools-launcher      │  │ nb           │  │ test-framework      │
+│ Process API          │  │ JSON Manifest│  │ MetadataTestExecutor│
+│ Orchestration Logic  │  │ Commands     │  │ Assertions Engine   │
+└──────────────────────┘  └──────────────┘  └─────────────────────┘
+
+After (Unified - Single System):
+┌─────────────────────────────────────────────────────────────────┐
+│                   YAML Launcher Framework                        │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ Unified YAML Schema                                      │  │
+│  │ (assertions, extraction, orchestration, signatures)      │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │ Core Engines                                             │  │
+│  │ • YamlLauncherConfigLoader (parsing)                     │  │
+│  │ • StepExecutor (execution)                            │  │
+│  │ • SequentialExecutionOrchestrator (pipelines)            │  │
+│  │ • ParallelExecutionOrchestrator (concurrent)             │  │
+│  │ • AssertionValidator (output validation)                 │  │
+│  │ • VariableExtractor (regex extraction)                   │  │
+│  └──────────────────────────────────────────────────────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│ Layered Usage (All using same framework, different interfaces)  │
+├──────────────────────┬──────────────────┬──────────────────────┤
+│ ntools-launcher      │ nb               │ test-framework       │
+│ IStepExecutor       │ nb install       │ StepExecutor         │
+│ LaunchAsync(yaml)    │ nb deploy        │ MetadataTestExecutor │
+│ Legacy: Launcher.cs  │ JSON auto-conv   │ Legacy: Metadata     │
+└──────────────────────┴──────────────────┴──────────────────────┘
+</code></pre></div>
+<hr />
+<h3 id="phased-rollout-timeline">Phased Rollout Timeline<a class="headerlink" href="#phased-rollout-timeline" title="Anchor link to this section for reference">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Week 1-2: Phase 1 - Foundation
+├─ YamlLauncherConfigLoader working
+├─ StepExecutor for single steps
+├─ ntools-launcher: Available alongside Process API
+└─ Status: Parallel systems
+
+Week 2-4: Phase 2 - ntools-launcher Integration
+├─ Refactor ntools-launcher to use YAML internally
+├─ Process.LockVerifyStart() delegates to StepExecutor
+├─ nb: Added `nb install --yaml`
+├─ test-framework: Compatibility layer in place
+└─ Status: Internal migration underway
+
+Week 3-6: Phase 3 - Sequential &amp; nb Full Integration
+├─ DependencyResolver and SequentialExecutionOrchestrator
+├─ nb complex deployments use YAML launcher
+├─ JSON becomes transparent wrapper
+├─ test-framework: New scenarios in unified schema
+└─ Status: Two systems consolidating
+
+Week 4-8: Phase 4 - Parallel &amp; test-framework Complete
+├─ ParallelExecutionOrchestrator
+├─ All test-framework scenarios migrated
+├─ MetadataTestExecutor thin wrapper
+├─ Unified assertion/extraction engine
+└─ Status: Converging to single framework
+
+Week 4-12: Phase 5+ - Advanced Features &amp; Documentation
+├─ Variable substitution, retries, hooks, etc.
+├─ Cross-repository orchestration tested
+├─ Documentation for all three repos
+├─ User migration guides published
+└─ Status: Production ready
+
+Month 4-6: Adoption &amp; Deprecation
+├─ Internal teams fully migrated
+├─ External users adopt new framework
+├─ Deprecation notices published (v1.1+)
+├─ Legacy path marked for v2.0 removal
+└─ Status: Single framework dominant
+</code></pre></div>
+<hr />
+<h3 id="code-replacement-examples">Code Replacement Examples<a class="headerlink" href="#code-replacement-examples" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="ntools-launcher-from-process-api-to-yaml">ntools-launcher: From Process API to YAML<a class="headerlink" href="#ntools-launcher-from-process-api-to-yaml" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Before (Current):</strong>
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">DeployAsync</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">downloader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="n">downloader</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">installer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="n">installer</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">verifier</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Process</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">StartInfo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="n">verifier</span><span class="p">.</span><span class="n">LockVerifyStart</span><span class="p">(</span><span class="n">verbose</span><span class="p">:</span><span class="w"> </span><span class="k">true</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>After (Unified YAML):</strong>
+<div class="highlight"><pre><span></span><code><span class="k">public</span><span class="w"> </span><span class="k">async</span><span class="w"> </span><span class="n">Task</span><span class="w"> </span><span class="nf">DeployAsync</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">executor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">StepExecutor</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">var</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">executor</span><span class="p">.</span><span class="n">LaunchAsync</span><span class="p">(</span><span class="s">"deploy.yaml"</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="p">.</span><span class="n">Success</span><span class="p">)</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="nf">DeploymentException</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">ErrorMessage</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>YAML Configuration:</strong>
+<div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">steps</span><span class="p">:</span><span class="w">  </span><span class="c1"># Or use 'tasks' for test context or 'apps' for deployment</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"download"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"downloader.exe"</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"install"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"installer.exe"</span>
+<span class="w">    </span><span class="nt">verifySignature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"download"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"verify"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"verifier.exe"</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"install"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+</code></pre></div></p>
+<p><strong>Result:</strong> 15 lines of C# code → 3 lines of C# code + declarative YAML</p>
+<hr />
+<h4 id="nb-from-json-to-unified-yaml">nb: From JSON to Unified YAML<a class="headerlink" href="#nb-from-json-to-unified-yaml" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Before (Current):</strong>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"Name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"MyApp"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"InstallCommand"</span><span class="p">:</span><span class="w"> </span><span class="s2">"powershell.exe"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"InstallArgs"</span><span class="p">:</span><span class="w"> </span><span class="s2">"-Command Expand-Archive..."</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p><strong>After (Transparent):</strong>
+<div class="highlight"><pre><span></span><code>nb<span class="w"> </span>install<span class="w"> </span>--yaml<span class="w"> </span>myapp-deployment.yaml
+<span class="c1"># Internally: JSON auto-converted or YAML directly used</span>
+</code></pre></div></p>
+<p><strong>YAML Equivalent:</strong>
+<div class="highlight"><pre><span></span><code><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">"1.0"</span>
+<span class="nt">steps</span><span class="p">:</span><span class="w">  </span><span class="c1"># Can also use 'tasks' or 'apps'</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"download-release"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"gh.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"release</span><span class="nv"> </span><span class="s">download..."</span>
+<span class="w">    </span><span class="nt">expectedReturnCode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
+
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"extract"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"powershell.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"-Command</span><span class="nv"> </span><span class="s">Expand-Archive..."</span>
+<span class="w">    </span><span class="nt">dependencies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"download-release"</span><span class="p p-Indicator">]</span>
+</code></pre></div></p>
+<p><strong>Result:</strong> Isolated commands → Multi-step orchestration</p>
+<hr />
+<h4 id="test-framework-from-metadata-to-unified">test-framework: From Metadata to Unified<a class="headerlink" href="#test-framework-from-metadata-to-unified" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Before (Current):</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># test-framework metadata format</span>
+<span class="nt">commands</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">step</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">args</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"wi"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"list"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"--json"</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">variable_extractions</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"id"</span>
+<span class="w">        </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">'"id":\s*(\d+)'</span>
+</code></pre></div></p>
+<p><strong>After (Unified):</strong>
+<div class="highlight"><pre><span></span><code><span class="c1"># YAML launcher format (same capabilities)</span>
+<span class="nt">steps</span><span class="p">:</span><span class="w">  </span><span class="c1"># Canonical form</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"list-items"</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"sdo.exe"</span>
+<span class="w">    </span><span class="nt">arguments</span><span class="p">:</span><span class="w"> </span><span class="s">"wi</span><span class="nv"> </span><span class="s">list</span><span class="nv"> </span><span class="s">--json"</span>
+<span class="w">    </span><span class="nt">extractVariables</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"id"</span>
+<span class="w">        </span><span class="nt">pattern</span><span class="p">:</span><span class="w"> </span><span class="s">'"id":\s*(\d+)'</span>
+</code></pre></div></p>
+<p><strong>Result:</strong> Separate framework → Part of unified ecosystem</p>
+<hr />
+<h3 id="single-design-requirements">Single Design Requirements<a class="headerlink" href="#single-design-requirements" title="Anchor link to this section for reference">&para;</a></h3>
+<h4 id="requirement-1-complete-code-replacement-capability">Requirement 1: Complete Code Replacement Capability ✅<a class="headerlink" href="#requirement-1-complete-code-replacement-capability" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Status:</strong> Design enables this
+- All features from three codebases supported in YAML launcher
+- Legacy code can be removed without functionality loss
+- New code can be written entirely in YAML</p>
+<h4 id="requirement-2-backward-compatibility-during-transition">Requirement 2: Backward Compatibility During Transition ✅<a class="headerlink" href="#requirement-2-backward-compatibility-during-transition" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Status:</strong> Design guarantees this
+- Old code runs alongside new code
+- No breaking changes to public APIs
+- Gradual migration path for each repo</p>
+<h4 id="requirement-3-single-unified-framework">Requirement 3: Single Unified Framework ✅<a class="headerlink" href="#requirement-3-single-unified-framework" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Status:</strong> Design achieves this
+- One YAML schema for all three repos
+- Single assertion engine
+- Single extraction engine
+- Single orchestration engine</p>
+<h4 id="requirement-4-cross-repository-orchestration">Requirement 4: Cross-Repository Orchestration ✅<a class="headerlink" href="#requirement-4-cross-repository-orchestration" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Status:</strong> Design supports this
+- Can orchestrate nb → test-framework scenarios
+- Can orchestrate test-framework → ntools-launcher deployments
+- Variables flow across repository boundaries</p>
+<h4 id="requirement-5-simplified-codebase-maintenance">Requirement 5: Simplified Codebase Maintenance ✅<a class="headerlink" href="#requirement-5-simplified-codebase-maintenance" title="Anchor link to this section for reference">&para;</a></h4>
+<p><strong>Status:</strong> Design reduces duplication
+- One assertion validator (not three)
+- One variable extractor (not two)
+- One orchestration engine (not three different approaches)
+- One documentation set covering all use cases</p>
+<hr />
+<h3 id="success-criteria-for-rolling-adoption">Success Criteria for Rolling Adoption<a class="headerlink" href="#success-criteria-for-rolling-adoption" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Month 1 (Weeks 1-4):</strong>
+- ✅ ntools-launcher fully uses YAML launcher internally
+- ✅ nb supports YAML deployments
+- ✅ test-framework uses unified framework internally
+- ✅ All existing code continues to work
+- ✅ Zero user-facing breaking changes</p>
+<p><strong>Month 2 (Weeks 5-8):</strong>
+- ✅ 80% of new test-framework scenarios in unified schema
+- ✅ 90% of ntools-launcher orchestrations in YAML
+- ✅ nb complex deployments use YAML by default
+- ✅ Cross-repository orchestration working
+- ✅ Documentation updated for unified approach</p>
+<p><strong>Month 3-6 (Weeks 9-12+):</strong>
+- ✅ 100% of new code uses unified framework
+- ✅ 80% of old code migrated to unified framework
+- ✅ Deprecation notices published
+- ✅ Public documentation complete
+- ✅ User adoption of unified framework established</p>
+<hr />
+<h3 id="rollout-communication-plan">Rollout Communication Plan<a class="headerlink" href="#rollout-communication-plan" title="Anchor link to this section for reference">&para;</a></h3>
+<p><strong>Week 1:</strong> Internal announcement
+- Design review completed
+- Unified framework benefits explained
+- Timeline shared with all teams</p>
+<p><strong>Week 4:</strong> Phase 1 completion
+- ntools-launcher uses YAML internally
+- Demo shows code reduction (15 → 3 lines)
+- Migration guide published</p>
+<p><strong>Week 8:</strong> Phase 3 completion
+- test-framework fully consolidated
+- nb deployments unified
+- Cross-repository examples available</p>
+<p><strong>Week 12:</strong> Unified framework launched
+- GA release of ntools.Launcher.Yaml NuGet package
+- Public documentation complete
+- Training complete for all teams</p>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li><code>yaml-launcher-design.md</code> - Detailed architecture</li>
+<li><code>yaml-schema-reference.md</code> - Complete YAML syntax</li>
+<li><code>implementation-roadmap.md</code> - Implementation tasks</li>
+<li><code>test-framework-integration.md</code> - test-framework specifics</li>
+<li><code>integration-examples.md</code> - Real-world examples</li>
+<li><a href="../../test-framework/docs/METADATA_DRIVEN_TESTING.md">test-framework docs</a> - Reference implementation</li>
+</ul>
+<hr />
+<h2 id="approval">Approval<a class="headerlink" href="#approval" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>[ ] Architecture Review Approved</li>
+<li>[ ] Timeline Approved  </li>
+<li>[ ] Scope Approved</li>
+<li>[ ] Risk Mitigation Approved</li>
+</ul>
+<p><strong>Reviewers:</strong>
+- [ ] Development Team Lead
+- [ ] Architecture Lead
+- [ ] QA Lead
+- [ ] Product Owner</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "search.suggest", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
