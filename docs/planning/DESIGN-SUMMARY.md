@@ -1,21 +1,21 @@
 # YAML Launcher Design Summary: Unified Framework with Backward Compatibility
 
 **Date:** May 25, 2026  
-**Status:** Design Phase Complete - Ready for Implementation  
+**Status:** Design baseline; Phase 1 foundation implemented, later phases remain planned  
 **Audience:** Architecture Review, Development Teams
 
 ---
 
 ## Problem Statement
 
-Three codebases (test-framework, nb, ntools-launcher) independently solve similar problems:
+Three codebases (test-framework, sdo, ntools-launcher) independently solve similar problems:
 - **test-framework:** Metadata-driven execution with output capture, assertions, variable extraction
-- **nb:** Currently uses JSON manifests for app installation with verification (will migrate to YAML)
+- **sdo:** Currently uses JSON manifests for app installation with verification (will migrate to YAML)
 - **ntools-launcher:** Process orchestration with signature verification
 
 **Current State:** 
 - Each has its own approach to orchestration
-- test-framework's output assertions/variable extraction not available in nb or ntools-launcher
+- test-framework's output assertions/variable extraction not available in sdo or ntools-launcher
 - No unified way to describe multi-step deployments across repositories
 - Duplicated logic for assertion validation, error handling, result passing
 
@@ -102,7 +102,7 @@ tasks:
       - type: "output_contains"
         value: "Version"
 
-# Alternative: apps (preferred for nb context)
+# Alternative: apps (preferred for sdo context)
 apps:
   - path: "app.exe"
     arguments: "--version"
@@ -194,7 +194,7 @@ tasks:
   - path: "app.exe"
     expectedReturnCode: 0
 
-# Also valid (nb context)
+# Also valid (sdo context)
 apps:
   - path: "app.exe"
     expectedReturnCode: 0
@@ -306,20 +306,20 @@ steps:
 
 ---
 
-## nb Command Compatibility
+## sdo Command Compatibility
 
-### Current nb Pattern (to migrate)
+### Current sdo Pattern (to migrate)
 ```bash
-nb install --json tools.json        # Current: JSON manifest (deprecated)
-nb install --name MyApp             # Install from default location
-nb list                             # List available apps
+sdo install --json tools.json        # Current: JSON manifest (deprecated)
+sdo install --name MyApp             # Install from default location
+sdo list                             # List available apps
 ```
 
 ### New Unified YAML Format
 ```yaml
 # Simple case: Single step
 step:
-  path: "nb.exe"
+  path: "sdo.exe"
   arguments: "install --name MyApp"
 
 # Complex deployments: Multi-step orchestration
@@ -340,7 +340,7 @@ steps:  # Canonical form; can also use 'tasks' or 'apps'
 **Unified Approach:**
 1. **YAML is the single standard format** across all three repositories
 2. **Auto-conversion tooling provided** to migrate existing JSON manifests to YAML
-3. **Phase 1:** Implement YAML launcher with nb support
+3. **Phase 1:** Implement YAML launcher with sdo support
 4. **Phase 2:** Provide `json-to-yaml` migration utility
 5. **Phase 3:** Gradually deprecate JSON format (keep read support for backward compat)
 6. **Result:** All three repos speak same language (YAML), simpler maintenance
@@ -473,7 +473,7 @@ Parses JSON output and validates with JSONPath.
 ### Functional Success
 - ✅ All current YAML launcher configs work unchanged
 - ✅ All test-framework scenarios can be expressed in YAML launcher
-- ✅ All nb deployments can be orchestrated in YAML launcher
+- ✅ All sdo deployments can be orchestrated in YAML launcher
 - ✅ All ntools-launcher orchestrations can be described in YAML launcher
 
 ### API Success
@@ -590,13 +590,13 @@ Parses JSON output and validates with JSONPath.
 ## Questions & Answers
 
 ### Q: How is this different from test-framework's metadata?
-**A:** This unifies test-framework's approach with nb's and ntools-launcher's patterns. Test-framework has assertions/extraction; this extends those to all three codebases.
+**A:** This unifies test-framework's approach with sdo's and ntools-launcher's patterns. Test-framework has assertions/extraction; this extends those to all three codebases.
 
 ### Q: Will existing test-framework tests still work?
 **A:** Yes. Can coexist. MetadataTestExecutor can be compatibility layer or gradually migrated to StepExecutor.
 
-### Q: What about nb commands that don't fit this pattern?
-**A:** Those continue using `nb install --name MyApp`. YAML launcher is for complex orchestrations, not simple cases.
+### Q: What about sdo commands that don't fit this pattern?
+**A:** Those continue using `sdo install --name MyApp`. YAML launcher is for complex orchestrations, not simple cases.
 
 ### Q: Do I have to rewrite my code?
 **A:** No. All existing code continues to work. YAML launcher is additive, not replacement.
@@ -644,7 +644,7 @@ Parses JSON output and validates with JSONPath.
 
 This design **enables complete replacement** of existing code in all three repositories with the unified YAML launcher approach. The final requirement is:
 
-> **Within 6 months: All executable orchestration across ntools-launcher, nb, and test-framework uses the single YAML launcher framework.**
+> **Within 6 months: All executable orchestration across ntools-launcher, sdo, and test-framework uses the single YAML launcher framework.**
 
 ---
 
@@ -675,14 +675,14 @@ This design **enables complete replacement** of existing code in all three repos
 
 ---
 
-#### Phase 2-3: nb Integration (Weeks 2-6)
+#### Phase 2-3: sdo Integration (Weeks 2-6)
 **Current State:** JSON manifest for simple installs, no complex orchestration
 
 **Transition Strategy:**
-1. **Week 2-3:** YAML launcher deployed for nb with migration tooling
-   - New: `nb install --yaml deployment.yaml` command added
-   - Tooling: `nb migrate --json-to-yaml tools.json` converts JSON manifests to YAML
-   - Old: `nb install --json tools.json` still works (internally uses YAML after conversion)
+1. **Week 2-3:** YAML launcher deployed for sdo with migration tooling
+   - New: `sdo install --yaml deployment.yaml` command added
+   - Tooling: `sdo migrate --json-to-yaml tools.json` converts JSON manifests to YAML
+   - Old: `sdo install --json tools.json` still works (internally uses YAML after conversion)
    - Status: **Single Format Foundation**
 
 2. **Week 3-4:** All complex deployments use YAML
@@ -692,17 +692,17 @@ This design **enables complete replacement** of existing code in all three repos
 
 3. **Week 5-6:** JSON becomes optional/legacy
    - JSON files automatically converted to YAML at read time
-   - `nb install --json tools.json` transparently converts to YAML
+   - `sdo install --json tools.json` transparently converts to YAML
    - Users see no change; implementation unified on YAML
    - Status: **Transparent YAML Foundation**
 
 4. **Post-Week 6:** YAML is primary format
    - Deprecation: JSON input marked for v2.0 removal
    - Migration guide provided for all JSON users
-   - New nb features only support YAML
+   - New sdo features only support YAML
    - Status: **Pure YAML Format**
 
-**Requirement:** By end of Week 6, all nb configurations standardized on YAML launcher (with backward-compatible JSON-to-YAML conversion).
+**Requirement:** By end of Week 6, all sdo configurations standardized on YAML launcher (with backward-compatible JSON-to-YAML conversion).
 
 ---
 
@@ -744,7 +744,7 @@ This design **enables complete replacement** of existing code in all three repos
 ```
 Before (Current - 3 Separate Systems):
 ┌──────────────────────┐  ┌──────────────┐  ┌─────────────────────┐
-│ ntools-launcher      │  │ nb           │  │ test-framework      │
+│ ntools-launcher      │  │ sdo           │  │ test-framework      │
 │ Process API          │  │ JSON Manifest│  │ MetadataTestExecutor│
 │ Orchestration Logic  │  │ Commands     │  │ Assertions Engine   │
 └──────────────────────┘  └──────────────┘  └─────────────────────┘
@@ -768,9 +768,9 @@ After (Unified - Single System):
 ├─────────────────────────────────────────────────────────────────┤
 │ Layered Usage (All using same framework, different interfaces)  │
 ├──────────────────────┬──────────────────┬──────────────────────┤
-│ ntools-launcher      │ nb               │ test-framework       │
-│ IStepExecutor       │ nb install       │ StepExecutor         │
-│ LaunchAsync(yaml)    │ nb deploy        │ MetadataTestExecutor │
+│ ntools-launcher      │ sdo               │ test-framework       │
+│ IStepExecutor       │ sdoo install       │ StepExecutor         │
+│ LaunchAsync(yaml)    │ sdo deploy        │ MetadataTestExecutor │
 │ Legacy: Launcher.cs  │ JSON auto-conv   │ Legacy: Metadata     │
 └──────────────────────┴──────────────────┴──────────────────────┘
 ```
@@ -789,13 +789,13 @@ Week 1-2: Phase 1 - Foundation
 Week 2-4: Phase 2 - ntools-launcher Integration
 ├─ Refactor ntools-launcher to use YAML internally
 ├─ Process.LockVerifyStart() delegates to StepExecutor
-├─ nb: Added `nb install --yaml`
+├─ sdo: Added `sdo install --yaml`
 ├─ test-framework: Compatibility layer in place
 └─ Status: Internal migration underway
 
-Week 3-6: Phase 3 - Sequential & nb Full Integration
+Week 3-6: Phase 3 - Sequential & sdo Full Integration
 ├─ DependencyResolver and SequentialExecutionOrchestrator
-├─ nb complex deployments use YAML launcher
+├─ sdo complex deployments use YAML launcher
 ├─ JSON becomes transparent wrapper
 ├─ test-framework: New scenarios in unified schema
 └─ Status: Two systems consolidating
@@ -880,7 +880,7 @@ steps:  # Or use 'tasks' for test context or 'apps' for deployment
 
 ---
 
-#### nb: From JSON to Unified YAML
+#### sdoo: From JSON to Unified YAML
 
 **Before (Current):**
 ```json
@@ -893,7 +893,7 @@ steps:  # Or use 'tasks' for test context or 'apps' for deployment
 
 **After (Transparent):**
 ```bash
-nb install --yaml myapp-deployment.yaml
+sdo install --yaml myapp-deployment.yaml
 # Internally: JSON auto-converted or YAML directly used
 ```
 
@@ -969,7 +969,7 @@ steps:  # Canonical form
 
 #### Requirement 4: Cross-Repository Orchestration ✅
 **Status:** Design supports this
-- Can orchestrate nb → test-framework scenarios
+- Can orchestrate sdo → test-framework scenarios
 - Can orchestrate test-framework → ntools-launcher deployments
 - Variables flow across repository boundaries
 
@@ -986,7 +986,7 @@ steps:  # Canonical form
 
 **Month 1 (Weeks 1-4):**
 - ✅ ntools-launcher fully uses YAML launcher internally
-- ✅ nb supports YAML deployments
+- ✅ sdoo supports YAML deployments
 - ✅ test-framework uses unified framework internally
 - ✅ All existing code continues to work
 - ✅ Zero user-facing breaking changes
@@ -994,7 +994,7 @@ steps:  # Canonical form
 **Month 2 (Weeks 5-8):**
 - ✅ 80% of new test-framework scenarios in unified schema
 - ✅ 90% of ntools-launcher orchestrations in YAML
-- ✅ nb complex deployments use YAML by default
+- ✅ sdo complex deployments use YAML by default
 - ✅ Cross-repository orchestration working
 - ✅ Documentation updated for unified approach
 
@@ -1021,7 +1021,7 @@ steps:  # Canonical form
 
 **Week 8:** Phase 3 completion
 - test-framework fully consolidated
-- nb deployments unified
+- sdo deployments unified
 - Cross-repository examples available
 
 **Week 12:** Unified framework launched

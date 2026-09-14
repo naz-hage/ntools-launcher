@@ -151,7 +151,7 @@ ntools-launcher/
 ├── README.md                     # Project documentation
 ├── targets.md                    # Build targets documentation
 ├── coverage.cobertura.xml        # Test coverage report
-├── nbuild.targets                # MSBuild targets
+├── sdo.targets                # MSBuild targets
 ├── unit-tests.targets            # Unit test targets
 ├── e2e-tests.targets             # E2E test targets
 │
@@ -337,11 +337,11 @@ These models represent execution outcomes:
 │  └─ Dictionary<string, string> Variables                  │
 └────────────────┬────────────────────────────────────────────┘
                  │
-                 │ Execute (future implementation)
+                 │ Validate and execute selected step
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
-│      Existing ntools-launcher Components                   │
-│  (Launcher, ShellUtility, ResultHelper)                    │
+│      YAML Launcher Services                                 │
+│  YamlLauncherConfigLoader -> StepExecutor -> ILogger        │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  │ Results
@@ -362,12 +362,12 @@ LauncherConfig supports three property names that all reference the same underly
 ```csharp
 config.Steps  // Canonical form (recommended)
 config.Tasks  // Alias for test-framework integration
-config.Apps   // Alias for nb integration context
+config.Apps   // Alias for sdo integration context
 ```
 
 This enables:
 - test-framework projects to use "tasks" in YAML
-- nb projects to use "apps" in YAML
+- sdo projects to use "apps" in YAML
 - All configurations to share the same model layer
 
 ### YAML Schema Support
@@ -388,17 +388,18 @@ tasks:      # test-framework compatibility
   - name: task1
     path: /usr/bin/test
 
-apps:       # nb/ntools compatibility
+apps:       # sdo/ntools compatibility
   - name: app1
     path: /usr/bin/deploy
 ```
 
 ### Key Features
 
-- **Type-Safe Configuration**: C# models with optional validation (full validation layer planned)
+- **Type-Safe Configuration**: C# models validated by `LauncherConfigValidator`
 - **YAML Native**: Native YAML support via YamlDotNet
-- **Configuration Models**: Models for sequential/parallel step orchestration (execution engine planned)
-- **Extensible Design**: Model-based architecture enables future features (assertions, variable extraction, retry policies, timeouts, hooks)
+- **Single-Step Execution**: `StepExecutor` captures output, validates exit codes, applies environment and working-directory settings, and enforces timeouts
+- **Structured Logging**: `ILogger` and `Logger` provide optional `[LAUNCHER]`-prefixed output
+- **Extensible Design**: Model-based architecture leaves room for dependency orchestration, variable substitution, retries, and hooks
 
 ## Future Enhancements
 

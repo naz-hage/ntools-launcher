@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 
 namespace YamlLauncher.Models;
@@ -28,4 +29,19 @@ public class LaunchResult
     /// Gets or sets the error message if the execution failed.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UTC start time of the execution.
+    /// </summary>
+    public DateTime StartTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UTC end time of the execution.
+    /// </summary>
+    public DateTime EndTime { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total duration of the execution in milliseconds.
+    /// </summary>
+    public long DurationMs { get; set; }
 }

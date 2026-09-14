@@ -1,0 +1,60 @@
+version: '1.0'
+description: Validates sequential launcher execution, variable extraction, substitution, and assertions.
+execution:
+  mode: Sequential
+  stopOnFirstError: false
+  timeout: 30
+steps:
+- name: Get a work item to work on
+  path: cmd.exe
+  arguments: /c echo 1087
+  expectedReturnCode: 0
+  assertions:
+  - type: exit_code
+    value: 0
+  - type: output_contains
+    value: '1087'
+  extractVariables:
+  - name: work_item_id
+    pattern: '^(\d+)\s*$'
+    groupIndex: 1
+- name: Start work on the work item
+  path: cmd.exe
+  arguments: '/c echo Branch: 1087-implement-unit-tests'
+  expectedReturnCode: 0
+  assertions:
+  - type: exit_code
+    value: 0
+  - type: output_contains
+    value: 'Branch:'
+  extractVariables:
+  - name: branch_name
+    pattern: 'Branch:\s+([^\r\n]+)'
+    groupIndex: 1
+- name: Show work item details
+  path: cmd.exe
+  arguments: /c echo Work item {work_item_id}
+  expectedReturnCode: 0
+  assertions:
+  - type: exit_code
+    value: 0
+  - type: output_contains
+    value: 'Work item 1087'
+- name: Update work item state to In Progress
+  path: cmd.exe
+  arguments: /c echo Updated {work_item_id} In Progress
+  expectedReturnCode: 0
+  assertions:
+  - type: exit_code
+    value: 0
+  - type: output_contains
+    value: 'In Progress'
+- name: Close the work item
+  path: cmd.exe
+  arguments: /c echo Closed {work_item_id}
+  expectedReturnCode: 0
+  assertions:
+  - type: exit_code
+    value: 0
+  - type: output_contains
+    value: 'Closed 1087'

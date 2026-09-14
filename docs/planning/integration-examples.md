@@ -1,6 +1,6 @@
-# Integration Examples: test-framework, nb, ntools-launcher
+# Integration Examples: test-framework, sdooo, ntools-launcher
 
-This document shows concrete examples of how test-framework scenarios, nb deployments, and ntools-launcher orchestrations can be unified under the YAML launcher schema with assertion and result passing support.
+This document shows concrete examples of how test-framework scenarios, sdooo deployments, and ntools-launcher orchestrations can be unified under the YAML launcher schema with assertion and result passing support.
 
 ---
 
@@ -64,7 +64,7 @@ commands:
 
 ```yaml
 # yaml-launcher format (unified approach)
-# Note: Use 'tasks:' for test-framework context or 'apps:' for nb context
+# Note: Use 'tasks:' for test-framework context or 'apps:' for sdoo context
 version: "1.0"
 description: "Validate SDO Work Item Workflow"
 
@@ -135,9 +135,9 @@ execution:
 
 ---
 
-## Example 2: nb Installation with Verification
+## Example 2: sdo Installation with Verification
 
-### Current Pattern (nb with Manual JSON)
+### Current Pattern (sdo with Manual JSON)
 
 **File:** `tools.json`
 ```json
@@ -152,7 +152,7 @@ execution:
 
 **Usage:**
 ```powershell
-nb install --json tools.json
+sdo install --json tools.json
 ```
 
 ### Equivalent YAML Launcher Schema (New)
@@ -239,7 +239,7 @@ execution:
 
 ### Benefits of Unified Approach
 
-1. **Multi-step deployment:** Not just `nb install --name MyApp`, but complete orchestration
+1. **Multi-step deployment:** Not just `sdo install --name MyApp`, but complete orchestration
 2. **Verification at each step:** Download, signature check, extract, install, verify all validated
 3. **Extracted values:** Actual installed version extracted and verified in final step
 4. **Flexible:** Can add pre/post steps, rollback logic, notifications
@@ -573,7 +573,7 @@ execution:
 
 ## Schema Comparison Table
 
-| Capability | test-framework | nb | ntools-launcher | YAML Launcher (Unified) |
+| Capability | test-framework | sdo | ntools-launcher | YAML Launcher (Unified) |
 |-----------|---|---|---|---|
 | Execute executable | ✅ | ✅ | ✅ | ✅ |
 | Capture output | ✅ | ✅ | ✅ | ✅ |
@@ -598,10 +598,10 @@ execution:
 3. Use MetadataTestExecutor → StepExecutor compatibility layer
 4. Phase out separate metadata files, consolidate into YAML launcher
 
-### nb
+### sdo
 1. Current JSON manifest format remains for backward compatibility
 2. New complex deployments described in YAML launcher format
-3. `nb deploy --yaml deployment-plan.yaml` new command
+3. `sdo deploy --yaml deployment-plan.yaml` new command
 4. JSON approach becomes "simple case" of YAML launcher
 
 ### ntools-launcher
@@ -616,7 +616,7 @@ execution:
 
 After implementation:
 - ✅ 90%+ of test-framework scenarios expressible in YAML launcher
-- ✅ Complex nb deployments simplified from code to YAML config
+- ✅ Complex sdo deployments simplified from code to YAML config
 - ✅ ntools-launcher users have declarative alternative to imperative code
 - ✅ Variables flowing between steps reduces configuration duplication
 - ✅ Unified assertion language across all three codebases

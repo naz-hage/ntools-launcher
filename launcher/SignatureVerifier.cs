@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
+using YamlLauncher.Logging;
 
 namespace Ntools
 {
@@ -12,6 +13,8 @@ namespace Ntools
         /// </summary>
     public static class SignatureVerifier
     {
+        private static readonly ILogger _logger = new Logger(verbose: false);
+
         // Structure to hold WinTrustData
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         public struct WinTrustData
@@ -86,7 +89,7 @@ namespace Ntools
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception: {ex.Message}");
+                _logger.LogError($"Exception: {ex.Message}");
             }
             finally
             {
@@ -119,11 +122,11 @@ namespace Ntools
             X509Certificate2 certificate = signerInfo.Certificate;
 
             // Print the details of the digital signature
-            Console.WriteLine("Subject: " + certificate.Subject);
-            Console.WriteLine("Issuer: " + certificate.Issuer);
-            Console.WriteLine("Valid From: " + certificate.NotBefore);
-            Console.WriteLine("Valid To: " + certificate.NotAfter);
-            Console.WriteLine("Thumbprint: " + certificate.Thumbprint);
+            _logger.LogInfo("Subject: " + certificate.Subject);
+            _logger.LogInfo("Issuer: " + certificate.Issuer);
+            _logger.LogInfo("Valid From: " + certificate.NotBefore);
+            _logger.LogInfo("Valid To: " + certificate.NotAfter);
+            _logger.LogInfo("Thumbprint: " + certificate.Thumbprint);
         }
 
 
@@ -147,16 +150,16 @@ namespace Ntools
             var cert = new X509Certificate2(fileName);
 
             // Display the properties of the certificate.
-            Console.WriteLine($"Certificate Properties ");
-            Console.WriteLine($"---------------------- ");
-            Console.WriteLine($"SignatureAlgorithm: {cert.SignatureAlgorithm.FriendlyName}");
-            Console.WriteLine($"Subject: {cert.Subject}");
-            Console.WriteLine($"Issuer: {cert.Issuer}");
-            Console.WriteLine($"Version: {cert.Version}");
-            Console.WriteLine($"Valid From: {cert.NotBefore}");
-            Console.WriteLine($"Valid To: {cert.NotAfter}");
-            Console.WriteLine($"Serial Number: {cert.SerialNumber}");
-            Console.WriteLine($"Thumbprint: {cert.Thumbprint}");
+            _logger.LogInfo($"Certificate Properties ");
+            _logger.LogInfo($"---------------------- ");
+            _logger.LogInfo($"SignatureAlgorithm: {cert.SignatureAlgorithm.FriendlyName}");
+            _logger.LogInfo($"Subject: {cert.Subject}");
+            _logger.LogInfo($"Issuer: {cert.Issuer}");
+            _logger.LogInfo($"Version: {cert.Version}");
+            _logger.LogInfo($"Valid From: {cert.NotBefore}");
+            _logger.LogInfo($"Valid To: {cert.NotAfter}");
+            _logger.LogInfo($"Serial Number: {cert.SerialNumber}");
+            _logger.LogInfo($"Thumbprint: {cert.Thumbprint}");
         }
     }
 

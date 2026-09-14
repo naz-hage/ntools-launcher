@@ -119,4 +119,8 @@
                 PACKAGE">
   </Target>
 
+  <!-- Build the solution alias solution target -->
+  <Target Name="BUILD" >
+	<CallTarget Targets="solution" />
+  </Target>
 </Project>

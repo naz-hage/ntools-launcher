@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Threading.Tasks;
+using YamlLauncher.Logging;
 
 namespace Ntools
 {
@@ -13,6 +14,8 @@ namespace Ntools
     /// </summary>
     public static class Nfile
     {
+        private static readonly ILogger _logger = new Logger(verbose: false);
+
         /// <summary>
         /// The maximum number of retries for downloading a file.
         /// </summary>
@@ -340,7 +343,7 @@ namespace Ntools
                     return true; // Good certificate.
                 }
 
-                Console.WriteLine("SSL certificate error: {0}", sslPolicyErrors);
+                _logger.LogWarning($"SSL certificate error: {sslPolicyErrors}");
                 return false; // Bad certificate
             };
 
@@ -354,7 +357,7 @@ namespace Ntools
             }
             catch (WebException ex)
             {
-                Console.WriteLine("WebException: {0}", ex.Message);
+                _logger.LogError($"WebException: {ex.Message}");
                 // If we got here, the certificate is invalid
                 // pass through exception to caller
                 throw;

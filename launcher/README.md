@@ -18,7 +18,7 @@ The `ntools-launcher` is a NuGet package library that simplifies common tasks re
 
 - **ShellUtility:** A helper class for executing shell commands and retrieving the full path of a file from the Path environment variable.
 
-- **YAML Launcher Framework:** Configuration models for declarative workflow definitions. Execution engine support is planned for future releases.
+- **YAML Launcher Framework:** YAML parsing, validation, and single-step execution with output capture, timeouts, environment variables, verbose logging, and optional signature checks.
 
 ## Installation
 
@@ -134,7 +134,7 @@ Console.WriteLine(isElevated);
 
 ### YAML Launcher Framework
 
-The YAML Launcher framework provides a declarative way to configure and execute multiple steps (applications, tasks, or scripts) with support for sequential/parallel execution, assertions, variable extraction, and dependency management.
+The YAML Launcher framework provides a declarative way to configure and execute a selected step (application, task, or script) with validated configuration, output capture, timeouts, environment variables, expected exit codes, and optional signature checks. The configuration models also define fields for later orchestration features.
 
 #### Basic YAML Configuration
 
@@ -177,22 +177,24 @@ var deserializer = new DeserializerBuilder()
 
 var config = deserializer.Deserialize<LauncherConfig>(yaml);
 
-// Execute steps (implementation requires launcher engine)
-// The framework supports:
-// - Sequential or Parallel execution modes
-// - Assertions for validating step results
-// - Variable extraction from step outputs
-// - Step dependencies for orchestration
+var loader = new YamlLauncherConfigLoader();
+var config = await loader.LoadFromFileAsync("launcher-config.yaml");
+var executor = new StepExecutor(config.Execution?.Verbose ?? false);
+var result = await executor.LaunchAsync(config, stepIndex: 0);
+
+// Result contains the exit code and captured standard output/error.
+Console.WriteLine(result.Results[0].ExitCode);
 ```
 
 #### Key Features
 
 - **Multiple Aliases**: Use `steps:`, `tasks:`, or `apps:` interchangeably in YAML
-- **Execution Modes**: Sequential or Parallel execution with configurable concurrency
-- **Assertions**: Validate exit codes, stdout/stderr output with pattern matching
-- **Variable Extraction**: Extract values from execution results using regex patterns
-- **Dependencies**: Define step ordering and execution constraints
-- **Error Handling**: Control behavior on failures (continue or stop)
+- **Configuration aliases**: Use `steps:`, `tasks:`, or `apps:` for the same step collection
+- **Single-step execution**: Execute a selected step by index with `StepExecutor`
+- **Process controls**: Apply working directories, environment variables, expected exit codes, and timeouts
+- **Output capture**: Capture standard output and standard error in `ExecutionResult`
+- **Validation**: Report invalid YAML and configuration errors with actionable messages
+- **Verbose logging**: Emit `[LAUNCHER]`-prefixed execution details when enabled
 - **YAML Deserialization**: Full support for YamlDotNet serialization/deserialization
 
 #### Model Classes
@@ -206,5 +208,5 @@ The framework includes comprehensive model classes for type-safe configuration:
 - `VariableExtraction`: Rules for extracting variables from execution results
 - `LaunchResult`, `ExecutionResult`: Result objects containing execution outcomes
 
-For detailed architecture and design information, see [yaml-launcher-design.md](../docs/planning/yaml-launcher-design.md).
+For detailed architecture and design information, see [yaml-launcher-design.md](../docs/planning/yaml-launcher-design.md). Dependency orchestration, variable substitution between steps, and full assertion evaluation remain planned extensions.
 

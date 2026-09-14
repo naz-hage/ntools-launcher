@@ -48,4 +48,38 @@ public class ExecutionResult
     /// Gets or sets the error message if the step failed.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the duration of step execution in milliseconds.
+    /// </summary>
+    public long DurationMs { get; set; }
+
+    // Convenience properties for compatibility
+
+    /// <summary>
+    /// Gets or sets the step name (alias for Name).
+    /// </summary>
+    public string? StepName 
+    { 
+        get => Name; 
+        set => Name = value; 
+    }
+
+    /// <summary>
+    /// Gets or sets standard output (alias for StandardOutput).
+    /// </summary>
+    public string? StdOut 
+    { 
+        get => StandardOutput; 
+        set => StandardOutput = value; 
+    }
+
+    /// <summary>
+    /// Gets or sets standard error output (alias for StandardError).
+    /// </summary>
+    public string? StdErr 
+    { 
+        get => StandardError; 
+        set => StandardError = value; 
+    }
 }

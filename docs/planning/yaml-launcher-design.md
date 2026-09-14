@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This design creates a new API layer for ntools-launcher that accepts YAML configuration files instead of Process objects. The framework unifies executable launching patterns across three codebases (test-framework, nb, ntools-launcher) into a single, extensible design.
+This design creates a new API layer for ntools-launcher that accepts YAML configuration files instead of Process objects. The framework unifies executable launching patterns across three codebases (test-framework, sdooo, ntools-launcher) into a single, extensible design.
 
 **Key Benefits:**
 - Declarative YAML-based configuration eliminates boilerplate Process creation code
@@ -25,7 +25,7 @@ This design creates a new API layer for ntools-launcher that accepts YAML config
 
 #### Pattern A: test-framework/CliTestExecutor
 ```csharp
-var executor = new CliTestExecutor("nb.exe", verbose: true);
+var executor = new CliTestExecutor("sdo.exe", verbose: true);
 var result = await executor.ExecuteAsync("install", new[] { "--name", "MyApp" });
 ```
 - **Strengths:** Handles environment vars, output capture, working directory
@@ -41,7 +41,7 @@ var result = process.LockVerifyStart(verbose);  // with signature verification
 - **Weakness:** Manual Process setup, ceremony-heavy
 - **Use Case:** Production executable launches with security requirements
 
-#### Pattern C: nb Command/ntools.json
+#### Pattern C: sdoo Command/ntools.json
 ```json
 {
   "Name": "MyApp",
@@ -197,7 +197,7 @@ namespace Ntools.Launcher
         public StepConfig? Step { get; set; }
     public List<StepConfig>? Steps { get; set; }
     public List<StepConfig>? Tasks { get; set; }  // Alias for test-framework
-    public List<StepConfig>? Apps { get; set; }    // Alias for nb
+    public List<StepConfig>? Apps { get; set; }    // Alias for sdo
         
         // Execution settings
         public ExecutionSettings Execution { get; set; }
@@ -392,17 +392,17 @@ var result = await executor.LaunchAsync("app-config.yaml");
 version: "1.0"
 tasks:
   - name: "test_install_with_name"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --name MyApp"
     verifySignature: true
   
   - name: "test_install_with_json"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --json manifest.json"
     verifySignature: true
 ```
 
-### 6.3 nb Installation Scenarios
+### 6.3 sdo Installation Scenarios
 
 **Current:** Hardcoded in ntools.json with limited orchestration  
 **New:** Complex installation pipelines with pre/post steps
@@ -412,17 +412,17 @@ tasks:
 version: "1.0"
 tasks:
   - name: "download"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "download --json tools.json"
   
   - name: "install"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "install --json tools.json"
     dependencies: ["download"]
     verifySignature: true
   
   - name: "verify"
-    path: "nb.exe"
+    path: "sdo.exe"
     arguments: "list"
     dependencies: ["install"]
 ```
@@ -553,7 +553,7 @@ await launcher.LaunchAsync("app-config.yaml");
 - [ ] Documentation with 10+ usage examples
 - [ ] NuGet package published
 - [ ] test-framework integration complete
-- [ ] nb deployment scenarios tested
+- [ ] sdo deployment scenarios tested
 
 ---
 
