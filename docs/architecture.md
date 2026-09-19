@@ -7,7 +7,7 @@ graph TB
     subgraph "NTools Launcher Library"
         subgraph "Core Classes"
             L[Launcher<br/>Process launching<br/>with security checks]
-            NF[NFile<br/>Secure file downloading<br/>with integrity checks]
+            NF[Nfile<br/>Secure file downloading<br/>with integrity checks]
             SU[ShellUtility<br/>Shell command execution<br/>Path resolution]
             CP[CurrentProcess<br/>Process elevation<br/>checking]
         end
@@ -33,7 +33,6 @@ graph TB
 
     L --> SV
     L --> RH
-    NF --> VT
     NF --> RD
     NF --> SV
     SU --> RH
@@ -70,18 +69,21 @@ graph TB
   - `LaunchAndWait()` - Launch and wait for completion
   - `LockAndLaunch()` - Lock file and launch with verification
 
-### NFile Class
+### Nfile Class
 - **Purpose**: Secure file downloading with integrity and security checks
 - **Key Features**:
   - HTTP/HTTPS file downloads
   - Digital signature verification
   - File size validation
-  - VirusTotal integration
-  - Progress reporting
+  - HTTPS certificate validation through `HttpClientHandler`
+  - Allowed extension and trusted-host checks
 - **Methods**:
-  - `DownloadAsync()` - Download file with all security checks
-  - `ValidateSignature()` - Verify digital signatures
-  - `CheckVirusTotal()` - Scan with VirusTotal
+  - `DownloadAsync()` - Download and validate a file
+  - `SetTrustedHosts()` - Configure permitted hosts
+  - `SetAllowedExtensions()` - Configure permitted extensions
+
+`VirusTotalChecker` is a separate opt-in component and is not called by
+`Nfile.DownloadAsync`.
 
 ### ShellUtility Class
 - **Purpose**: Execute shell commands and resolve file paths
@@ -158,7 +160,7 @@ ntools-launcher/
 ├── launcher/                     # Main library project
 │   ├── Launcher.csproj
 │   ├── Launcher.cs               # Main Launcher class
-│   ├── NFile.cs                  # File download functionality
+│   ├── Nfile.cs                  # File download functionality
 │   ├── ShellUtility.cs           # Shell command execution
 │   ├── CurrentProcess.cs         # Process elevation checking
 │   ├── ResultHelper.cs           # Process result handling

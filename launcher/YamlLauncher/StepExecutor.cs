@@ -49,6 +49,11 @@ public class StepExecutor : IStepExecutor
             if (string.IsNullOrWhiteSpace(step.Path))
                 throw new InvalidOperationException($"Step '{step.Name}' has no executable path");
 
+            if (step.RequireElevation && (!OperatingSystem.IsWindows() || !Ntools.CurrentProcess.IsElevated()))
+            {
+                throw new InvalidOperationException($"Step '{step.Name}' requires an elevated process");
+            }
+
             // Verify digital signature if applicable (Windows only, optional)
             if (!string.IsNullOrEmpty(step.RequireSignature) && 
                 !await VerifySignatureAsync(step.Path, step.RequireSignature))
@@ -298,21 +303,20 @@ public class StepExecutor : IStepExecutor
         {
             try
             {
-                // For now, just check if file is signed
-                // More detailed signature verification would require Windows API calls
                 if (!File.Exists(filePath))
                 {
                     _logger.LogError($"File not found for signature verification: {filePath}");
                     return false;
                 }
 
-                // Placeholder: actual implementation would use WinTrust API
-                // For this version, we just verify the file exists and is readable
+                var isValid = Ntools.SignatureVerifier.VerifyDigitalSignature(filePath);
                 if (_logger.IsVerbose)
                 {
-                    _logger.LogVerbose($"Signature verification passed for: {filePath}");
+                    _logger.LogVerbose(isValid
+                        ? $"Signature verification passed for: {filePath}"
+                        : $"Signature verification failed for: {filePath}");
                 }
-                return true;
+                return isValid;
             }
             catch (Exception ex)
             {

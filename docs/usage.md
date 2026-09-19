@@ -41,18 +41,20 @@ else
 The `LockVerifyStart` method verifies digital signatures before launching processes, useful for secure executable launching and preventing unauthorized execution.
 
 
-### NFile Class
+### Nfile Class
 
-The `NFile` class provides a method for downloading files from the web. Here's an example of how to use the `NFile` class:
+The `Nfile` class downloads a file from a trusted HTTPS host and validates the
+allowed extension. After a successful download, `ResultDownload` records the
+file size and whether the downloaded file has a digital signature.
 
 ```csharp
 using Ntools;
 
  try
  {
-    // It is assumed that the VirusTotal API key is stored in the environment variable
-    // VTAPIKEY. The key is used to check the downloaded file for virus.
-    var result = await NFile.DownloadAsync("https://example.com/file.zip", "C:\\temp\\file.zip");
+    Nfile.SetTrustedHosts(new List<string> { "example.com" });
+    Nfile.SetAllowedExtensions(new List<string> { ".zip" });
+    var result = await Nfile.DownloadAsync("https://example.com/file.zip", "C:\\temp\\file.zip");
     if (result.IsSuccess())
     {
         Console.WriteLine("Success");
@@ -60,7 +62,7 @@ using Ntools;
     else
     {
         Console.WriteLine($"Code: {result.Code}");
-        Console.WriteLine($"Message: {result.Message}");
+        Console.WriteLine(result.GetFirstOutput());
     }
  }
 catch (Exception ex)
@@ -68,7 +70,10 @@ catch (Exception ex)
     Console.WriteLine(ex.Message);
 }
 ```
-The `DownloadAsync` method downloads files and checks for viruses using VirusTotal, with optional digital signature verification.
+`DownloadAsync` uses the configured `HttpClient` certificate validation callback;
+an HTTP status such as 404 is returned as a download failure and is not treated
+as a certificate error. VirusTotal scanning is not automatic; use
+`VirusTotalChecker` explicitly when that integration is required.
 
 ### ShellUtility Class
 
@@ -103,12 +108,13 @@ variables:
   Configuration: "Release"
 execution:
   verbose: true
-  timeout: 60
+    timeout: 60 # seconds; applies to the selected step
 steps:
   - name: build
     path: dotnet
     arguments: "build -c $(Configuration)"
     expectedReturnCode: 0
+    requireSignature: "CN=Example Publisher"
 ```
 
 Load, validate, and execute the first step:
@@ -125,11 +131,17 @@ LaunchResult result = await executor.LaunchAsync(config, stepIndex: 0);
 
 var execution = result.Results[0];
 Console.WriteLine($"Exit code: {execution.ExitCode}");
-Console.WriteLine(execution.StdOut);
+Console.WriteLine(execution.StandardOutput);
 ```
 
 `LoadFromStringAsync` and `LoadFromStreamAsync` are also available. Invalid YAML, missing required configuration, dangling dependencies, and invalid regular expressions are reported through `LauncherConfigException`; YAML syntax errors include line and column information.
 
-`StepExecutor` captures standard output and standard error, applies global and step-specific environment variables, validates an optional working directory, enforces the configured timeout in seconds, and returns exit code `-1` when execution times out or cannot start. Verbose logging uses `[LAUNCHER]` prefixes and child processes run without creating a console window.
+`StepExecutor` captures standard output and standard error, applies global and
+step-specific environment variables, validates an optional working directory,
+enforces `execution.timeout` in seconds, and returns exit code `-1` when
+execution times out or cannot start. `requireSignature` is an optional
+certificate subject requirement for the executable. Verbose logging uses
+`[LAUNCHER]` prefixes and child processes run without creating a console
+window.
 
 The current framework executes individual steps. Dependency orchestration, variable substitution between steps, and full assertion evaluation remain planned extensions.

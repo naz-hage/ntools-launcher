@@ -11,7 +11,7 @@ The `ntools-launcher` is a NuGet package library that simplifies common tasks re
 - **Launcher:** A class with methods to launch a process and wait for it to complete. This includes methods for locking a file and verifying its digital signature before launching, and launching a process in a separate thread.
 - **ResultHelper:** A helper class for retrieving the result `Code` and `Output` of the launched executable.
 
-- **NFile:** A class with a method for downloading files from the web. This method for checks Web download Url integrity, the downloaded file signature, file size, and VirusTotal check.
+- **Nfile:** A class for downloading files from trusted HTTPS hosts, checking allowed extensions, recording file size, and inspecting the downloaded file signature.
 - **ResultDownload:** A helper class for retrieving the result of a downloaded file.
 
 - **CurrentProcess:** A class that provides a method to determine if the current process is elevated.
@@ -75,18 +75,18 @@ The Launcher class exposes `LockVerifyStart` method which is useful in scenarios
 2. **Preventing unauthorized executables**: In scenarios where you want to prevent unauthorized executables from running on your system, you can use this function to verify the digital signature of the file before launching it.
 
 
-### NFile Class
+### Nfile Class
 
-The `NFile` class provides a method for downloading files from the web. Here's an example of how to use the `NFile` class:
+The `Nfile` class provides a method for downloading files from configured trusted HTTPS hosts.
 
 ```csharp
 using Ntools;
 
  try
  {
-    // It is assumed that the VirusTotal API key is stored in the environment variable
-    // VTAPIKEY. The key is used to check the downloaded file for virus.
-    var result = await NFile.DownloadAsync("https://example.com/file.zip", "C:\\temp\\file.zip");
+    Nfile.SetTrustedHosts(new List<string> { "example.com" });
+    Nfile.SetAllowedExtensions(new List<string> { ".zip" });
+    var result = await Nfile.DownloadAsync("https://example.com/file.zip", "C:\\temp\\file.zip");
     if (result.IsSuccess())
     {
         Console.WriteLine("Success");
@@ -94,7 +94,7 @@ using Ntools;
     else
     {
         Console.WriteLine($"Code: {result.Code}");
-        Console.WriteLine($"Message: {result.Message}");
+        Console.WriteLine(result.GetFirstOutput());
     }
  }
 catch (Exception ex)

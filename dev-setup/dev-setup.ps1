@@ -1,11 +1,16 @@
+param(
+    [string]$nToolsVersion = "1.78.0",  # default version of NTools to install
+    [switch]$installMongoDB  # Add this switch to control whether MongoDB should be installed
+)
 # Get the common Install module and import it
 #########################
-$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/dev-setup/install.psm1"
-$output = "./install.psm1"
+$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/scripts/module-package/ntools-scripts.psm1"
+$output = "./ntools-scripts.psm1"
 Invoke-WebRequest -Uri $url -OutFile $output
-Import-Module ./install.psm1 -Force
+Import-Module $output -Force
 
 $fileName = Split-Path -Leaf $PSCommandPath
+
 Write-OutputMessage $fileName "Started installation script."
 
 # Check if admin
@@ -19,18 +24,19 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 
 # install Ntools
 #########################
-if (MainInstallApp -command install -json .\ntools.json) {
-    Write-OutputMessage $fileName "Installation of ntools succeeded."
-} else {
-    Write-OutputMessage $fileName "Error: Installation of ntools.json failed. Exiting script."
+Write-OutputMessage $fileName "Installing NTools..."
+$result = Install-NTools -Version $nToolsVersion
+if (-not $result) {
+    Write-Host "Failed to install NTools. Please check the logs for more details." -ForegroundColor Red
     exit 1
-
 }
-#install Development tools for the home project
+
+# install Nuget
 #########################
-& $global:NbExePath -c install -json .\apps.json
+Write-OutputMessage $fileName "Installing Nuget..."
+& "$env:ProgramFiles/nbuild/sdo.exe" tool install -j .\nuget.json
 if ($LASTEXITCODE -ne 0) {
-    Write-OutputMessage $fileName "Error: Installation of Development Tools failed. Exiting script."
+    Write-OutputMessage $fileName "Error: Installation of nuget.json failed. Exiting script."
     exit 1
 }
 

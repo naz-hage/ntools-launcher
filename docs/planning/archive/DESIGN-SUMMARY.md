@@ -1038,7 +1038,7 @@ steps:  # Canonical form
 - `implementation-roadmap.md` - Implementation tasks
 - `test-framework-integration.md` - test-framework specifics
 - `integration-examples.md` - Real-world examples
-- [test-framework docs](../../test-framework/docs/METADATA_DRIVEN_TESTING.md) - Reference implementation
+- `test-framework` documentation - Reference implementation maintained in the separate test-framework repository
 
 ---
 

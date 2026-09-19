@@ -50,5 +50,8 @@ nav:
     - Environment Setup: devguide/setup.md
     - Build and Test: devguide/build-and-test.md
     - Build Targets: devguide/targets.md
+  - Planning:
+    - Overview: planning/README.md
+    - Implementation Status: planning/implementation-status.md
   - Revisions:
     - Changelog: revisions/changelog.md

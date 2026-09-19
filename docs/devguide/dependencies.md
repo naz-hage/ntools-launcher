@@ -1,5 +1,8 @@
 ## Project Dependencies
-- This project depends on the developer to have a valid `VirusTotal` API key.  The key is used to check the downloaded file for virus.  The key is stored in the environment variable `VTAPIKEY `.  The key is used by the `NFile` class to check the downloaded file for virus.  Use the following command to set the environment variable:
-```bash
-setx VTAPIKEY "your_valid_virustotal_api_key"
-```
+- .NET 10 SDK
+- YamlDotNet 18.0.0
+- PowerShell and the `sdo` build tool for the documented development workflow
+
+`Nfile.DownloadAsync` does not require a VirusTotal API key. The standalone
+`VirusTotalChecker` class remains available for callers that explicitly want
+to submit a file for scanning and provide their own API key.
