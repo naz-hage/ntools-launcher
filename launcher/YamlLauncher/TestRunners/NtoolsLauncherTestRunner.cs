@@ -85,6 +85,8 @@ public class NtoolsLauncherTestRunner
             _logger.LogInfo("--- Executing Steps ---");
             var executor = new StepExecutor(verbose: _verbose, logger: _logger);
             bool allSuccess = true;
+            var passedSteps = 0;
+            var failedSteps = 0;
             var variables = new Dictionary<string, string>();
 
             if (config.Steps != null)
@@ -109,27 +111,28 @@ public class NtoolsLauncherTestRunner
                         {
                             _logger.LogError("No execution result returned");
                             allSuccess = false;
+                            failedSteps++;
                             continue;
                         }
 
                         // Extract variables from step output
                         ExtractVariables(step, executionResult, variables);
 
-                        if (!EvaluateAssertions(step, executionResult))
-                        {
-                            allSuccess = false;
-                        }
+                        var assertionsPassed = EvaluateAssertions(step, executionResult);
+                        var stepPassed = executionResult.Success && assertionsPassed;
 
                         _logger.LogInfo($"Exit Code: {executionResult.ExitCode}");
                         _logger.LogInfo($"Duration: {executionResult.DurationMs}ms");
                         
-                        if (executionResult.Success)
+                        if (stepPassed)
                         {
-                            _logger.LogInfo("[✓] Step succeeded");
+                            passedSteps++;
+                            _logger.LogInfo($"√ PASS: {step.Name ?? $"Step {i + 1}"}");
                         }
                         else
                         {
-                            _logger.LogError("[X] Step failed");
+                            failedSteps++;
+                            _logger.LogError($"X FAIL: {step.Name ?? $"Step {i + 1}"}");
                             allSuccess = false;
                         }
 
@@ -178,6 +181,12 @@ public class NtoolsLauncherTestRunner
 
             // Summary
             _logger.LogInfo("--- Execution Summary ---");
+            _logger.LogInfo($"Step summary: {passedSteps + failedSteps} total");
+            _logger.LogInfo($"√ Passed: {passedSteps}");
+            if (failedSteps > 0)
+            {
+                _logger.LogError($"X Failed: {failedSteps}");
+            }
             if (allSuccess)
             {
                 _logger.LogInfo("[✓] All steps executed successfully");
@@ -209,17 +218,33 @@ public class NtoolsLauncherTestRunner
 
         if (testNames.Length == 0)
         {
-            _logger.LogInfo("No YAML test files found");
+            Console.Info("No YAML test files found");
             return true;
         }
 
         var allSuccess = true;
+        var passedTests = 0;
+        var failedTests = 0;
         foreach (var testName in testNames)
         {
             if (!await RunTestAsync(testName!))
             {
                 allSuccess = false;
+                failedTests++;
+                Console.Error($"X FAIL: {testName}");
             }
+            else
+            {
+                passedTests++;
+                Console.Success($"√ PASS: {testName}");
+            }
+        }
+
+        Console.Info($"Execution summary: {passedTests + failedTests} total");
+        Console.Success($"√ Passed: {passedTests}");
+        if (failedTests > 0)
+        {
+            Console.Error($"X Failed: {failedTests}");
         }
 
         return allSuccess;
