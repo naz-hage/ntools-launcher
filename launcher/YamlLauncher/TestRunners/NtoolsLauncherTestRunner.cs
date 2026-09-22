@@ -184,7 +184,6 @@ public class NtoolsLauncherTestRunner
 
             // Summary
             ConsoleHelper.WriteInfo("--- Execution Summary ---");
-            ConsoleHelper.WriteInfo($"Step summary: {passedSteps + failedSteps} total");
             ConsoleHelper.WriteSuccess($"Passed: {passedSteps}");
             if (failedSteps > 0)
             {
@@ -192,12 +191,10 @@ public class NtoolsLauncherTestRunner
             }
             if (allSuccess)
             {
-                ConsoleHelper.WriteSuccess("All steps executed successfully");
                 return true;
             }
             else
             {
-                ConsoleHelper.WriteError("Some steps failed");
                 return false;
             }
         }
