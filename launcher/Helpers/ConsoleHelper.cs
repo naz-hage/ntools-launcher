@@ -56,4 +56,12 @@ public static class ConsoleHelper
     {
         WriteLine($"{message}", ConsoleColor.Cyan);
     }
+
+    /// <summary>
+    /// Displays a solid line in the console to separate sections of output.
+    /// </summary>
+    internal static void SolidLine()
+    {
+        WriteLine(new string('─', 40));
+    }
 }

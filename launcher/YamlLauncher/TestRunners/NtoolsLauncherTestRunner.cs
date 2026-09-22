@@ -44,7 +44,9 @@ public class NtoolsLauncherTestRunner
                 return false;
             }
 
-            _logger.LogInfo($"{'='} Running ntools-launcher Test: {testName} {'='}");
+            ConsoleHelper.WriteLine($"{'='} Running ntools-launcher Test: {testName} {'='}");
+            // display solid line to separate test output from previous console output
+            ConsoleHelper.SolidLine();
 
             // Load the YAML configuration
             var loader = new YamlLauncherConfigLoader();
@@ -249,7 +251,7 @@ public class NtoolsLauncherTestRunner
         }
 
         // Write a solid line to separate the summary from any further output
-        ConsoleHelper.WriteInfo(new string('_', 40));
+        ConsoleHelper.SolidLine();
 
         return allSuccess;
     }
