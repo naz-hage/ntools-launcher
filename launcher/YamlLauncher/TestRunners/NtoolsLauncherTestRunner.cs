@@ -1,5 +1,6 @@
 #nullable enable
 
+using Launcher.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -167,12 +168,12 @@ public class NtoolsLauncherTestRunner
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Execution failed: {ex.Message}");
+                        ConsoleHelper.WriteError($"Execution failed: {ex.Message}");
                         allSuccess = false;
 
                         if (config.Execution?.StopOnFirstError == true)
                         {
-                            _logger.LogError("[X] Stopping because stopOnFirstError is enabled");
+                            ConsoleHelper.WriteError("Stopping because stopOnFirstError is enabled");
                             break;
                         }
                     }
@@ -180,27 +181,27 @@ public class NtoolsLauncherTestRunner
             }
 
             // Summary
-            _logger.LogInfo("--- Execution Summary ---");
-            _logger.LogInfo($"Step summary: {passedSteps + failedSteps} total");
-            _logger.LogInfo($"√ Passed: {passedSteps}");
+            ConsoleHelper.WriteInfo("--- Execution Summary ---");
+            ConsoleHelper.WriteInfo($"Step summary: {passedSteps + failedSteps} total");
+            ConsoleHelper.WriteSuccess($"Passed: {passedSteps}");
             if (failedSteps > 0)
             {
-                _logger.LogError($"X Failed: {failedSteps}");
+                ConsoleHelper.WriteError($"Failed: {failedSteps}");
             }
             if (allSuccess)
             {
-                _logger.LogInfo("[✓] All steps executed successfully");
+                ConsoleHelper.WriteSuccess("All steps executed successfully");
                 return true;
             }
             else
             {
-                _logger.LogError("[X] Some steps failed");
+                ConsoleHelper.WriteError("Some steps failed");
                 return false;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Unexpected error: {ex.Message}");
+            ConsoleHelper.WriteError($"Unexpected error: {ex.Message}");
             return false;
         }
     }
@@ -218,7 +219,7 @@ public class NtoolsLauncherTestRunner
 
         if (testNames.Length == 0)
         {
-            Console.Info("No YAML test files found");
+            ConsoleHelper.WriteWarning("No YAML test files found");
             return true;
         }
 
@@ -231,21 +232,24 @@ public class NtoolsLauncherTestRunner
             {
                 allSuccess = false;
                 failedTests++;
-                Console.Error($"X FAIL: {testName}");
+                ConsoleHelper.WriteError($"Failed: {testName}");
             }
             else
             {
                 passedTests++;
-                Console.Success($"√ PASS: {testName}");
+                ConsoleHelper.WriteSuccess($"Passed: {testName}");
             }
         }
 
-        Console.Info($"Execution summary: {passedTests + failedTests} total");
-        Console.Success($"√ Passed: {passedTests}");
+        ConsoleHelper.WriteInfo($"Execution summary: {passedTests + failedTests} total");
+        ConsoleHelper.WriteSuccess($"Passed: {passedTests}");
         if (failedTests > 0)
         {
-            Console.Error($"X Failed: {failedTests}");
+            ConsoleHelper.WriteError($"Failed: {failedTests}");
         }
+
+        // Write a solid line to separate the summary from any further output
+        ConsoleHelper.WriteInfo(new string('_', 40));
 
         return allSuccess;
     }
@@ -259,7 +263,7 @@ public class NtoolsLauncherTestRunner
         {
             if (!Directory.Exists(_metadataPath))
             {
-                _logger.LogInfo("No metadata directory found");
+                ConsoleHelper.WriteInfo("No metadata directory found");
                 return;
             }
 
@@ -267,21 +271,21 @@ public class NtoolsLauncherTestRunner
 
             if (yamlFiles.Length == 0)
             {
-                _logger.LogInfo("No YAML test files found");
+                ConsoleHelper.WriteInfo("No YAML test files found");
                 return;
             }
 
-            _logger.LogInfo($"Available tests ({yamlFiles.Length}):");
+            ConsoleHelper.WriteInfo($"Available tests ({yamlFiles.Length}):");
 
             foreach (var file in yamlFiles.OrderBy(file => file, StringComparer.Ordinal))
             {
                 var testName = Path.GetFileNameWithoutExtension(file);
-                _logger.LogInfo($"  • {testName}");
+                ConsoleHelper.WriteInfo($"  • {testName}");
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Error listing tests: {ex.Message}");
+            ConsoleHelper.WriteError($"Error listing tests: {ex.Message}");
         }
     }
 

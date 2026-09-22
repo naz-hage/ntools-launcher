@@ -82,7 +82,7 @@
 		</Target>
 
 	<!-- Pack and Add Nuget package to local feed after a stage build -->
-	<Target Name="NUGET_ADD" DependsOnTargets="NUGET_DEP;NUGET_PACK" AfterTargets="STAGE">
+	<Target Name="NUGET_ADD" DependsOnTargets="AUTOTAG_STAGE;SOLUTION;NUGET_DEP;NUGET_PACK" AfterTargets="STAGE">
 		<Exec Command='if exist "$(LocalNugetFeed)\ntools-launcher\$(ProductVersion)" rd "$(LocalNugetFeed)\ntools-launcher\$(ProductVersion)" /s /q'/>
 		<Exec Command='"$(NugetExe)" add "$(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg" -Source "$(LocalNugetFeed)"'/>
 
