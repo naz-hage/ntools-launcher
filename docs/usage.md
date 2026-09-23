@@ -99,22 +99,22 @@ Console.WriteLine(isElevated);
 
 ### YAML Launcher Framework
 
-The YAML Launcher framework loads a validated `LauncherConfig` and executes one configured step at a time. Use `steps:` as the canonical YAML property; `tasks:` and `apps:` are supported aliases that map to the same collection.
+The YAML Launcher framework loads a validated `LauncherConfig` and executes configured steps. Use `steps:` as the canonical YAML property; `tasks:` and `apps:` are supported aliases that map to the same collection.
+
+#### Minimal Runnable Configuration
+
+This is the smallest useful configuration. It runs `dotnet --version` and can be loaded with the code below.
 
 ```yaml
 version: "1.0"
-description: "Build the application"
-variables:
-  Configuration: "Release"
+description: "Check the installed .NET version"
 execution:
-  verbose: true
-    timeout: 60 # seconds; applies to the selected step
+    verbose: true
 steps:
-  - name: build
-    path: dotnet
-    arguments: "build -c $(Configuration)"
-    expectedReturnCode: 0
-    requireSignature: "CN=Example Publisher"
+    - name: dotnet-version
+        path: dotnet
+        arguments: "--version"
+        expectedReturnCode: 0
 ```
 
 Load, validate, and execute the first step:
@@ -132,6 +132,49 @@ LaunchResult result = await executor.LaunchAsync(config, stepIndex: 0);
 var execution = result.Results[0];
 Console.WriteLine($"Exit code: {execution.ExitCode}");
 Console.WriteLine(execution.StandardOutput);
+```
+
+#### Full Configuration Reference
+
+The following example shows every supported configuration field. Values such as `workingDirectory` and `requireSignature` must be adapted to the local environment before use.
+
+```yaml
+version: "1.0" # required; format: X.Y or X.Y.Z
+description: "Build the application" # optional; default: null
+variables: # optional; default: null; global environment variables
+    Configuration: "Release"
+execution: # optional; defaults apply when omitted
+    mode: Sequential # optional; values: Sequential, Parallel; default: Sequential
+    verbose: true # optional; values: true, false; default: false
+    stopOnFirstError: true # optional; values: true, false; default: false
+    maxConcurrency: 4 # optional; positive integer; default: processor count; used in Parallel mode
+    timeout: 60 # optional; non-negative integer seconds; default: 0 (no timeout)
+steps: # required; must contain at least one step; tasks and apps are aliases
+    - name: build # required; step identifier
+        path: dotnet # required; executable or script path
+        arguments: "build -c $(Configuration)" # optional; default: empty
+        dependencies: [] # optional; default: null; names of prerequisite steps
+        continueOnError: false # optional; true or false; default: false
+        expectedReturnCode: 0 # optional; non-negative integer; default: 0
+        workingDirectory: null # optional; default: process working directory
+        environment: # optional; default: null; step-specific environment variables
+            BUILD_NUMBER: "42"
+        requireElevation: false # optional; true or false; default: false
+        requireSignature: null # optional; default: null; certificate subject on Windows
+        assertions: # optional; default: null
+            - type: exit_code # required; values: exit_code, output_contains, output_matches
+                value: "0" # required for exit_code and output_contains
+                pattern: null # required for output_matches; valid regular expression
+                jsonPath: null # reserved model field; not currently evaluated
+                expectedValue: null # reserved model field; not currently evaluated
+                caseInsensitive: false # optional; true or false; default: false
+                description: "The build must succeed" # optional; default: null
+        extractVariables: # optional; default: null
+            - name: BuildVersion # required; extracted variable name
+                pattern: "Version: ([0-9.]+)" # required; valid regular expression
+                groupIndex: 1 # optional; non-negative integer; default: 0 (full match)
+                caseInsensitive: false # optional; true or false; default: false
+                description: "Version reported by the build" # optional; default: null
 ```
 
 `LoadFromStringAsync` and `LoadFromStreamAsync` are also available. Invalid YAML, missing required configuration, dangling dependencies, and invalid regular expressions are reported through `LauncherConfigException`; YAML syntax errors include line and column information.
