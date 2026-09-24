@@ -62,6 +62,11 @@ public class StepConfig
     public Dictionary<string, string>? Environment { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the process must run elevated.
+    /// </summary>
+    public bool RequireElevation { get; set; }
+
+    /// <summary>
     /// Gets or sets the required digital signature for the executable (Windows only).
     /// If specified, the executable's digital signature must match for execution to proceed.
     /// </summary>

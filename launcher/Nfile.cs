@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Threading.Tasks;
@@ -51,7 +50,16 @@ namespace Ntools
             // Set up the HttpClient
             HttpMessageHandler = new HttpClientHandler
             {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+                {
+                    if (errors == SslPolicyErrors.None)
+                    {
+                        return true;
+                    }
+
+                    _logger.LogWarning($"SSL certificate error: {errors}");
+                    return false;
+                }
             };
 
             HttpClient = new HttpClient(HttpMessageHandler);
@@ -106,12 +114,6 @@ namespace Ntools
             var resultDownload = new ResultDownload(safeUri, downloadedFilename);
 
             if (!ValidExtension(url.ToString())) throw new ArgumentException("Invalid uri extension", nameof(url));
-
-            if (!ValidateServerCertificate(url.ToString()))
-            {
-                resultDownload.Fail("Invalid server certificate");
-                return resultDownload;
-            }
 
             if (string.IsNullOrEmpty(downloadedFilename)) throw new ArgumentException("Invalid file name.", nameof(downloadedFilename));
 
@@ -326,42 +328,5 @@ namespace Ntools
             return uri;
         }
 
-        /// <summary>
-        /// Validates the server certificate for the specified HTTPS URL.
-        /// </summary>
-        /// <param name="httpsUrl">The HTTPS URL to validate the server certificate for.</param>
-        /// <returns>True if the server certificate is valid; otherwise, false.</returns>
-        private static bool ValidateServerCertificate(string httpsUrl)
-        {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(httpsUrl);
-            request.Method = "HEAD"; // A HEAD request is sufficient to get the certificate
-
-            ServicePointManager.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
-            {
-                if (sslPolicyErrors == SslPolicyErrors.None)
-                {
-                    return true; // Good certificate.
-                }
-
-                _logger.LogWarning($"SSL certificate error: {sslPolicyErrors}");
-                return false; // Bad certificate
-            };
-
-            try
-            {
-                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-                {
-                    // If we got here, the certificate is valid
-                    return true;
-                }
-            }
-            catch (WebException ex)
-            {
-                _logger.LogError($"WebException: {ex.Message}");
-                // If we got here, the certificate is invalid
-                // pass through exception to caller
-                throw;
-            }
-        }
     }
 }

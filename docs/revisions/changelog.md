@@ -1,6 +1,12 @@
 ## [Latest Release](https://github.com/naz-hage/ntools-launcher/releases)
 
 ### Unreleased - September 2026
+- Replace the deprecated `ServicePointManager` certificate probe with the
+    `HttpClientHandler` certificate callback used by downloads.
+- Update development setup to use `dev-setup.ps1` and the shared
+    `ntools-scripts` module.
+- Align current documentation with the implemented `Nfile` and YAML launcher
+    APIs.
 - [issue #27] Upgrade the project and test dependencies to .NET 10 / MSTest 4.
 - [issue #31] Add YamlDotNet 18.0.0 and the YAML launcher foundation.
 - [issue #33] Add YAML launcher configuration and result models, including `steps:`, `tasks:`, and `apps:` aliases.

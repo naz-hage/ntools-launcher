@@ -1,6 +1,6 @@
 using System;
 
-namespace Launcher.Helpers;
+namespace HomeStandard.Helpers;
 
 public static class ConsoleHelper
 {
@@ -9,7 +9,7 @@ public static class ConsoleHelper
     /// </summary>
     /// <param name="message">The message to write to the console.</param>
     /// <param name="color">The optional color for the message text.</param>
-    public static void WriteLine(string message, ConsoleColor? color = null)
+    private static void WriteLine(string message, ConsoleColor? color = null)
     {
         if (color.HasValue)
         {
@@ -55,13 +55,5 @@ public static class ConsoleHelper
     public static void WriteInfo(string message)
     {
         WriteLine($"{message}", ConsoleColor.Cyan);
-    }
-
-    /// <summary>
-    /// Displays a solid line in the console to separate sections of output.
-    /// </summary>
-    internal static void SolidLine()
-    {
-        WriteLine(new string('─', 40));
     }
 }

@@ -398,4 +398,69 @@ public class StepExecutorTests
         Assert.AreEqual(1, result.Results!.Count);
         Assert.AreEqual("testStep", result.Results[0].StepName);
     }
+
+    [TestMethod]
+    public async Task LaunchAsync_WhenElevationIsRequired_UsesCurrentProcessElevation()
+    {
+        var config = new LauncherConfig
+        {
+            Version = "1.0",
+            Steps = new List<StepConfig>
+            {
+                new StepConfig
+                {
+                    Name = "elevated",
+                    Path = "cmd.exe",
+                    Arguments = "/c exit 0",
+                    RequireElevation = true,
+                    ExpectedReturnCode = 0
+                }
+            }
+        };
+
+        var result = await _executor.LaunchAsync(config, 0);
+
+        Assert.IsNotNull(result);
+        if (OperatingSystem.IsWindows() && Ntools.CurrentProcess.IsElevated())
+        {
+            Assert.IsTrue(result.Success);
+        }
+        else
+        {
+            Assert.IsFalse(result.Success);
+            Assert.IsTrue(result.Results![0].StdErr!.Contains("requires an elevated process"));
+        }
+    }
+
+    [TestMethod]
+    public async Task LaunchAsync_WhenUnsignedFileRequiresSignature_FailsOnWindows()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("Authenticode verification is Windows-specific.");
+            return;
+        }
+
+        var config = new LauncherConfig
+        {
+            Version = "1.0",
+            Steps = new List<StepConfig>
+            {
+                new StepConfig
+                {
+                    Name = "signed",
+                    Path = "cmd.exe",
+                    Arguments = "/c exit 0",
+                    RequireSignature = "true",
+                    ExpectedReturnCode = 0
+                }
+            }
+        };
+
+        var result = await _executor.LaunchAsync(config, 0);
+
+        Assert.IsNotNull(result);
+        Assert.IsFalse(result.Success);
+        Assert.IsTrue(result.Results![0].StdErr!.Contains("Digital signature verification failed"));
+    }
 }
