@@ -343,7 +343,7 @@ These models represent execution outcomes:
                  ▼
 ┌─────────────────────────────────────────────────────────────┐
 │      YAML Launcher Services                                 │
-│  YamlLauncherConfigLoader -> StepExecutor -> ILogger        │
+│  YamlLauncherConfigLoader -> StepExecutor -> Launcher.Services.ConsoleHelper │
 └────────────────┬────────────────────────────────────────────┘
                  │
                  │ Results
@@ -400,7 +400,7 @@ apps:       # sdo/ntools compatibility
 - **Type-Safe Configuration**: C# models validated by `LauncherConfigValidator`
 - **YAML Native**: Native YAML support via YamlDotNet
 - **Single-Step Execution**: `StepExecutor` captures output, validates exit codes, applies environment and working-directory settings, and enforces timeouts
-- **Structured Logging**: `ILogger` and `Logger` provide optional `[LAUNCHER]`-prefixed output
+- **Console Output**: `Launcher.Services.ConsoleHelper` provides colored status output directly to the console; configurable logging sinks are not currently supported
 - **Extensible Design**: Model-based architecture leaves room for dependency orchestration, variable substitution, retries, and hooks
 
 ## Future Enhancements

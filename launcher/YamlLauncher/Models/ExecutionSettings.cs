@@ -38,7 +38,7 @@ public class ExecutionSettings
     /// <summary>
     /// Gets or sets a value indicating whether execution should stop on the first error.
     /// </summary>
-    public bool StopOnFirstError { get; set; }
+    public bool StopOnFirstError { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the maximum number of steps to execute concurrently (only used in Parallel mode).

@@ -2,15 +2,12 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using YamlLauncher.Logging;
-using Launcher.Helpers;
+using Launcher.Services;
 
 namespace Ntools
 {
     public static class Launcher 
     {
-        private static readonly ILogger _logger = new Logger(verbose: false);
-
         /// <summary>
         /// Locks the file, verifies the digital signature, and starts the process.
         /// </summary>

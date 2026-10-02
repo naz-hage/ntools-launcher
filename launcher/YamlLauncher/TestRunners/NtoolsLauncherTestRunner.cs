@@ -1,13 +1,12 @@
 #nullable enable
 
-using Launcher.Helpers;
+using Launcher.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using YamlLauncher.Logging;
 using YamlLauncher.Models;
 
 namespace YamlLauncher.TestRunners;
@@ -20,13 +19,11 @@ public class NtoolsLauncherTestRunner
 {
     private readonly bool _verbose;
     private readonly string _metadataPath;
-    private readonly ILogger _logger;
 
-    public NtoolsLauncherTestRunner(bool verbose = false, ILogger? logger = null, string? metadataPath = null)
+    public NtoolsLauncherTestRunner(bool verbose = false, string? metadataPath = null)
     {
         _verbose = verbose;
         _metadataPath = metadataPath ?? Path.Combine(AppContext.BaseDirectory, "metadata");
-        _logger = logger ?? new Logger(verbose, "LAUNCHER");
     }
 
     /// <summary>
@@ -40,7 +37,7 @@ public class NtoolsLauncherTestRunner
 
             if (yamlFile == null)
             {
-                _logger.LogError($"Test YAML file not found for test: {testName}");
+                WriteError($"Test YAML file not found for test: {testName}");
                 return false;
             }
 
@@ -55,38 +52,38 @@ public class NtoolsLauncherTestRunner
             try
             {
                 config = await loader.LoadFromFileAsync(yamlFile);
-                _logger.LogInfo("[✓] YAML Configuration loaded successfully");
-                _logger.LogInfo($"    Version: {config.Version}");
-                _logger.LogInfo($"    Steps: {config.Steps?.Count ?? 0}");
-                _logger.LogInfo($"    Description: {config.Description}");
+                WriteInfo("[✓] YAML Configuration loaded successfully");
+                WriteInfo($"    Version: {config.Version}");
+                WriteInfo($"    Steps: {config.Steps?.Count ?? 0}");
+                WriteInfo($"    Description: {config.Description}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to load YAML: {ex.Message}");
+                WriteError($"Failed to load YAML: {ex.Message}");
                 if (ex is LauncherConfigException lcex)
                 {
-                    _logger.LogError($"    Line: {lcex.LineNumber}, Column: {lcex.ColumnNumber}");
+                    WriteError($"    Line: {lcex.LineNumber}, Column: {lcex.ColumnNumber}");
                 }
                 return false;
             }
 
             // Validate the configuration
-            _logger.LogInfo("--- Configuration Validation ---");
+            WriteInfo("--- Configuration Validation ---");
             try
             {
                 var validator = new LauncherConfigValidator();
                 validator.Validate(config);
-                _logger.LogInfo("[✓] Configuration is valid");
+                WriteInfo("[✓] Configuration is valid");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Configuration validation failed: {ex.Message}");
+                WriteError($"Configuration validation failed: {ex.Message}");
                 return false;
             }
 
             // Execute the steps
-            _logger.LogInfo("--- Executing Steps ---");
-            var executor = new StepExecutor(verbose: _verbose, logger: _logger);
+            WriteInfo("--- Executing Steps ---");
+            var executor = new StepExecutor(verbose: _verbose);
             bool allSuccess = true;
             var passedSteps = 0;
             var failedSteps = 0;
@@ -112,7 +109,7 @@ public class NtoolsLauncherTestRunner
                         var executionResult = result.Results?.LastOrDefault();
                         if (executionResult == null)
                         {
-                            _logger.LogError("No execution result returned");
+                            WriteError("No execution result returned");
                             allSuccess = false;
                             failedSteps++;
                             continue;
@@ -124,34 +121,38 @@ public class NtoolsLauncherTestRunner
                         var assertionsPassed = EvaluateAssertions(step, executionResult);
                         var stepPassed = executionResult.Success && assertionsPassed;
 
-                        _logger.LogInfo($"Exit Code: {executionResult.ExitCode}");
-                        _logger.LogInfo($"Duration: {executionResult.DurationMs}ms");
+                        WriteInfo($"Exit Code: {executionResult.ExitCode}");
+                        WriteInfo($"Duration: {executionResult.DurationMs}ms");
                         
                         if (stepPassed)
                         {
                             passedSteps++;
-                            _logger.LogInfo($"√ PASS: {step.Name ?? $"Step {i + 1}"}");
+                            WriteSuccess($"PASS: {step.Name ?? $"Step {i + 1}"}");
                         }
                         else
                         {
                             failedSteps++;
-                            _logger.LogError($"X FAIL: {step.Name ?? $"Step {i + 1}"}");
+                            var stepLabel = $"Step {i + 1} ('{step.Name ?? "unnamed"}')";
+                            var failureMessage = string.IsNullOrWhiteSpace(executionResult.ErrorMessage)
+                                ? $"FAIL: {stepLabel}"
+                                : $"FAIL: {stepLabel}: {executionResult.ErrorMessage}";
+                            WriteError(failureMessage);
                             allSuccess = false;
                         }
 
                         if (!allSuccess && config.Execution?.StopOnFirstError == true)
                         {
-                            _logger.LogError("[X] Stopping because stopOnFirstError is enabled");
+                            WriteError("Stopping because stopOnFirstError is enabled");
                             break;
                         }
 
                         // Show extracted variables
                         if (executionResult.ExtractedVariables?.Count > 0)
                         {
-                            _logger.LogInfo("Variables extracted:");
+                            WriteInfo("Variables extracted:");
                             foreach (var varResult in executionResult.ExtractedVariables)
                             {
-                                _logger.LogInfo($"  - {varResult.Name} = {varResult.Value}");
+                                WriteInfo($"  - {varResult.Name} = {varResult.Value}");
                             }
                         }
 
@@ -160,17 +161,18 @@ public class NtoolsLauncherTestRunner
                         {
                             if (!string.IsNullOrEmpty(executionResult.StandardOutput))
                             {
-                                _logger.LogVerbose($"Output:\n{string.Join("\n", executionResult.StandardOutput.Split('\n').Take(5))}");
+                                WriteVerbose($"Output:\n{string.Join("\n", executionResult.StandardOutput.Split('\n').Take(5))}");
                             }
                             if (!string.IsNullOrEmpty(executionResult.StandardError))
                             {
-                                _logger.LogVerbose($"Error:\n{string.Join("\n", executionResult.StandardError.Split('\n').Take(5))}");
+                                WriteVerbose($"Error:\n{string.Join("\n", executionResult.StandardError.Split('\n').Take(5))}");
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        ConsoleHelper.WriteError($"Execution failed: {ex.Message}");
+                        failedSteps++;
+                        ConsoleHelper.WriteError($"Step {i + 1} ('{step.Name ?? "unnamed"}') failed: {ex.Message}");
                         allSuccess = false;
 
                         if (config.Execution?.StopOnFirstError == true)
@@ -225,12 +227,14 @@ public class NtoolsLauncherTestRunner
         var allSuccess = true;
         var passedTests = 0;
         var failedTests = 0;
+        var failedTestNames = new List<string>();
         foreach (var testName in testNames)
         {
             if (!await RunTestAsync(testName!))
             {
                 allSuccess = false;
                 failedTests++;
+            failedTestNames.Add(testName!);
                 ConsoleHelper.WriteError($"Failed: {testName}");
             }
             else
@@ -245,6 +249,11 @@ public class NtoolsLauncherTestRunner
         if (failedTests > 0)
         {
             ConsoleHelper.WriteError($"Failed: {failedTests}");
+            ConsoleHelper.WriteError("Failed tests:");
+            foreach (var failedTestName in failedTestNames)
+            {
+                ConsoleHelper.WriteError($"  - {failedTestName}");
+            }
         }
 
         // Write a solid line to separate the summary from any further output
@@ -350,7 +359,7 @@ public class NtoolsLauncherTestRunner
         // Check if there are any variable extractions configured
         if (step.ExtractVariables == null || step.ExtractVariables.Count == 0)
         {
-            _logger.LogVerbose("No variable extractions configured for this step");
+            WriteVerbose("No variable extractions configured for this step");
             return;
         }
 
@@ -358,11 +367,11 @@ public class NtoolsLauncherTestRunner
         
         if (string.IsNullOrEmpty(output))
         {
-            _logger.LogVerbose("No output to extract variables from");
+            WriteVerbose("No output to extract variables from");
             return;
         }
 
-        _logger.LogVerbose($"Extracting {step.ExtractVariables.Count} variable(s)");
+        WriteVerbose($"Extracting {step.ExtractVariables.Count} variable(s)");
 
         foreach (var extraction in step.ExtractVariables)
         {
@@ -370,36 +379,36 @@ public class NtoolsLauncherTestRunner
             {
                 if (string.IsNullOrEmpty(extraction.Pattern))
                 {
-                    _logger.LogError($"Extraction '{extraction.Name}': No pattern defined");
+                    WriteError($"Extraction '{extraction.Name}': No pattern defined");
                     continue;
                 }
 
                 if (string.IsNullOrEmpty(extraction.Name))
                 {
-                    _logger.LogError("Extraction has no variable name defined");
+                    WriteError("Extraction has no variable name defined");
                     continue;
                 }
 
-                _logger.LogVerbose($"Pattern from YAML: '{extraction.Pattern}' (length={extraction.Pattern.Length})");
-                _logger.LogVerbose($"Pattern bytes: {string.Join(", ", extraction.Pattern.Select(c => $"'{c}'({(int)c})"))}");
-                _logger.LogVerbose($"Attempting to extract '{extraction.Name}' using pattern: {extraction.Pattern}, groupIndex: {extraction.GroupIndex}");
+                WriteVerbose($"Pattern from YAML: '{extraction.Pattern}' (length={extraction.Pattern.Length})");
+                WriteVerbose($"Pattern bytes: {string.Join(", ", extraction.Pattern.Select(c => $"'{c}'({(int)c})"))}");
+                WriteVerbose($"Attempting to extract '{extraction.Name}' using pattern: {extraction.Pattern}, groupIndex: {extraction.GroupIndex}");
 
                 var regexOptions = extraction.CaseInsensitive ? RegexOptions.IgnoreCase | RegexOptions.Multiline : RegexOptions.Multiline;
                 var match = Regex.Match(output, extraction.Pattern, regexOptions);
 
                 if (match.Success)
                 {
-                    _logger.LogVerbose($"Match found! Groups count: {match.Groups.Count}");
-                    _logger.LogVerbose($"Match position: Index={match.Index}, Length={match.Length}, Value='{match.Value}'");
+                    WriteVerbose($"Match found! Groups count: {match.Groups.Count}");
+                    WriteVerbose($"Match position: Index={match.Index}, Length={match.Length}, Value='{match.Value}'");
                     var contextStart = Math.Max(0, match.Index - 20);
                     var contextLength = Math.Min(60, output.Length - contextStart);
-                    _logger.LogVerbose($"Context: '{output.Substring(contextStart, contextLength)}'");
+                    WriteVerbose($"Context: '{output.Substring(contextStart, contextLength)}'");
                     for (int g = 0; g < match.Groups.Count; g++)
                     {
-                        _logger.LogVerbose($"  Group[{g}] = '{match.Groups[g].Value}'");
+                        WriteVerbose($"  Group[{g}] = '{match.Groups[g].Value}'");
                     }
-                    _logger.LogVerbose($"Full output length: {output.Length}");
-                    _logger.LogVerbose($"Full output:\n{output}");
+                    WriteVerbose($"Full output length: {output.Length}");
+                    WriteVerbose($"Full output:\n{output}");
 
                     // **CRITICAL FIX**: Check bounds before accessing group, just like test-framework does
                     var value = match.Groups.Count > extraction.GroupIndex
@@ -409,26 +418,26 @@ public class NtoolsLauncherTestRunner
                     if (!string.IsNullOrEmpty(value))
                     {
                         variables[extraction.Name] = value;
-                        _logger.LogInfo($"[✓] Extracted: {extraction.Name} = {value}");
+                        WriteSuccess($"Extracted: {extraction.Name} = {value}");
                     }
                     else
                     {
-                        _logger.LogInfo($"[·] Pattern matched but extracted value is empty");
+                        WriteInfo("Pattern matched but extracted value is empty");
                     }
                 }
                 else
                 {
-                    _logger.LogError($"[X] Pattern did not match output");
+                    WriteError("Pattern did not match output");
                     if (_verbose)
                     {
                         var preview = output.Length > 200 ? output.Substring(0, 200) + "..." : output;
-                        _logger.LogVerbose($"   Output: {preview}");
+                        WriteVerbose($"   Output: {preview}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[X] Error extracting variable {extraction.Name}: {ex.Message}");
+                WriteError($"Error extracting variable {extraction.Name}: {ex.Message}");
             }
         }
     }
@@ -465,18 +474,32 @@ public class NtoolsLauncherTestRunner
 
             if (passed)
             {
-                _logger.LogInfo($"[✓] Assertion passed: {assertion.Type}");
+                WriteSuccess($"Assertion passed: {assertion.Type}");
             }
             else
             {
                 var expected = assertion.Type?.Trim().Equals("output_matches", StringComparison.OrdinalIgnoreCase) == true
                     ? assertion.Pattern ?? "<missing>"
                     : assertion.Value ?? "<missing>";
-                _logger.LogError($"[X] Assertion failed: {assertion.Type}; expected '{expected}'");
+                WriteError($"Assertion failed: {assertion.Type}; expected '{expected}'");
                 allPassed = false;
             }
         }
 
         return allPassed;
+    }
+
+    private static void WriteInfo(string message) => ConsoleHelper.WriteInfo(message);
+
+    private static void WriteSuccess(string message) => ConsoleHelper.WriteSuccess(message);
+
+    private static void WriteError(string message) => ConsoleHelper.WriteError(message);
+
+    private void WriteVerbose(string message)
+    {
+        if (_verbose)
+        {
+            ConsoleHelper.WriteVerbose(message);
+        }
     }
 }

@@ -4,7 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Net.Security;
 using System.Threading.Tasks;
-using YamlLauncher.Logging;
+using Launcher.Services;
 
 namespace Ntools
 {
@@ -13,8 +13,6 @@ namespace Ntools
     /// </summary>
     public static class Nfile
     {
-        private static readonly ILogger _logger = new Logger(verbose: false);
-
         /// <summary>
         /// The maximum number of retries for downloading a file.
         /// </summary>
@@ -57,7 +55,7 @@ namespace Ntools
                         return true;
                     }
 
-                    _logger.LogWarning($"SSL certificate error: {errors}");
+                    ConsoleHelper.WriteWarning($"SSL certificate error: {errors}");
                     return false;
                 }
             };

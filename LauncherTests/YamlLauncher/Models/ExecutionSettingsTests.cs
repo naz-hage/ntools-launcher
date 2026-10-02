@@ -16,7 +16,7 @@ public class ExecutionSettingsTests
         // Assert
         Assert.AreEqual(ExecutionMode.Sequential, settings.Mode);
         Assert.IsFalse(settings.Verbose);
-        Assert.IsFalse(settings.StopOnFirstError);
+        Assert.IsTrue(settings.StopOnFirstError);
         Assert.AreEqual(Environment.ProcessorCount, settings.MaxConcurrency);
         Assert.AreEqual(0, settings.Timeout);
     }
