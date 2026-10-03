@@ -11,6 +11,9 @@
 
 ## Usage
 - Check out the [README](./launcher/README.md) file for usage examples.
+- `StepExecutor` supports selecting a step by its unique name or by one or more
+  zero-based indices. Multiple selected steps run sequentially in the order
+  requested; the existing single-index API remains supported.
 
 ## License
 - This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

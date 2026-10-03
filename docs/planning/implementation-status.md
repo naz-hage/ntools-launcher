@@ -16,9 +16,12 @@ This document records what is implemented in the repository today. Design propos
 - Validation of expected return codes, dependencies, assertion patterns, variables, and variable extraction patterns.
 - Actionable `LauncherConfigException` errors, including YAML line and column information where available.
 
-### Single-step execution
+### Step execution and selection
 
-- `StepExecutor.LaunchAsync(LauncherConfig, int)` executes one selected step.
+- `StepExecutor.LaunchAsync(LauncherConfig, int)` executes one selected step and remains compatible with existing callers.
+- `StepExecutor.LaunchAsync(LauncherConfig, string)` executes the uniquely named step.
+- `StepExecutor.LaunchAsync(LauncherConfig, params int[])` executes one or more indexed steps sequentially in the requested order.
+- Name and index selections are fully validated before execution; unknown or ambiguous names and out-of-range indices fail without starting an unintended step.
 - Standard output and standard error capture.
 - Working-directory validation.
 - Global environment variables merged with step-specific environment variables.
@@ -61,7 +64,7 @@ These features exist in models or validation, but are not implemented as general
 
 The following remain future work:
 
-- General multi-step orchestration API.
+- Dependency-aware multi-step orchestration.
 - Dependency-aware sequential orchestration.
 - Parallel execution and concurrency throttling.
 - General variable substitution engine, including recursive substitution and predefined variables.
@@ -77,7 +80,8 @@ The implementation is covered by tests under `LauncherTests/YamlLauncher/`, incl
 - Configuration model and alias behavior.
 - YAML loading from strings, files, and streams.
 - Validation failures and dependency validation.
-- Single-step execution, output capture, timeouts, environment variables, working directories, exit codes, and signature behavior.
+- Named, single-index, and multi-index step execution, including requested ordering and invalid-selection handling.
+- Output capture, timeouts, environment variables, working directories, exit codes, and signature behavior.
 - Required-elevation enforcement and Windows Authenticode failure behavior.
 - Test-runner variable extraction, substitution, assertions, and fail-fast behavior.
 

@@ -173,6 +173,28 @@ Console.WriteLine($"Exit code: {execution.ExitCode}");
 Console.WriteLine(execution.StandardOutput);
 ```
 
+`StepExecutor` also supports selecting a step by name or executing multiple
+steps by zero-based index:
+
+```csharp
+// Names must be unique and are matched exactly.
+LaunchResult namedResult = await executor.LaunchAsync(config, "dotnet-version");
+
+// Executes index 2 first, followed by index 0.
+LaunchResult multipleResult = await executor.LaunchAsync(config, 2, 0);
+foreach (var stepResult in multipleResult.Results ?? [])
+{
+    Console.WriteLine($"{stepResult.StepName}: {stepResult.ExitCode}");
+}
+```
+
+Unknown or ambiguous names and out-of-range indices throw an
+`ArgumentException`. All indices are validated before execution begins.
+For multiple selections, the returned `LaunchResult.Results` collection
+preserves the requested order and contains the existing per-step execution
+results. The original `LaunchAsync(config, stepIndex)` overload remains
+available for existing callers.
+
 #### Full Configuration Reference
 
 The following example shows every supported configuration field. Values such as `workingDirectory` and `requireSignature` must be adapted to the local environment before use.
@@ -220,9 +242,11 @@ steps: # required; must contain at least one step; tasks and apps are aliases
 `StepExecutor` captures standard output and standard error, applies global and
 step-specific environment variables, validates an optional working directory,
 enforces `execution.timeout` in seconds, and returns exit code `-1` when
-execution times out or cannot start. `requireSignature` is an optional
-certificate subject requirement for the executable. Verbose output is emitted
-only when enabled and child processes run without creating a console window.
+execution times out or cannot start. It can execute one uniquely named step,
+one indexed step, or multiple indexed steps sequentially. `requireSignature`
+is an optional certificate subject requirement for the executable. Verbose
+output is emitted only when enabled and child processes run without creating a
+console window.
 
 #### Console Output
 

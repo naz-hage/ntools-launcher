@@ -1,5 +1,6 @@
 #nullable enable
 
+using Launcher.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,12 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YamlLauncher.Models;
-using Launcher.Services;
 
 namespace YamlLauncher;
 
 /// <summary>
-/// Executes a single step and captures its output, exit code, and execution time.
+/// Executes configured steps and captures their output, exit codes, and execution times.
 /// </summary>
 public class StepExecutor : IStepExecutor
 {
@@ -26,6 +26,65 @@ public class StepExecutor : IStepExecutor
     }
 
     public async Task<LaunchResult> LaunchAsync(LauncherConfig config, int stepIndex)
+    {
+        return await LaunchStepsAsync(config, new[] { stepIndex });
+    }
+
+    public async Task<LaunchResult> LaunchAsync(LauncherConfig config, string stepName)
+    {
+        if (string.IsNullOrWhiteSpace(stepName))
+            throw new ArgumentException("Step name cannot be empty", nameof(stepName));
+
+        ValidateConfig(config);
+
+        var matchingIndices = config.Steps!
+            .Select((step, index) => new { step, index })
+            .Where(item => string.Equals(item.step.Name, stepName, StringComparison.Ordinal))
+            .Select(item => item.index)
+            .ToList();
+
+        if (matchingIndices.Count == 0)
+            throw new ArgumentException($"No step with name '{stepName}' was found", nameof(stepName));
+
+        if (matchingIndices.Count > 1)
+            throw new ArgumentException($"Step name '{stepName}' is ambiguous; it matches {matchingIndices.Count} steps", nameof(stepName));
+
+        return await LaunchStepsAsync(config, matchingIndices);
+    }
+
+    public async Task<LaunchResult> LaunchAsync(LauncherConfig config, params int[] stepIndices)
+    {
+        return await LaunchStepsAsync(config, stepIndices);
+    }
+
+    private async Task<LaunchResult> LaunchStepsAsync(LauncherConfig config, IEnumerable<int> stepIndices)
+    {
+        ValidateConfig(config);
+        var steps = config.Steps!;
+
+        var indices = stepIndices?.ToList() ?? throw new ArgumentNullException(nameof(stepIndices));
+        if (indices.Count == 0)
+            throw new ArgumentException("At least one step index must be specified", nameof(stepIndices));
+
+        // Validate all selections before starting any process.
+        foreach (var stepIndex in indices)
+        {
+            if (stepIndex < 0 || stepIndex >= steps.Count)
+                throw new ArgumentException(
+                    $"Step index {stepIndex} is out of range (0-{steps.Count - 1})",
+                    nameof(stepIndices));
+        }
+
+        var results = new List<LaunchResult>();
+        foreach (var stepIndex in indices)
+        {
+            results.Add(await ExecuteStepAsync(config, stepIndex));
+        }
+
+        return AggregateResults(results);
+    }
+
+    private async Task<LaunchResult> ExecuteStepAsync(LauncherConfig config, int stepIndex)
     {
         if (config == null)
             throw new ArgumentNullException(nameof(config));
@@ -64,89 +123,87 @@ public class StepExecutor : IStepExecutor
             // Create process
             var psi = CreateProcessStartInfo(step, config);
 
-            using (var process = new Process { StartInfo = psi })
+            using var process = new Process { StartInfo = psi };
+            // Capture output asynchronously to prevent deadlocks
+            var stdoutBuilder = new StringBuilder();
+            var stderrBuilder = new StringBuilder();
+
+            process.OutputDataReceived += (s, e) =>
             {
-                // Capture output asynchronously to prevent deadlocks
-                var stdoutBuilder = new StringBuilder();
-                var stderrBuilder = new StringBuilder();
-
-                process.OutputDataReceived += (s, e) =>
+                if (e.Data != null)
                 {
-                    if (e.Data != null)
-                    {
-                        stdoutBuilder.AppendLine(e.Data);
-                        if (_verbose)
-                        {
-                            Console.WriteLine(e.Data);
-                        }
-                    }
-                };
-
-                process.ErrorDataReceived += (s, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        stderrBuilder.AppendLine(e.Data);
-                        if (_verbose)
-                        {
-                            Console.Error.WriteLine(e.Data);
-                        }
-                    }
-                };
-
-                if (_verbose)
-                {
-                    var fullPath = Path.GetFullPath(psi.FileName);
-                    ConsoleHelper.WriteLine($"Step {stepIndex + 1}: {step.Name}", ConsoleColor.Blue);
-                    ConsoleHelper.WriteInfo($"Executing: {fullPath} {psi.Arguments}");
-                    if (!string.IsNullOrEmpty(step.WorkingDirectory))
-                    {
-                        ConsoleHelper.WriteVerbose($"Working Directory: {step.WorkingDirectory}");
-                    }
-                    else
-                    {
-                        ConsoleHelper.WriteVerbose("Working Directory Not Set:");
-                    }
-                    ConsoleHelper.WriteInfo("--- Command Output ---");
-                }
-
-                process.Start();
-
-                if (psi.RedirectStandardOutput)
-                    process.BeginOutputReadLine();
-
-                if (psi.RedirectStandardError)
-                    process.BeginErrorReadLine();
-
-                // Wait for process completion with timeout
-                bool completed = process.WaitForExit(timeout);
-
-                if (!completed)
-                {
-                    process.Kill();
-                    stopwatch.Stop();
+                    stdoutBuilder.AppendLine(e.Data);
                     if (_verbose)
                     {
-                        ConsoleHelper.WriteInfo("--- End Output ---");
+                        Console.WriteLine(e.Data);
                     }
-                    return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
                 }
+            };
 
+            process.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    stderrBuilder.AppendLine(e.Data);
+                    if (_verbose)
+                    {
+                        Console.Error.WriteLine(e.Data);
+                    }
+                }
+            };
+
+            if (_verbose)
+            {
+                var fullPath = Path.GetFullPath(psi.FileName);
+                ConsoleHelper.WriteLine($"Step {stepIndex + 1}: {step.Name}", ConsoleColor.Blue);
+                ConsoleHelper.WriteInfo($"Executing: {fullPath} {psi.Arguments}");
+                if (!string.IsNullOrEmpty(step.WorkingDirectory))
+                {
+                    ConsoleHelper.WriteVerbose($"Working Directory: {step.WorkingDirectory}");
+                }
+                else
+                {
+                    ConsoleHelper.WriteVerbose("Working Directory Not Set:");
+                }
+                ConsoleHelper.WriteInfo("--- Command Output ---");
+            }
+
+            process.Start();
+
+            if (psi.RedirectStandardOutput)
+                process.BeginOutputReadLine();
+
+            if (psi.RedirectStandardError)
+                process.BeginErrorReadLine();
+
+            // Wait for process completion with timeout
+            bool completed = process.WaitForExit(timeout);
+
+            if (!completed)
+            {
+                process.Kill();
                 stopwatch.Stop();
-
-                var stdout = stdoutBuilder.ToString().TrimEnd();
-                var stderr = stderrBuilder.ToString().TrimEnd();
-                var exitCode = process.ExitCode;
-
                 if (_verbose)
                 {
                     ConsoleHelper.WriteInfo("--- End Output ---");
-                    ConsoleHelper.WriteInfo($"Exit Code: {exitCode}");
-                    ConsoleHelper.WriteInfo($"Duration: {stopwatch.ElapsedMilliseconds}ms");
                 }
-
-                return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
+                return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
             }
+
+            stopwatch.Stop();
+
+            var stdout = stdoutBuilder.ToString().TrimEnd();
+            var stderr = stderrBuilder.ToString().TrimEnd();
+            var exitCode = process.ExitCode;
+
+            if (_verbose)
+            {
+                ConsoleHelper.WriteInfo("--- End Output ---");
+                ConsoleHelper.WriteInfo($"Exit Code: {exitCode}");
+                ConsoleHelper.WriteInfo($"Duration: {stopwatch.ElapsedMilliseconds}ms");
+            }
+
+            return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
         }
         catch (Exception ex)
         {
@@ -154,6 +211,35 @@ public class StepExecutor : IStepExecutor
             ConsoleHelper.WriteError($"Step {stepIndex + 1} ('{step.Name ?? "unnamed"}') failed: {ex.Message}");
             return CreateFailureResult(step, startTime, stopwatch.Elapsed, ex.Message);
         }
+    }
+
+    private static void ValidateConfig(LauncherConfig config)
+    {
+        if (config == null)
+            throw new ArgumentNullException(nameof(config));
+
+        if (config.Steps == null || config.Steps.Count == 0)
+            throw new ArgumentException("Configuration has no steps", nameof(config));
+    }
+
+    private static LaunchResult AggregateResults(IReadOnlyList<LaunchResult> results)
+    {
+        ArgumentNullException.ThrowIfNull(results);
+        var first = results[0];
+        var last = results[results.Count - 1];
+        var executionResults = results
+            .Where(result => result.Results != null)
+            .SelectMany(result => result.Results!)
+            .ToList();
+
+        return new LaunchResult
+        {
+            StartTime = first.StartTime,
+            EndTime = last.EndTime,
+            DurationMs = results.Sum(result => result.DurationMs),
+            Success = results.All(result => result.Success),
+            Results = executionResults
+        };
     }
 
     private ProcessStartInfo CreateProcessStartInfo(StepConfig step, LauncherConfig config)
@@ -218,8 +304,7 @@ public class StepExecutor : IStepExecutor
             Success = success,
             Results = new List<ExecutionResult>
             {
-                new ExecutionResult
-                {
+                new() {
                     StepName = step.Name,
                     ExitCode = exitCode,
                     StdOut = stdout,
@@ -243,8 +328,7 @@ public class StepExecutor : IStepExecutor
             Success = false,
             Results = new List<ExecutionResult>
             {
-                new ExecutionResult
-                {
+                new() {
                     StepName = step.Name,
                     ExitCode = -1,
                     StdOut = string.Empty,
@@ -266,8 +350,7 @@ public class StepExecutor : IStepExecutor
             Success = false,
             Results = new List<ExecutionResult>
             {
-                new ExecutionResult
-                {
+                new() {
                     StepName = step.Name,
                     ExitCode = -1,
                     StdOut = string.Empty,
