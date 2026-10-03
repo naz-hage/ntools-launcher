@@ -97,7 +97,8 @@ public class StepExecutor : IStepExecutor
                 if (_verbose)
                 {
                     var fullPath = Path.GetFullPath(psi.FileName);
-                    ConsoleHelper.WriteVerbose($"Executing: {fullPath} {psi.Arguments}");
+                    ConsoleHelper.WriteLine($"Step {stepIndex + 1}: {step.Name}", ConsoleColor.Blue);
+                    ConsoleHelper.WriteInfo($"Executing: {fullPath} {psi.Arguments}");
                     if (!string.IsNullOrEmpty(step.WorkingDirectory))
                     {
                         ConsoleHelper.WriteVerbose($"Working Directory: {step.WorkingDirectory}");
@@ -106,7 +107,7 @@ public class StepExecutor : IStepExecutor
                     {
                         ConsoleHelper.WriteVerbose("Working Directory Not Set:");
                     }
-                    ConsoleHelper.WriteVerbose("--- Command Output ---");
+                    ConsoleHelper.WriteInfo("--- Command Output ---");
                 }
 
                 process.Start();
@@ -126,7 +127,7 @@ public class StepExecutor : IStepExecutor
                     stopwatch.Stop();
                     if (_verbose)
                     {
-                        ConsoleHelper.WriteVerbose("--- End Output ---");
+                        ConsoleHelper.WriteInfo("--- End Output ---");
                     }
                     return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
                 }
@@ -139,9 +140,9 @@ public class StepExecutor : IStepExecutor
 
                 if (_verbose)
                 {
-                    ConsoleHelper.WriteVerbose("--- End Output ---");
-                    ConsoleHelper.WriteVerbose($"Exit Code: {exitCode}");
-                    ConsoleHelper.WriteVerbose($"Duration: {stopwatch.ElapsedMilliseconds}ms");
+                    ConsoleHelper.WriteInfo("--- End Output ---");
+                    ConsoleHelper.WriteInfo($"Exit Code: {exitCode}");
+                    ConsoleHelper.WriteInfo($"Duration: {stopwatch.ElapsedMilliseconds}ms");
                 }
 
                 return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
