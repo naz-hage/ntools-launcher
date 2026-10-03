@@ -1,0 +1,69 @@
+version: "1.0"
+description: "Build the ntools-launcher"
+variables:
+  ArtifactDirectory: "C:\\Artifacts"
+  Target: "Release"
+  BuildType: "stage"
+  Verbosity: "minimal"
+  ReleaseDir: "C:\\Release"
+  Project: "ntools-launcher"
+execution:
+    verbose: true
+    stopOnFirstError: true
+steps:
+  - name: clean solution
+    path: sdo
+    arguments: "clean"
+    workingDirectory: .
+    expectedReturnCode: 0
+  - name: dotnet-version
+    path: dotnet
+    arguments: "--version"
+    workingDirectory: .
+    expectedReturnCode: 0
+  - name: get repo info
+    path: sdo
+    arguments: "repo info"
+    workingDirectory: .
+    expectedReturnCode: 0    
+  # AUTOTAG_STAGE;
+  - name: autotag stage
+    path: sdo
+    arguments: "repo tag auto -b $(BuildType) --verbose"
+    workingDirectory: .
+    expectedReturnCode: 0
+  # Version=$(Get-Content .\.temp\.tag) /v:m
+  - name: get version
+    path:  pwsh.exe
+    arguments: '-Command Get-Content .\.temp\.tag'
+    workingDirectory: .
+    expectedReturnCode: 0
+  # SOLUTION;
+  - name: build solution
+    path: sdo
+    arguments: "solution"
+    workingDirectory: .
+    expectedReturnCode: 0
+  # TEST;
+  # - name: test solution
+  #   path: sdo
+  #   arguments: "test"
+  #   workingDirectory: .
+  #   expectedReturnCode: 0
+  # COPY_ARTIFACTS;
+  # PUBLISH;
+  - name: publish sdo
+    path: pwsh.exe
+    arguments: >-
+      -NoProfile -Command
+      "$version = (Get-Content '.\\.temp\\.tag').Trim();
+      $output = Join-Path '$(ArtifactDirectory)' ('ntools-launcher\\$(Target)\\' + $version);
+      dotnet publish `
+        '.\\launcher\\Launcher.csproj' `
+        -c '$(Target)' `
+        -o $output `
+        --no-restore `
+        /p:SolutionVersion=$version `
+        /v:$(Verbosity)"
+    workingDirectory: .
+    expectedReturnCode: 0

@@ -97,6 +97,45 @@ var isElevated = CurrentProcess.IsElevated();
 Console.WriteLine(isElevated);
 ```
 
+### ConsoleHelper Class
+
+The `ConsoleHelper` class provides consistent colored output for launcher
+messages. Each colored write resets the console color after writing.
+
+```csharp
+using Launcher.Services;
+
+ConsoleHelper.WriteInfo("Starting launcher");
+ConsoleHelper.WriteWarning("Configuration uses a fallback value");
+ConsoleHelper.WriteSuccess("Step completed");
+ConsoleHelper.WriteError("Step failed");
+ConsoleHelper.WriteVerbose("Detailed diagnostic information");
+ConsoleHelper.WriteLine("Custom colored message", ConsoleColor.Cyan);
+```
+
+### Nversion Class
+
+The `Nversion` class returns formatted version information from assembly
+metadata. By default, it reads the entry assembly, which is the application
+that started the process.
+
+```csharp
+using Launcher.Services;
+
+var applicationVersion = Nversion.Get();
+Console.WriteLine(applicationVersion);
+```
+
+Use `AssemblyType.Executing` when the version of the assembly containing the
+launcher service is required instead:
+
+```csharp
+using Launcher.Services;
+
+var launcherVersion = Nversion.Get(AssemblyType.Executing);
+Console.WriteLine(launcherVersion);
+```
+
 ### YAML Launcher Framework
 
 The YAML Launcher framework loads a validated `LauncherConfig` and executes configured steps. Use `steps:` as the canonical YAML property; `tasks:` and `apps:` are supported aliases that map to the same collection.
@@ -146,7 +185,7 @@ variables: # optional; default: null; global environment variables
 execution: # optional; defaults apply when omitted
     mode: Sequential # optional; values: Sequential, Parallel; default: Sequential
     verbose: true # optional; values: true, false; default: false
-    stopOnFirstError: true # optional; values: true, false; default: false
+    stopOnFirstError: true # optional; values: true, false; default: true
     maxConcurrency: 4 # optional; positive integer; default: processor count; used in Parallel mode
     timeout: 60 # optional; non-negative integer seconds; default: 0 (no timeout)
 steps: # required; must contain at least one step; tasks and apps are aliases
@@ -154,7 +193,6 @@ steps: # required; must contain at least one step; tasks and apps are aliases
         path: dotnet # required; executable or script path
         arguments: "build -c $(Configuration)" # optional; default: empty
         dependencies: [] # optional; default: null; names of prerequisite steps
-        continueOnError: false # optional; true or false; default: false
         expectedReturnCode: 0 # optional; non-negative integer; default: 0
         workingDirectory: null # optional; default: process working directory
         environment: # optional; default: null; step-specific environment variables
@@ -183,8 +221,34 @@ steps: # required; must contain at least one step; tasks and apps are aliases
 step-specific environment variables, validates an optional working directory,
 enforces `execution.timeout` in seconds, and returns exit code `-1` when
 execution times out or cannot start. `requireSignature` is an optional
-certificate subject requirement for the executable. Verbose logging uses
-`[LAUNCHER]` prefixes and child processes run without creating a console
-window.
+certificate subject requirement for the executable. Verbose output is emitted
+only when enabled and child processes run without creating a console window.
+
+#### Console Output
+
+`Launcher.Services.ConsoleHelper` is the supported console output utility for
+callers and launcher services. It provides consistent colors and status
+markers for information, warnings, errors, successes, and verbose diagnostics.
+
+```csharp
+using Launcher.Services;
+
+ConsoleHelper.WriteInfo("Starting launcher");
+ConsoleHelper.WriteWarning("Using a fallback value");
+ConsoleHelper.WriteError("Step failed");
+ConsoleHelper.WriteSuccess("Step completed");
+ConsoleHelper.WriteVerbose("Detailed diagnostic information");
+```
+
+Pass `verbose: true` to `StepExecutor` to enable its diagnostic output:
+
+```csharp
+var executor = new StepExecutor(verbose: true);
+```
+
+`ConsoleHelper` writes directly to the console and is not a logging framework
+or configurable logging sink. `WriteVerbose` does not suppress output by
+itself; callers should invoke it only when verbose mode is enabled. The
+launcher uses this pattern internally.
 
 The current framework executes individual steps. Dependency orchestration, variable substitution between steps, and full assertion evaluation remain planned extensions.

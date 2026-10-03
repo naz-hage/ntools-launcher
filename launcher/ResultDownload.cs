@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using YamlLauncher.Logging;
+using Launcher.Services;
 
 namespace Ntools
 {
@@ -13,8 +13,6 @@ namespace Ntools
     /// </summary>
     public class ResultDownload : ResultHelper
     {
-        private readonly ILogger _logger;
-
         /// <summary>
         /// Gets the name of the downloaded file.
         /// </summary>
@@ -47,7 +45,6 @@ namespace Ntools
         /// <param name="fileName">The name of the downloaded file.</param>
         public ResultDownload(Uri uri, string fileName)
         {
-            _logger = new Logger(verbose: false);
             New();
             FileName = fileName;
             Uri = uri;
@@ -113,13 +110,13 @@ namespace Ntools
                 catch (CryptographicException ex)
                 {
                     // display the error message
-                    _logger.LogError($"CryptographicException: {ex.Message}");
+                    ConsoleHelper.WriteError($"CryptographicException: {ex.Message}");
                     DigitallySigned = false;
                 }
             }
             else
             {
-                _logger.LogWarning($"File `{FileName}` is not digitally signed.");
+                ConsoleHelper.WriteWarning($"File `{FileName}` is not digitally signed.");
             }
         }
     }

@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YamlLauncher.Models;
-using YamlLauncher.Logging;
+using Launcher.Services;
 
 namespace YamlLauncher;
 
@@ -18,11 +18,11 @@ namespace YamlLauncher;
 /// </summary>
 public class StepExecutor : IStepExecutor
 {
-    private readonly ILogger _logger;
+    private readonly bool _verbose;
 
-    public StepExecutor(bool verbose = false, ILogger? logger = null)
+    public StepExecutor(bool verbose = false)
     {
-        _logger = logger ?? new Logger(verbose);
+        _verbose = verbose;
     }
 
     public async Task<LaunchResult> LaunchAsync(LauncherConfig config, int stepIndex)
@@ -75,7 +75,7 @@ public class StepExecutor : IStepExecutor
                     if (e.Data != null)
                     {
                         stdoutBuilder.AppendLine(e.Data);
-                        if (_logger.IsVerbose)
+                        if (_verbose)
                         {
                             Console.WriteLine(e.Data);
                         }
@@ -87,26 +87,27 @@ public class StepExecutor : IStepExecutor
                     if (e.Data != null)
                     {
                         stderrBuilder.AppendLine(e.Data);
-                        if (_logger.IsVerbose)
+                        if (_verbose)
                         {
                             Console.Error.WriteLine(e.Data);
                         }
                     }
                 };
 
-                if (_logger.IsVerbose)
+                if (_verbose)
                 {
                     var fullPath = Path.GetFullPath(psi.FileName);
-                    _logger.LogVerbose($"Executing: {fullPath} {psi.Arguments}");
+                    ConsoleHelper.WriteLine($"Step {stepIndex + 1}: {step.Name}", ConsoleColor.Blue);
+                    ConsoleHelper.WriteInfo($"Executing: {fullPath} {psi.Arguments}");
                     if (!string.IsNullOrEmpty(step.WorkingDirectory))
                     {
-                        _logger.LogVerbose($"Working Directory: {step.WorkingDirectory}");
+                        ConsoleHelper.WriteVerbose($"Working Directory: {step.WorkingDirectory}");
                     }
                     else
                     {
-                        _logger.LogVerbose($"Working Directory Not Set:");
+                        ConsoleHelper.WriteVerbose("Working Directory Not Set:");
                     }
-                    _logger.LogVerbose($"--- Command Output ---");
+                    ConsoleHelper.WriteInfo("--- Command Output ---");
                 }
 
                 process.Start();
@@ -124,9 +125,9 @@ public class StepExecutor : IStepExecutor
                 {
                     process.Kill();
                     stopwatch.Stop();
-                    if (_logger.IsVerbose)
+                    if (_verbose)
                     {
-                        _logger.LogVerbose($"--- End Output ---");
+                        ConsoleHelper.WriteInfo("--- End Output ---");
                     }
                     return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
                 }
@@ -137,11 +138,11 @@ public class StepExecutor : IStepExecutor
                 var stderr = stderrBuilder.ToString().TrimEnd();
                 var exitCode = process.ExitCode;
 
-                if (_logger.IsVerbose)
+                if (_verbose)
                 {
-                    _logger.LogVerbose($"--- End Output ---");
-                    _logger.LogVerbose($"Exit Code: {exitCode}");
-                    _logger.LogVerbose($"Duration: {stopwatch.ElapsedMilliseconds}ms");
+                    ConsoleHelper.WriteInfo("--- End Output ---");
+                    ConsoleHelper.WriteInfo($"Exit Code: {exitCode}");
+                    ConsoleHelper.WriteInfo($"Duration: {stopwatch.ElapsedMilliseconds}ms");
                 }
 
                 return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
@@ -150,7 +151,7 @@ public class StepExecutor : IStepExecutor
         catch (Exception ex)
         {
             stopwatch.Stop();
-            _logger.LogError($"Error executing step: {ex.Message}");
+            ConsoleHelper.WriteError($"Step {stepIndex + 1} ('{step.Name ?? "unnamed"}') failed: {ex.Message}");
             return CreateFailureResult(step, startTime, stopwatch.Elapsed, ex.Message);
         }
     }
@@ -292,9 +293,9 @@ public class StepExecutor : IStepExecutor
         // Windows-specific digital signature verification
         if (!OperatingSystem.IsWindows())
         {
-            if (_logger.IsVerbose)
+            if (_verbose)
             {
-                _logger.LogVerbose($"Digital signature verification skipped on non-Windows platform");
+            ConsoleHelper.WriteVerbose("Digital signature verification skipped on non-Windows platform");
             }
             return true;
         }
@@ -305,14 +306,14 @@ public class StepExecutor : IStepExecutor
             {
                 if (!File.Exists(filePath))
                 {
-                    _logger.LogError($"File not found for signature verification: {filePath}");
+                    ConsoleHelper.WriteError($"File not found for signature verification: {filePath}");
                     return false;
                 }
 
                 var isValid = Ntools.SignatureVerifier.VerifyDigitalSignature(filePath);
-                if (_logger.IsVerbose)
+                if (_verbose)
                 {
-                    _logger.LogVerbose(isValid
+                    ConsoleHelper.WriteVerbose(isValid
                         ? $"Signature verification passed for: {filePath}"
                         : $"Signature verification failed for: {filePath}");
                 }
@@ -320,7 +321,7 @@ public class StepExecutor : IStepExecutor
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error during signature verification: {ex.Message}");
+                ConsoleHelper.WriteError($"Error during signature verification: {ex.Message}");
                 return false;
             }
         });

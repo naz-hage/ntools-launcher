@@ -34,7 +34,7 @@ This document records what is implemented in the repository today. Design propos
 
 - Discovers and runs named YAML test files.
 - Executes steps in YAML order.
-- Supports `stopOnFirstError`.
+- Supports `stopOnFirstError`, which defaults to `true`; set it to `false` to continue after a failed step.
 - Extracts variables from step output using regular expressions.
 - Substitutes extracted variables in later arguments using `{variableName}` syntax.
 - Evaluates these assertion types: `exit_code`, `output_contains`, `output_not_contains`, and `output_matches`.
@@ -51,7 +51,7 @@ This document records what is implemented in the repository today. Design propos
 These features exist in models or validation, but are not implemented as general-purpose orchestration by `StepExecutor`:
 
 - `StepConfig.Dependencies` is validated, but no dependency graph is resolved and dependencies do not reorder execution.
-- `StepConfig.ContinueOnError` is modeled, but the core executor does not run a pipeline that applies it.
+- `StepConfig.ContinueOnError` remains a model field for compatibility; it is not a supported workflow control.
 - `ExecutionSettings.Mode` and `MaxConcurrency` are modeled, but there is no parallel execution engine.
 - `LauncherConfig.Variables` and step environment values are passed to processes; general `$(variable)` substitution is not provided by `StepExecutor`.
 - Assertions and variable extraction are evaluated by `NtoolsLauncherTestRunner`, not by `StepExecutor` itself.

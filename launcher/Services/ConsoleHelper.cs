@@ -1,7 +1,10 @@
 using System;
 
-namespace Launcher.Helpers;
+namespace Launcher.Services;
 
+/// <summary>
+/// Provides consistent colored console output for launcher messages.
+/// </summary>
 public static class ConsoleHelper
 {
     /// <summary>
@@ -35,23 +38,39 @@ public static class ConsoleHelper
         WriteLine($"X {message}", ConsoleColor.Red);
     }
 
+    /// <summary>
+    /// Writes a warning message to the console in yellow.
+    /// </summary>
+    /// <param name="message">The warning message to display.</param>
     public static void WriteWarning(string message)
     {
         WriteLine($"{message}", ConsoleColor.Yellow);
     }
 
+    /// <summary>
+    /// Writes a success message to the console in green with a checkmark prefix.
+    /// </summary>
+    /// <param name="message">The success message to display.</param>
     public static void WriteSuccess(string message)
     {
         // √ ✓
         WriteLine($"√ {message}", ConsoleColor.Green);
     }
 
+    /// <summary>
+    /// Writes a verbose diagnostic message to the console in gray.
+    /// </summary>
+    /// <param name="message">The diagnostic message to display.</param>
     public static void WriteVerbose(string message)
     {
         WriteLine($"{message}", ConsoleColor.Gray);
     }
 
 
+    /// <summary>
+    /// Writes an informational message to the console in cyan.
+    /// </summary>
+    /// <param name="message">The informational message to display.</param>
     public static void WriteInfo(string message)
     {
         WriteLine($"{message}", ConsoleColor.Cyan);
