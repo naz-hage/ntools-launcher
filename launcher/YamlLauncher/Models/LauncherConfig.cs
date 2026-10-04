@@ -37,6 +37,11 @@ public class LauncherConfig
     public List<StepConfig>? Steps { get; set; }
 
     /// <summary>
+    /// Gets or sets the named, ordered groups of steps.
+    /// </summary>
+    public List<StageConfig>? Stages { get; set; }
+
+    /// <summary>
     /// Gets or sets the tasks (alias for Steps, used for test-framework integration context).
     /// </summary>
     public List<StepConfig>? Tasks

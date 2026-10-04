@@ -1,5 +1,6 @@
 #nullable enable
 
+using Launcher.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,12 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YamlLauncher.Models;
-using Launcher.Services;
 
 namespace YamlLauncher;
 
 /// <summary>
-/// Executes a single step and captures its output, exit code, and execution time.
+/// Executes configured steps and captures their output, exit codes, and execution times.
 /// </summary>
 public class StepExecutor : IStepExecutor
 {
@@ -25,7 +25,153 @@ public class StepExecutor : IStepExecutor
         _verbose = verbose;
     }
 
+    /// <summary>
+    /// Launches a single step by its index in the configuration.
+    /// </summary>
+    /// <param name="config">The launcher configuration.</param>
+    /// <param name="stepIndex">The index of the step to launch.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the launch result.</returns>
     public async Task<LaunchResult> LaunchAsync(LauncherConfig config, int stepIndex)
+    {
+        return await LaunchStepsAsync(config, new[] { stepIndex });
+    }
+
+    /// <summary>
+    /// Launches a single step by its name in the configuration.
+    /// </summary>
+    /// <param name="config">The launcher configuration.</param>
+    /// <param name="stepName">The name of the step to launch.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the launch result.</returns>
+    /// <exception cref="ArgumentException"></exception>
+    public async Task<LaunchResult> LaunchAsync(LauncherConfig config, string stepName)
+    {
+        if (string.IsNullOrWhiteSpace(stepName))
+            throw new ArgumentException("Step name cannot be empty", nameof(stepName));
+
+        ValidateConfig(config);
+
+        var matchingIndices = config.Steps!
+            .Select((step, index) => new { step, index })
+            .Where(item => string.Equals(item.step.Name, stepName, StringComparison.Ordinal))
+            .Select(item => item.index)
+            .ToList();
+
+        if (matchingIndices.Count == 0)
+            throw new ArgumentException($"No step with name '{stepName}' was found", nameof(stepName));
+
+        if (matchingIndices.Count > 1)
+            throw new ArgumentException($"Step name '{stepName}' is ambiguous; it matches {matchingIndices.Count} steps", nameof(stepName));
+
+        return await LaunchStepsAsync(config, matchingIndices);
+    }
+
+    public async Task<LaunchResult> LaunchAsync(LauncherConfig config, params int[] stepIndices)
+    {
+        return await LaunchStepsAsync(config, stepIndices);
+    }
+
+    /// <summary>
+    /// Launches a stage by its name, executing all steps defined in that stage.
+    /// </summary>
+    /// <param name="config">The launcher configuration.</param>
+    /// <param name="stageName">The name of the stage to launch.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the launch result.</returns>
+    /// <exception cref="ArgumentException"></exception>
+    public async Task<LaunchResult> LaunchStageAsync(LauncherConfig config, string stageName)
+    {
+        if (string.IsNullOrWhiteSpace(stageName))
+            throw new ArgumentException("Stage name cannot be empty", nameof(stageName));
+
+        ValidateConfig(config);
+
+        if (config.Stages == null || config.Stages.Count == 0)
+            throw new ArgumentException("Configuration has no stages", nameof(config));
+
+        var matchingStages = config.Stages
+            .Where(stage => string.Equals(stage.Name, stageName, StringComparison.Ordinal))
+            .ToList();
+
+        if (matchingStages.Count == 0)
+            throw new ArgumentException($"No stage with name '{stageName}' was found", nameof(stageName));
+
+        if (matchingStages.Count > 1)
+            throw new ArgumentException(
+                $"Stage name '{stageName}' is ambiguous; it matches {matchingStages.Count} stages",
+                nameof(stageName));
+
+        var stage = matchingStages[0];
+        if (stage.Steps == null || stage.Steps.Count == 0)
+            throw new ArgumentException($"Stage '{stageName}' has no steps", nameof(stageName));
+
+        var stepIndices = new List<int>();
+        foreach (var stepName in stage.Steps)
+        {
+            var matchingSteps = config.Steps!
+                .Select((step, index) => new { step, index })
+                .Where(item => string.Equals(item.step.Name, stepName, StringComparison.Ordinal))
+                .Select(item => item.index)
+                .ToList();
+
+            if (matchingSteps.Count == 0)
+                throw new ArgumentException(
+                    $"Stage '{stageName}' references unknown step '{stepName}'",
+                    nameof(stageName));
+
+            if (matchingSteps.Count > 1)
+                throw new ArgumentException(
+                    $"Stage '{stageName}' references ambiguous step '{stepName}'",
+                    nameof(stageName));
+
+            stepIndices.Add(matchingSteps[0]);
+        }
+
+        return await LaunchStepsAsync(config, stepIndices);
+    }
+
+    /// <summary>
+    /// Launches multiple steps by their indices in the configuration.
+    /// </summary>
+    /// <param name="config">The launcher configuration.</param>
+    /// <param name="stepIndices">The indices of the steps to launch.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the launch result.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="stepIndices"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="stepIndices"/> is empty or contains invalid indices.</exception>
+    private async Task<LaunchResult> LaunchStepsAsync(LauncherConfig config, IEnumerable<int> stepIndices)
+    {
+        ValidateConfig(config);
+        var steps = config.Steps!;
+
+        var indices = stepIndices?.ToList() ?? throw new ArgumentNullException(nameof(stepIndices));
+        if (indices.Count == 0)
+            throw new ArgumentException("At least one step index must be specified", nameof(stepIndices));
+
+        // Validate all selections before starting any process.
+        foreach (var stepIndex in indices)
+        {
+            if (stepIndex < 0 || stepIndex >= steps.Count)
+                throw new ArgumentException(
+                    $"Step index {stepIndex} is out of range (0-{steps.Count - 1})",
+                    nameof(stepIndices));
+        }
+
+        var results = new List<LaunchResult>();
+        foreach (var stepIndex in indices)
+        {
+            results.Add(await ExecuteStepAsync(config, stepIndex));
+        }
+
+        return AggregateResults(results);
+    }
+
+    /// <summary>
+    /// Executes a single step by its index in the configuration, capturing its output, exit code, and execution time.
+    /// </summary>
+    /// <param name="config">The launcher configuration.</param>
+    /// <param name="stepIndex">The index of the step to execute.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the launch result.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="config"/> has no steps or <paramref name="stepIndex"/> is out of range.</exception>
+    private async Task<LaunchResult> ExecuteStepAsync(LauncherConfig config, int stepIndex)
     {
         if (config == null)
             throw new ArgumentNullException(nameof(config));
@@ -64,89 +210,87 @@ public class StepExecutor : IStepExecutor
             // Create process
             var psi = CreateProcessStartInfo(step, config);
 
-            using (var process = new Process { StartInfo = psi })
+            using var process = new Process { StartInfo = psi };
+            // Capture output asynchronously to prevent deadlocks
+            var stdoutBuilder = new StringBuilder();
+            var stderrBuilder = new StringBuilder();
+
+            process.OutputDataReceived += (s, e) =>
             {
-                // Capture output asynchronously to prevent deadlocks
-                var stdoutBuilder = new StringBuilder();
-                var stderrBuilder = new StringBuilder();
-
-                process.OutputDataReceived += (s, e) =>
+                if (e.Data != null)
                 {
-                    if (e.Data != null)
-                    {
-                        stdoutBuilder.AppendLine(e.Data);
-                        if (_verbose)
-                        {
-                            Console.WriteLine(e.Data);
-                        }
-                    }
-                };
-
-                process.ErrorDataReceived += (s, e) =>
-                {
-                    if (e.Data != null)
-                    {
-                        stderrBuilder.AppendLine(e.Data);
-                        if (_verbose)
-                        {
-                            Console.Error.WriteLine(e.Data);
-                        }
-                    }
-                };
-
-                if (_verbose)
-                {
-                    var fullPath = Path.GetFullPath(psi.FileName);
-                    ConsoleHelper.WriteLine($"Step {stepIndex + 1}: {step.Name}", ConsoleColor.Blue);
-                    ConsoleHelper.WriteInfo($"Executing: {fullPath} {psi.Arguments}");
-                    if (!string.IsNullOrEmpty(step.WorkingDirectory))
-                    {
-                        ConsoleHelper.WriteVerbose($"Working Directory: {step.WorkingDirectory}");
-                    }
-                    else
-                    {
-                        ConsoleHelper.WriteVerbose("Working Directory Not Set:");
-                    }
-                    ConsoleHelper.WriteInfo("--- Command Output ---");
-                }
-
-                process.Start();
-
-                if (psi.RedirectStandardOutput)
-                    process.BeginOutputReadLine();
-
-                if (psi.RedirectStandardError)
-                    process.BeginErrorReadLine();
-
-                // Wait for process completion with timeout
-                bool completed = process.WaitForExit(timeout);
-
-                if (!completed)
-                {
-                    process.Kill();
-                    stopwatch.Stop();
+                    stdoutBuilder.AppendLine(e.Data);
                     if (_verbose)
                     {
-                        ConsoleHelper.WriteInfo("--- End Output ---");
+                        Console.WriteLine(e.Data);
                     }
-                    return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
                 }
+            };
 
+            process.ErrorDataReceived += (s, e) =>
+            {
+                if (e.Data != null)
+                {
+                    stderrBuilder.AppendLine(e.Data);
+                    if (_verbose)
+                    {
+                        Console.Error.WriteLine(e.Data);
+                    }
+                }
+            };
+
+            if (_verbose)
+            {
+                var fullPath = Path.GetFullPath(psi.FileName);
+                ConsoleHelper.WriteLine($"Step {stepIndex + 1}: {step.Name}", ConsoleColor.Blue);
+                ConsoleHelper.WriteInfo($"Executing: {fullPath} {psi.Arguments}");
+                if (!string.IsNullOrEmpty(step.WorkingDirectory))
+                {
+                    ConsoleHelper.WriteVerbose($"Working Directory: {step.WorkingDirectory}");
+                }
+                else
+                {
+                    ConsoleHelper.WriteVerbose("Working Directory Not Set:");
+                }
+                ConsoleHelper.WriteInfo("--- Command Output ---");
+            }
+
+            process.Start();
+
+            if (psi.RedirectStandardOutput)
+                process.BeginOutputReadLine();
+
+            if (psi.RedirectStandardError)
+                process.BeginErrorReadLine();
+
+            // Wait for process completion with timeout
+            bool completed = process.WaitForExit(timeout);
+
+            if (!completed)
+            {
+                process.Kill();
                 stopwatch.Stop();
-
-                var stdout = stdoutBuilder.ToString().TrimEnd();
-                var stderr = stderrBuilder.ToString().TrimEnd();
-                var exitCode = process.ExitCode;
-
                 if (_verbose)
                 {
                     ConsoleHelper.WriteInfo("--- End Output ---");
-                    ConsoleHelper.WriteInfo($"Exit Code: {exitCode}");
-                    ConsoleHelper.WriteInfo($"Duration: {stopwatch.ElapsedMilliseconds}ms");
                 }
-
-                return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
+                return CreateTimeoutResult(step, startTime, stopwatch.Elapsed);
             }
+
+            stopwatch.Stop();
+
+            var stdout = stdoutBuilder.ToString().TrimEnd();
+            var stderr = stderrBuilder.ToString().TrimEnd();
+            var exitCode = process.ExitCode;
+
+            if (_verbose)
+            {
+                ConsoleHelper.WriteInfo("--- End Output ---");
+                ConsoleHelper.WriteInfo($"Exit Code: {exitCode}");
+                ConsoleHelper.WriteInfo($"Duration: {stopwatch.ElapsedMilliseconds}ms");
+            }
+
+            return CreateExecutionResult(step, startTime, stopwatch.Elapsed, stdout, stderr, exitCode);
         }
         catch (Exception ex)
         {
@@ -156,6 +300,54 @@ public class StepExecutor : IStepExecutor
         }
     }
 
+    /// <summary>
+    /// Validates the launcher configuration to ensure it is not null and contains at least one step.
+    /// </summary>
+    /// <param name="config">The launcher configuration to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="config"/> has no steps.</exception>
+    private static void ValidateConfig(LauncherConfig config)
+    {
+        if (config == null)
+            throw new ArgumentNullException(nameof(config));
+
+        if (config.Steps == null || config.Steps.Count == 0)
+            throw new ArgumentException("Configuration has no steps", nameof(config));
+    }
+
+    /// <summary>
+    /// Aggregates multiple launch results into a single result, combining their execution times, success status, and individual execution results.
+    /// </summary>
+    /// <param name="results">The list of launch results to aggregate.</param>
+    /// <returns>A single aggregated launch result.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="results"/> is null.</exception>
+    private static LaunchResult AggregateResults(IReadOnlyList<LaunchResult> results)
+    {
+        ArgumentNullException.ThrowIfNull(results);
+        var first = results[0];
+        var last = results[results.Count - 1];
+        var executionResults = results
+            .Where(result => result.Results != null)
+            .SelectMany(result => result.Results!)
+            .ToList();
+
+        return new LaunchResult
+        {
+            StartTime = first.StartTime,
+            EndTime = last.EndTime,
+            DurationMs = results.Sum(result => result.DurationMs),
+            Success = results.All(result => result.Success),
+            Results = executionResults
+        };
+    }
+
+    /// <summary>
+    /// Creates a <see cref="ProcessStartInfo"/> object for the given step and launcher configuration.
+    /// </summary>
+    /// <param name="step">The step configuration.</param>
+    /// <param name="config">The launcher configuration.</param>
+    /// <returns>A <see cref="ProcessStartInfo"/> object configured for the step.</returns>
+    /// <exception cref="DirectoryNotFoundException">Thrown when the specified working directory does not exist.</exception>
     private ProcessStartInfo CreateProcessStartInfo(StepConfig step, LauncherConfig config)
     {
         var psi = new ProcessStartInfo
@@ -199,7 +391,17 @@ public class StepExecutor : IStepExecutor
 
         return psi;
     }
-
+    
+    /// <summary>
+    /// Creates a <see cref="LaunchResult"/> object representing the result of executing a step.
+    /// </summary>
+    /// <param name="step">The step configuration.</param>
+    /// <param name="startTime">The start time of the execution.</param>
+    /// <param name="duration">The duration of the execution.</param>
+    /// <param name="stdout">The standard output captured during execution.</param>
+    /// <param name="stderr">The standard error captured during execution.</param>
+    /// <param name="exitCode">The exit code returned by the process.</param>
+    /// <returns>A <see cref="LaunchResult"/> representing the execution result.</returns>
     private LaunchResult CreateExecutionResult(
         StepConfig step,
         DateTime startTime,
@@ -218,8 +420,7 @@ public class StepExecutor : IStepExecutor
             Success = success,
             Results = new List<ExecutionResult>
             {
-                new ExecutionResult
-                {
+                new() {
                     StepName = step.Name,
                     ExitCode = exitCode,
                     StdOut = stdout,
@@ -232,7 +433,14 @@ public class StepExecutor : IStepExecutor
 
         return result;
     }
-
+    
+    /// <summary>
+    /// Creates a <see cref="LaunchResult"/> object representing a timeout result for a step.
+    /// </summary>
+    /// <param name="step">The step configuration.</param>
+    /// <param name="startTime">The start time of the execution.</param>
+    /// <param name="duration">The duration of the execution.</param>
+    /// <returns>A <see cref="LaunchResult"/> representing the timeout result.</returns>
     private LaunchResult CreateTimeoutResult(StepConfig step, DateTime startTime, TimeSpan duration)
     {
         return new LaunchResult
@@ -243,8 +451,7 @@ public class StepExecutor : IStepExecutor
             Success = false,
             Results = new List<ExecutionResult>
             {
-                new ExecutionResult
-                {
+                new() {
                     StepName = step.Name,
                     ExitCode = -1,
                     StdOut = string.Empty,
@@ -255,7 +462,15 @@ public class StepExecutor : IStepExecutor
             }
         };
     }
-
+    
+    /// <summary>
+    /// Creates a <see cref="LaunchResult"/> object representing a failure result for a step.
+    /// </summary>
+    /// <param name="step">The step configuration.</param>
+    /// <param name="startTime">The start time of the execution.</param>
+    /// <param name="duration">The duration of the execution.</param>
+    /// <param name="errorMessage">The error message describing the failure.</param>
+    /// <returns>A <see cref="LaunchResult"/> representing the failure result.</returns>
     private LaunchResult CreateFailureResult(StepConfig step, DateTime startTime, TimeSpan duration, string errorMessage)
     {
         return new LaunchResult
@@ -266,8 +481,7 @@ public class StepExecutor : IStepExecutor
             Success = false,
             Results = new List<ExecutionResult>
             {
-                new ExecutionResult
-                {
+                new() {
                     StepName = step.Name,
                     ExitCode = -1,
                     StdOut = string.Empty,
@@ -278,7 +492,12 @@ public class StepExecutor : IStepExecutor
             }
         };
     }
-
+    
+    /// <summary>
+    /// Gets the timeout value in milliseconds from the launcher configuration.
+    /// </summary>
+    /// <param name="config">The launcher configuration.</param>
+    /// <returns>The timeout value in milliseconds, or <see cref="Timeout.Infinite"/> if no timeout is specified.</returns>
     private int GetTimeout(LauncherConfig config)
     {
         if (config.Execution?.Timeout > 0)
@@ -288,6 +507,12 @@ public class StepExecutor : IStepExecutor
         return Timeout.Infinite; // No timeout
     }
 
+    /// <summary>
+    /// Verifies the digital signature of a file asynchronously.
+    /// </summary>
+    /// <param name="filePath">The path to the file to verify.</param>
+    /// <param name="requiredSignature">The required digital signature.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains <c>true</c> if the signature is valid; otherwise, <c>false</c>.</returns>
     private async Task<bool> VerifySignatureAsync(string filePath, string requiredSignature)
     {
         // Windows-specific digital signature verification

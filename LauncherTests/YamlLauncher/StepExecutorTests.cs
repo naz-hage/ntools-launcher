@@ -1,10 +1,11 @@
 #nullable enable
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YamlLauncher;
 using YamlLauncher.Models;
 
@@ -372,6 +373,148 @@ public class StepExecutorTests
     }
 
     [TestMethod]
+    public async Task LaunchAsync_ExecutesCorrectStep_ByName()
+    {
+        var config = CreateEchoConfig(
+            ("first", "First"),
+            ("target", "Target"));
+
+        var result = await _executor.LaunchAsync(config, "target");
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(1, result.Results!.Count);
+        Assert.AreEqual("target", result.Results[0].StepName);
+        Assert.IsTrue(result.Results[0].StdOut!.Contains("Target"));
+    }
+
+    [TestMethod]
+    public async Task LaunchAsync_ExecutesMultipleSteps_InRequestedOrder()
+    {
+        var config = CreateEchoConfig(
+            ("first", "First"),
+            ("second", "Second"),
+            ("third", "Third"));
+
+        var result = await _executor.LaunchAsync(config, 2, 0);
+
+        Assert.IsTrue(result.Success);
+        CollectionAssert.AreEqual(
+            new[] { "third", "first" },
+            result.Results!.ConvertAll(execution => execution.StepName));
+    }
+
+    [TestMethod]
+    public async Task LaunchAsync_WithInvalidSelection_DoesNotStartAnyStep()
+    {
+        var markerPath = Path.Combine(Path.GetTempPath(), $"step-executor-{Guid.NewGuid():N}.txt");
+        try
+        {
+            var config = new LauncherConfig
+            {
+                Steps = new List<StepConfig>
+                {
+                    new StepConfig
+                    {
+                        Name = "first",
+                        Path = "cmd.exe",
+                        Arguments = $"/c echo started > \"{markerPath}\""
+                    }
+                }
+            };
+
+            await AssertThrowsAsync<ArgumentException>(
+                () => _executor.LaunchAsync(config, 0, 5));
+
+            Assert.IsFalse(File.Exists(markerPath));
+        }
+        finally
+        {
+            if (File.Exists(markerPath))
+                File.Delete(markerPath);
+        }
+    }
+
+    [TestMethod]
+    public async Task LaunchAsync_WithUnknownOrAmbiguousName_FailsClearly()
+    {
+        var config = CreateEchoConfig(
+            ("duplicate", "First"),
+            ("duplicate", "Second"));
+
+        var unknown = await AssertThrowsAsync<ArgumentException>(
+            () => _executor.LaunchAsync(config, "missing"));
+        StringAssert.Contains(unknown.Message, "No step with name 'missing'");
+
+        var ambiguous = await AssertThrowsAsync<ArgumentException>(
+            () => _executor.LaunchAsync(config, "duplicate"));
+        StringAssert.Contains(ambiguous.Message, "ambiguous");
+    }
+
+    [TestMethod]
+    public async Task LaunchStageAsync_ExecutesNamedStepsInConfiguredOrder()
+    {
+        var config = CreateEchoConfig(
+            ("clean", "Clean"),
+            ("build", "Build"),
+            ("publish", "Publish"));
+        config.Stages = new List<StageConfig>
+        {
+            new StageConfig
+            {
+                Name = "release",
+                Steps = new List<string> { "clean", "build", "publish" }
+            }
+        };
+
+        var result = await _executor.LaunchStageAsync(config, "release");
+
+        Assert.IsTrue(result.Success);
+        CollectionAssert.AreEqual(
+            new[] { "clean", "build", "publish" },
+            result.Results!.ConvertAll(execution => execution.StepName));
+    }
+
+    [TestMethod]
+    public async Task LaunchStageAsync_WithUnknownStep_FailsBeforeExecution()
+    {
+        var markerPath = Path.Combine(Path.GetTempPath(), $"stage-executor-{Guid.NewGuid():N}.txt");
+        try
+        {
+            var config = new LauncherConfig
+            {
+                Steps = new List<StepConfig>
+                {
+                    new StepConfig
+                    {
+                        Name = "clean",
+                        Path = "cmd.exe",
+                        Arguments = $"/c echo started > \"{markerPath}\""
+                    }
+                },
+                Stages = new List<StageConfig>
+                {
+                    new StageConfig
+                    {
+                        Name = "release",
+                        Steps = new List<string> { "missing", "clean" }
+                    }
+                }
+            };
+
+            var exception = await AssertThrowsAsync<ArgumentException>(
+                () => _executor.LaunchStageAsync(config, "release"));
+
+            StringAssert.Contains(exception.Message, "unknown step 'missing'");
+            Assert.IsFalse(File.Exists(markerPath));
+        }
+        finally
+        {
+            if (File.Exists(markerPath))
+                File.Delete(markerPath);
+        }
+    }
+
+    [TestMethod]
     public async Task LaunchAsync_ResultsHaveCorrectMetadata()
     {
         var config = new LauncherConfig
@@ -462,5 +605,36 @@ public class StepExecutorTests
         Assert.IsNotNull(result);
         Assert.IsFalse(result.Success);
         Assert.IsTrue(result.Results![0].StdErr!.Contains("Digital signature verification failed"));
+    }
+
+    private static LauncherConfig CreateEchoConfig(params (string Name, string Output)[] steps)
+    {
+        return new LauncherConfig
+        {
+            Version = "1.0",
+            Steps = new List<StepConfig>(steps.Select(step => new StepConfig
+            {
+                Name = step.Name,
+                Path = "cmd.exe",
+                Arguments = $"/c \"echo {step.Output}\"",
+                ExpectedReturnCode = 0
+            }))
+        };
+    }
+
+    private static async Task<TException> AssertThrowsAsync<TException>(Func<Task> action)
+        where TException : Exception
+    {
+        try
+        {
+            await action();
+        }
+        catch (TException exception)
+        {
+            return exception;
+        }
+
+        Assert.Fail($"Expected {typeof(TException).Name} to be thrown.");
+        throw new InvalidOperationException();
     }
 }

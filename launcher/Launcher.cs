@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Launcher.Services;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Launcher.Services;
 
 namespace Ntools
 {
@@ -33,7 +33,7 @@ namespace Ntools
             }
 
             // Lock the file for reading
-            using (FileStream fileStream = new FileStream(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (FileStream fileStream = new(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 // Check for valid digital signature
                 if (!SignatureVerifier.VerifyDigitalSignature(fileStream.Name))
@@ -75,7 +75,7 @@ namespace Ntools
             }
 
             // Lock the file for reading
-            using (FileStream fileStream = new FileStream(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (FileStream fileStream = new(Path.Combine(process.StartInfo.WorkingDirectory, process.StartInfo.FileName), FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                     // Start the process.
                     result = process.Start(verbose);

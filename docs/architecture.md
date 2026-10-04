@@ -69,6 +69,14 @@ graph TB
   - `LaunchAndWait()` - Launch and wait for completion
   - `LockAndLaunch()` - Lock file and launch with verification
 
+### YAML Launcher Stages
+
+`LauncherConfig` contains the canonical `steps` collection and an optional
+`stages` collection. Each `StageConfig` names an ordered list of existing
+steps. `StepExecutor.LaunchStageAsync` resolves and validates every reference
+before executing the steps sequentially, returning the same aggregated
+`LaunchResult` used by multi-step index execution.
+
 ### Nfile Class
 - **Purpose**: Secure file downloading with integrity and security checks
 - **Key Features**:
@@ -399,7 +407,7 @@ apps:       # sdo/ntools compatibility
 
 - **Type-Safe Configuration**: C# models validated by `LauncherConfigValidator`
 - **YAML Native**: Native YAML support via YamlDotNet
-- **Single-Step Execution**: `StepExecutor` captures output, validates exit codes, applies environment and working-directory settings, and enforces timeouts
+- **Flexible Step Execution**: `StepExecutor` selects a step by unique name or zero-based index, executes multiple indexed steps sequentially in requested order, captures output, validates exit codes, applies environment and working-directory settings, and enforces timeouts
 - **Console Output**: `Launcher.Services.ConsoleHelper` provides colored status output directly to the console; configurable logging sinks are not currently supported
 - **Extensible Design**: Model-based architecture leaves room for dependency orchestration, variable substitution, retries, and hooks
 

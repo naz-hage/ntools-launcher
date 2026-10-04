@@ -186,11 +186,29 @@ var result = await executor.LaunchAsync(config, stepIndex: 0);
 Console.WriteLine(result.Results[0].ExitCode);
 ```
 
+Steps can also be selected by name or several zero-based indices:
+
+```csharp
+// The name must match exactly one configured step.
+var namedResult = await executor.LaunchAsync(config, "build");
+
+// Steps execute sequentially in the requested order (2, then 0).
+var selectedResult = await executor.LaunchAsync(config, 2, 0);
+foreach (var execution in selectedResult.Results ?? [])
+{
+    Console.WriteLine($"{execution.StepName}: {execution.ExitCode}");
+}
+```
+
+Name selection fails if no step matches or if multiple steps have the same
+name. Index selection validates every requested index before starting any
+process, so an invalid selection cannot start an unintended step.
+
 #### Key Features
 
 - **Multiple Aliases**: Use `steps:`, `tasks:`, or `apps:` interchangeably in YAML
 - **Configuration aliases**: Use `steps:`, `tasks:`, or `apps:` for the same step collection
-- **Single-step execution**: Execute a selected step by index with `StepExecutor`
+- **Flexible step execution**: Execute one step by index or unique name, or execute multiple steps sequentially by index
 - **Process controls**: Apply working directories, environment variables, expected exit codes, and timeouts
 - **Output capture**: Capture standard output and standard error in `ExecutionResult`
 - **Validation**: Report invalid YAML and configuration errors with actionable messages
@@ -209,4 +227,3 @@ The framework includes comprehensive model classes for type-safe configuration:
 - `LaunchResult`, `ExecutionResult`: Result objects containing execution outcomes
 
 For detailed architecture and design information, see [yaml-launcher-design.md](../docs/planning/yaml-launcher-design.md). Dependency orchestration, variable substitution between steps, and full assertion evaluation remain planned extensions.
-
