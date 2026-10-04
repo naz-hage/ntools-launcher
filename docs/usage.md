@@ -195,6 +195,42 @@ preserves the requested order and contains the existing per-step execution
 results. The original `LaunchAsync(config, stepIndex)` overload remains
 available for existing callers.
 
+#### Executing Named Stages
+
+Stages are named, ordered groups of existing step names. Define them beside
+the top-level `steps` collection:
+
+```yaml
+steps:
+    - name: clean
+      path: dotnet
+      arguments: clean
+    - name: build
+      path: dotnet
+      arguments: build
+    - name: publish
+      path: dotnet
+      arguments: publish
+
+stages:
+    - name: release
+      steps:
+          - clean
+          - build
+          - publish
+```
+
+Execute a stage with one call:
+
+```csharp
+LaunchResult releaseResult = await executor.LaunchStageAsync(config, "release");
+```
+
+The stage and all referenced step names are validated before execution begins.
+Stage steps run sequentially in the order listed. Stage names and referenced step names
+must be unique; unknown or ambiguous names produce an `ArgumentException` from
+`StepExecutor` and a `LauncherConfigException` when loading YAML.
+
 #### Full Configuration Reference
 
 The following example shows every supported configuration field. Values such as `workingDirectory` and `requireSignature` must be adapted to the local environment before use.

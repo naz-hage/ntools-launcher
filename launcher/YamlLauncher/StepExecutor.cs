@@ -57,6 +57,57 @@ public class StepExecutor : IStepExecutor
         return await LaunchStepsAsync(config, stepIndices);
     }
 
+    public async Task<LaunchResult> LaunchStageAsync(LauncherConfig config, string stageName)
+    {
+        if (string.IsNullOrWhiteSpace(stageName))
+            throw new ArgumentException("Stage name cannot be empty", nameof(stageName));
+
+        ValidateConfig(config);
+
+        if (config.Stages == null || config.Stages.Count == 0)
+            throw new ArgumentException("Configuration has no stages", nameof(config));
+
+        var matchingStages = config.Stages
+            .Where(stage => string.Equals(stage.Name, stageName, StringComparison.Ordinal))
+            .ToList();
+
+        if (matchingStages.Count == 0)
+            throw new ArgumentException($"No stage with name '{stageName}' was found", nameof(stageName));
+
+        if (matchingStages.Count > 1)
+            throw new ArgumentException(
+                $"Stage name '{stageName}' is ambiguous; it matches {matchingStages.Count} stages",
+                nameof(stageName));
+
+        var stage = matchingStages[0];
+        if (stage.Steps == null || stage.Steps.Count == 0)
+            throw new ArgumentException($"Stage '{stageName}' has no steps", nameof(stageName));
+
+        var stepIndices = new List<int>();
+        foreach (var stepName in stage.Steps)
+        {
+            var matchingSteps = config.Steps!
+                .Select((step, index) => new { step, index })
+                .Where(item => string.Equals(item.step.Name, stepName, StringComparison.Ordinal))
+                .Select(item => item.index)
+                .ToList();
+
+            if (matchingSteps.Count == 0)
+                throw new ArgumentException(
+                    $"Stage '{stageName}' references unknown step '{stepName}'",
+                    nameof(stageName));
+
+            if (matchingSteps.Count > 1)
+                throw new ArgumentException(
+                    $"Stage '{stageName}' references ambiguous step '{stepName}'",
+                    nameof(stageName));
+
+            stepIndices.Add(matchingSteps[0]);
+        }
+
+        return await LaunchStepsAsync(config, stepIndices);
+    }
+
     private async Task<LaunchResult> LaunchStepsAsync(LauncherConfig config, IEnumerable<int> stepIndices)
     {
         ValidateConfig(config);

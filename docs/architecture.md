@@ -69,6 +69,14 @@ graph TB
   - `LaunchAndWait()` - Launch and wait for completion
   - `LockAndLaunch()` - Lock file and launch with verification
 
+### YAML Launcher Stages
+
+`LauncherConfig` contains the canonical `steps` collection and an optional
+`stages` collection. Each `StageConfig` names an ordered list of existing
+steps. `StepExecutor.LaunchStageAsync` resolves and validates every reference
+before executing the steps sequentially, returning the same aggregated
+`LaunchResult` used by multi-step index execution.
+
 ### Nfile Class
 - **Purpose**: Secure file downloading with integrity and security checks
 - **Key Features**:

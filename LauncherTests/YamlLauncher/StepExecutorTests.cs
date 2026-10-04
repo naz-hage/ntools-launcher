@@ -451,6 +451,70 @@ public class StepExecutorTests
     }
 
     [TestMethod]
+    public async Task LaunchStageAsync_ExecutesNamedStepsInConfiguredOrder()
+    {
+        var config = CreateEchoConfig(
+            ("clean", "Clean"),
+            ("build", "Build"),
+            ("publish", "Publish"));
+        config.Stages = new List<StageConfig>
+        {
+            new StageConfig
+            {
+                Name = "release",
+                Steps = new List<string> { "clean", "build", "publish" }
+            }
+        };
+
+        var result = await _executor.LaunchStageAsync(config, "release");
+
+        Assert.IsTrue(result.Success);
+        CollectionAssert.AreEqual(
+            new[] { "clean", "build", "publish" },
+            result.Results!.ConvertAll(execution => execution.StepName));
+    }
+
+    [TestMethod]
+    public async Task LaunchStageAsync_WithUnknownStep_FailsBeforeExecution()
+    {
+        var markerPath = Path.Combine(Path.GetTempPath(), $"stage-executor-{Guid.NewGuid():N}.txt");
+        try
+        {
+            var config = new LauncherConfig
+            {
+                Steps = new List<StepConfig>
+                {
+                    new StepConfig
+                    {
+                        Name = "clean",
+                        Path = "cmd.exe",
+                        Arguments = $"/c echo started > \"{markerPath}\""
+                    }
+                },
+                Stages = new List<StageConfig>
+                {
+                    new StageConfig
+                    {
+                        Name = "release",
+                        Steps = new List<string> { "missing", "clean" }
+                    }
+                }
+            };
+
+            var exception = await AssertThrowsAsync<ArgumentException>(
+                () => _executor.LaunchStageAsync(config, "release"));
+
+            StringAssert.Contains(exception.Message, "unknown step 'missing'");
+            Assert.IsFalse(File.Exists(markerPath));
+        }
+        finally
+        {
+            if (File.Exists(markerPath))
+                File.Delete(markerPath);
+        }
+    }
+
+    [TestMethod]
     public async Task LaunchAsync_ResultsHaveCorrectMetadata()
     {
         var config = new LauncherConfig

@@ -27,6 +27,7 @@ public class LauncherConfigValidator
 
         ValidateVersion(config);
         ValidateSteps(config);
+        ValidateStages(config);
         ValidateVariables(config);
         ValidateAssertions(config);
         ValidateVariableExtractions(config);
@@ -81,6 +82,44 @@ public class LauncherConfigValidator
         if (step.ExpectedReturnCode < 0)
         {
             throw new LauncherConfigException($"Step '{step.Name}' has invalid expected return code: {step.ExpectedReturnCode}. Must be >= 0.");
+        }
+    }
+
+    private void ValidateStages(LauncherConfig config)
+    {
+        if (config.Stages == null)
+        {
+            return;
+        }
+
+        var stageNames = new HashSet<string>(StringComparer.Ordinal);
+        for (var stageIndex = 0; stageIndex < config.Stages.Count; stageIndex++)
+        {
+            var stage = config.Stages[stageIndex];
+            if (stage == null || string.IsNullOrWhiteSpace(stage.Name))
+                throw new LauncherConfigException($"Stage at index {stageIndex} must have a name.");
+
+            if (!stageNames.Add(stage.Name))
+                throw new LauncherConfigException($"Stage name '{stage.Name}' is duplicated.");
+
+            if (stage.Steps == null || stage.Steps.Count == 0)
+                throw new LauncherConfigException($"Stage '{stage.Name}' must contain at least one step.");
+
+            foreach (var stepName in stage.Steps)
+            {
+                if (string.IsNullOrWhiteSpace(stepName))
+                    throw new LauncherConfigException($"Stage '{stage.Name}' contains an empty step name.");
+
+                var matchingStepCount = config.Steps!.Count(
+                    step => string.Equals(step.Name, stepName, StringComparison.Ordinal));
+                if (matchingStepCount == 0)
+                    throw new LauncherConfigException(
+                        $"Stage '{stage.Name}' references step '{stepName}', but no such step exists.");
+
+                if (matchingStepCount > 1)
+                    throw new LauncherConfigException(
+                        $"Stage '{stage.Name}' references ambiguous step '{stepName}'.");
+            }
         }
     }
 

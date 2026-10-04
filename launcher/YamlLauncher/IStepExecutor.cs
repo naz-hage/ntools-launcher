@@ -35,4 +35,12 @@ public interface IStepExecutor
     /// <param name="stepIndices">The zero-based indices of the steps to execute</param>
     /// <returns>Aggregated execution results for the selected steps</returns>
     Task<LaunchResult> LaunchAsync(LauncherConfig config, params int[] stepIndices);
+
+    /// <summary>
+    /// Executes all steps in a named stage asynchronously in their configured order.
+    /// </summary>
+    /// <param name="config">The launcher configuration containing stage and step definitions</param>
+    /// <param name="stageName">The name of the stage to execute</param>
+    /// <returns>Aggregated execution results for the stage steps</returns>
+    Task<LaunchResult> LaunchStageAsync(LauncherConfig config, string stageName);
 }

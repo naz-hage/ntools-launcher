@@ -50,6 +50,77 @@ tasks:
     }
 
     [TestMethod]
+    public async Task LoadFromString_WithStages_DeserializesStageStepNames()
+    {
+        var yaml = @"version: '1.0'
+steps:
+  - name: 'clean'
+    path: '/usr/bin/clean'
+stages:
+  - name: 'build'
+    steps:
+      - 'clean'
+";
+
+        var config = await _loader.LoadFromStringAsync(yaml);
+
+        Assert.IsNotNull(config.Stages);
+        Assert.AreEqual(1, config.Stages.Count);
+        Assert.AreEqual("build", config.Stages[0].Name);
+        CollectionAssert.AreEqual(new[] { "clean" }, config.Stages[0].Steps);
+    }
+
+    [TestMethod]
+    public async Task LoadFromString_WithStageReferencingUnknownStep_Fails()
+    {
+        var yaml = @"version: '1.0'
+steps:
+  - name: 'clean'
+    path: '/usr/bin/clean'
+stages:
+  - name: 'build'
+    steps:
+      - 'missing'
+";
+
+        try
+        {
+            await _loader.LoadFromStringAsync(yaml);
+            Assert.Fail("Should have thrown LauncherConfigException");
+        }
+        catch (LauncherConfigException ex)
+        {
+            StringAssert.Contains(ex.Message, "references step 'missing'");
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadFromString_WithStageReferencingAmbiguousStep_Fails()
+    {
+        var yaml = @"version: '1.0'
+steps:
+  - name: 'clean'
+    path: '/usr/bin/clean'
+  - name: 'clean'
+    path: '/usr/bin/other-clean'
+stages:
+  - name: 'build'
+    steps:
+      - 'clean'
+";
+
+        try
+        {
+            await _loader.LoadFromStringAsync(yaml);
+            Assert.Fail("Should have thrown LauncherConfigException");
+        }
+        catch (LauncherConfigException ex)
+        {
+            StringAssert.Contains(ex.Message, "references ambiguous step 'clean'");
+        }
+    }
+
+    [TestMethod]
     public async Task LoadFromString_MissingVersion_Fails()
     {
         var yaml = @"steps:

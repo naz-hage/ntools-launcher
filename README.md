@@ -14,6 +14,8 @@
 - `StepExecutor` supports selecting a step by its unique name or by one or more
   zero-based indices. Multiple selected steps run sequentially in the order
   requested; the existing single-index API remains supported.
+- Named `stages` group existing steps and execute them sequentially with one
+  call.
 
 ## License
 - This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
