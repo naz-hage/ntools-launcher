@@ -128,7 +128,7 @@ execution:
   
 variables:
   InstallPath: "C:\\Program Files\\MyCompany"
-  DownloadsPath: "C:\\NToolsDownloads"
+  DownloadsPath: "C:\\sdo-downloads"
 ```
 
 ### 3.3 Parallel Executables (Independent Tasks)

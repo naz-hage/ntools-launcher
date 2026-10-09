@@ -110,7 +110,7 @@ namespace Ntools.Tests
             var expectedFail = new Dictionary<Uri, string>
             {
                 { new("https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"), "Docker.Desk>top.Installer.exe" },  //Invalid download filename: exception
-                { new("https://github.com/naz-hage/ntools/releases/download/1.3.0/1.3.0.zip"), "c:\\temp\\Docker.Desk>top.Installer.exe" },  //Invalid download filename: exception
+                { new("https://github.com/naz-hage/sdo/releases/download/1.3.0/1.3.0.zip"), "c:\\temp\\Docker.Desk>top.Installer.exe" },  //Invalid download filename: exception
                 { new("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"), null },  //Invalid download filename: exception
             };
 

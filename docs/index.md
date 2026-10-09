@@ -2,7 +2,7 @@
 
 A NuGet package library for launching executables, downloading files, executing shell commands, and checking process elevation.
 
-Used by [ntools](https://github.com/naz-hage/ntools) repo:
+Used by [ntools](https://github.com/naz-hage/sdo) repo:
 
 - **Nbackup** launches `robocopy` and wait for it to complete, ensuring that the backup process is fully completed before the program continues.
 - **Nbuild** launches `msbuild` to build and test .NET projects.  It also builds selected development tools for the project.  It utilizes the `NFile` class to download the tools from the web.

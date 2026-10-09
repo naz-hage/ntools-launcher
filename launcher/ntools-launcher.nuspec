@@ -7,7 +7,7 @@
     <authors>naz-hage</authors>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="file">LICENSE.txt</license>
-    <projectUrl>https://github.com/naz-hage/ntools-launcher/blob/main/README.md</projectUrl>
+    <projectUrl>https://github.com/naz-hage/sdo-launcher/blob/main/README.md</projectUrl>
     <description>Boost your developer productivity and streamline workflows with ntools-launcher! This versatile library simplifies tasks like launching executables, downloading files, executing shell commands, and checking process elevation. With its user-friendly design and robust functionality, ntools-launcher is a must-have tool for developers.</description>
     <copyright>2020-2026</copyright>
     <readme>README.md</readme>
