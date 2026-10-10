@@ -34,9 +34,9 @@ if (-not $result) {
 # install Nuget
 #########################
 Write-OutputMessage $fileName "Installing Nuget..."
-& "$env:ProgramFiles/nbuild/sdo.exe" tool install -j .\nuget.json
+& "$env:ProgramFiles/Sdo/sdo.exe" tool install --manifest .\nuget.yaml
 if ($LASTEXITCODE -ne 0) {
-    Write-OutputMessage $fileName "Error: Installation of nuget.json failed. Exiting script."
+    Write-OutputMessage $fileName "Error: Installation of nuget.yaml failed. Exiting script."
     exit 1
 }
 
