@@ -14,7 +14,7 @@ on:
   workflow_call:
 
 env:
-  Ntools: Nbuild
+  Sdo: sdo
   build_type: ${{ github.ref == 'refs/heads/main' && 'prod' || github.event.inputs.build_type || 'stage' }}
   nToolsVersion: "1.82.0"
   Enable_Logging: true # Enable additional logging
@@ -77,7 +77,7 @@ jobs:
         Get-Content -Path $env:GITHUB_PATH
         $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
         echo "ProgramFilesPath=$programFilesPath" | Out-File -FilePath $env:GITHUB_ENV -Append
-        echo "$programFilesPath\${{ env.Ntools }}" | Out-File -FilePath $env:GITHUB_PATH -Append
+        echo "$programFilesPath\${{ env.Sdo }}" | Out-File -FilePath $env:GITHUB_PATH -Append
         Get-Content -Path $env:GITHUB_PATH
       shell: pwsh
       working-directory: ${{ github.workspace }}
@@ -96,7 +96,7 @@ jobs:
 
     - name: Run build using ntools
       run: |
-        & "$env:ProgramFilesPath/nbuild/sdo.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
+        & "$env:ProgramFilesPath/${{ env.Sdo }}/${{ env.Sdo }}.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
       shell: pwsh
       working-directory: ${{ github.workspace }}
       env:
