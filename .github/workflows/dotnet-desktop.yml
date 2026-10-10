@@ -16,7 +16,7 @@ on:
 env:
   Sdo: sdo
   build_type: ${{ github.ref == 'refs/heads/main' && 'prod' || github.event.inputs.build_type || 'stage' }}
-  nToolsVersion: "1.82.0"
+  SdoVersion: "1.82.0"
   Enable_Logging: true # Enable additional logging
 
 jobs:
@@ -65,14 +65,14 @@ jobs:
         echo "$dotnetPath" | Out-File -FilePath $env:GITHUB_PATH -Append
       shell: pwsh
 
-    - name: Install ntools
+    - name: Install Sdo
       run: |
         cd ./dev-setup
-        ./dev-setup.ps1 -nToolsVersion ${{ env.nToolsVersion }} 
+        ./dev-setup.ps1 -SdoVersion ${{ env.SdoVersion }} 
       shell: pwsh
       working-directory: ${{ github.workspace }}
 
-    - name: Set ProgramFiles and Ntools Paths
+    - name: Set ProgramFiles and Sdo Paths
       run: |
         Get-Content -Path $env:GITHUB_PATH
         $programFilesPath = [System.Environment]::GetFolderPath('ProgramFiles')
@@ -94,7 +94,7 @@ jobs:
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
 
-    - name: Run build using ntools
+    - name: Run build using Sdo
       run: |
         & "$env:ProgramFilesPath/${{ env.Sdo }}/${{ env.Sdo }}.exe" ${{ env.build_type }} ${{ env.Enable_Logging == 'true' && '--verbose' || '' }}
       shell: pwsh
