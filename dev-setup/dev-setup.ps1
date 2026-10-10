@@ -1,11 +1,11 @@
 param(
-    [string]$nToolsVersion = "1.78.0",  # default version of NTools to install
+    [string]$nToolsVersion = "1.78.0",  # default version of SDO to install
     [switch]$installMongoDB  # Add this switch to control whether MongoDB should be installed
 )
-# Get the common Install module and import it
+# Get the shared SDO setup module and import it
 #########################
-$url = "https://raw.githubusercontent.com/naz-hage/ntools/main/scripts/module-package/ntools-scripts.psm1"
-$output = "./ntools-scripts.psm1"
+$url = "https://raw.githubusercontent.com/naz-hage/sdo/main/scripts/module-package/sdo-scripts.psm1"
+$output = "./sdo-scripts.psm1"
 Invoke-WebRequest -Uri $url -OutFile $output
 Import-Module $output -Force
 
@@ -22,12 +22,12 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     Write-OutputMessage $fileName "Admin rights detected"
 }
 
-# install Ntools
+# install SDO
 #########################
-Write-OutputMessage $fileName "Installing NTools..."
-$result = Install-NTools -Version $nToolsVersion
+Write-OutputMessage $fileName "Installing SDO..."
+$result = Install-Sdo -Version $nToolsVersion
 if (-not $result) {
-    Write-Host "Failed to install NTools. Please check the logs for more details." -ForegroundColor Red
+    Write-Host "Failed to install SDO. Please check the logs for more details." -ForegroundColor Red
     exit 1
 }
 
