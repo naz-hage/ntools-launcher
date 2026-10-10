@@ -1,5 +1,5 @@
 param(
-    [string]$nToolsVersion = "1.78.0",  # default version of SDO to install
+    [string]$nToolsVersion = "1.85.0",  # default version of SDO to install
     [switch]$installMongoDB  # Add this switch to control whether MongoDB should be installed
 )
 # Get the shared SDO setup module and import it
