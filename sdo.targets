@@ -2,7 +2,7 @@
 
 	<!-- Reference: https://learn.microsoft.com/en-us/visualstudio/msbuild/walkthrough-using-msbuild?view=vs-2022 -->
 	
-	<Import Project="$(ProgramFiles)\Nbuild\common.targets"/>
+	<Import Project="$(ProgramFiles)\sdo\common.targets"/>
 
 	<PropertyGroup>
         <!-- This is the folder where the *.sln resides-->
@@ -49,8 +49,8 @@
                         $(SolutionDir)\$(TargetRelease)\*.exe;
                         $(SolutionDir)\$(TargetRelease)\*.exe.config;
                         $(SolutionDir)\$(TargetRelease)\*.json;
-						$(SolutionDir)\Nbuild\resources\*.targets;
-						$(SolutionDir)\Nbuild\resources\*.ps1;
+						$(SolutionDir)\sdo\resources\*.targets;
+						$(SolutionDir)\sdo\resources\*.ps1;
                         $(SolutionDir)\$(TargetRelease)\*.dll"
 						/>
 
@@ -75,15 +75,15 @@
 
 	<!-- Pack a Nuget package -->
 	<Target Name="NUGET_PACK" DependsOnTargets="NUGET_DEP">
-		<Exec Command='"$(NugetExe)" pack "$(SolutionDir)\launcher\ntools-launcher.nuspec" -Version $(ProductVersion) -OutputDirectory "$(NugetPackagePath)"'/>
-        <Exec Command='if exist "$(LocalNugetFeed)\ntools-launcher\$(ProductVersion)" rd "$(LocalNugetFeed)\ntools-launcher\$(ProductVersion)" /s /q'/>
+		<Exec Command='"$(NugetExe)" pack "$(SolutionDir)\launcher\sdo-launcher.nuspec" -Version $(ProductVersion) -OutputDirectory "$(NugetPackagePath)"'/>
+        <Exec Command='if exist "$(LocalNugetFeed)\sdo-launcher\$(ProductVersion)" rd "$(LocalNugetFeed)\sdo-launcher\$(ProductVersion)" /s /q'/>
 
 		<Message Text="==> DONE"/>
 		</Target>
 
 	<!-- Pack and Add Nuget package to local feed after a stage build -->
 	<Target Name="NUGET_ADD" DependsOnTargets="AUTOTAG_STAGE;SOLUTION;NUGET_DEP;NUGET_PACK" AfterTargets="STAGE">
-		<Exec Command='if exist "$(LocalNugetFeed)\ntools-launcher\$(ProductVersion)" rd "$(LocalNugetFeed)\ntools-launcher\$(ProductVersion)" /s /q'/>
+		<Exec Command='if exist "$(LocalNugetFeed)\sdo-launcher\$(ProductVersion)" rd "$(LocalNugetFeed)\sdo-launcher\$(ProductVersion)" /s /q'/>
 		<Exec Command='"$(NugetExe)" add "$(NugetPackagePath)\$(SolutionName).$(ProductVersion).nupkg" -Source "$(LocalNugetFeed)"'/>
 
 		<Message Text="==> DONE"/>
@@ -102,7 +102,7 @@
 	<!-- Build docs locally for testing -->
 	<Target Name="MKDOCS" >
 		<Exec Command='pip install mkdocs' WorkingDirectory="$(SolutionDir)"/>
-		<Exec Command='python -m mkdocs build -d %userprofile%\ntools' WorkingDirectory="$(SolutionDir)"/>
+		<Exec Command='python -m mkdocs build -d %userprofile%\sdo' WorkingDirectory="$(SolutionDir)"/>
 		<Exec Command='python -m mkdocs serve' WorkingDirectory="$(SolutionDir)"/>
      <Message Text="==> DONE"/>
 	</Target>
